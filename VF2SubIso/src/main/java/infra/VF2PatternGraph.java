@@ -9,12 +9,9 @@ public class VF2PatternGraph {
 
     private Graph<vertex, relationshipEdge> graph;
 
-    private HashMap<Integer,vertex> nodeMap;
-
     public VF2PatternGraph()
     {
         graph= new DefaultDirectedGraph<>(relationshipEdge.class);
-        nodeMap= new HashMap<>();
     }
 
     public Graph<vertex, relationshipEdge> getGraph() {

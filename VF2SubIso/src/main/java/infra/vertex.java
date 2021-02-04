@@ -1,18 +1,16 @@
 package infra;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class vertex {
 
-    private String type = "";
+    private Set<String> types;
 
     private Map<String, attribute> attributes;
 
     public vertex(String type) {
-        this.type = type;
+        this.types=new HashSet<>();
+        types.add(type);
         attributes= new HashMap<>();
     }
 
@@ -29,17 +27,18 @@ public abstract class vertex {
         return attributes.keySet();
     }
 
-    public String getType() {
-        return type;
-    }
-
     public void setAllAttributes(List<attribute> attributes) {
         for (attribute attr:attributes)
             this.attributes.put(attr.getAttrName(),attr);
     }
 
-    public void setType(String type) {
-        this.type = type.toLowerCase();
+    public Set<String> getTypes() {
+        return types;
+    }
+
+    public void addTypes(String type)
+    {
+        this.types.add(type);
     }
 
     public void addAttribute(String name, String value)

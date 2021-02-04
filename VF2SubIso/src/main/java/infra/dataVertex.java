@@ -6,17 +6,17 @@ public class dataVertex extends vertex {
     private String vertexURI="";
     private final int hashValue;
 
+
     public dataVertex(String type, String uri) {
         super(type);
         this.vertexURI=uri;
         this.hashValue=vertexURI.hashCode();
     }
 
-
     @Override
     public String toString() {
         return "vertex{" +
-                "type='" + super.getType() + '\'' +
+                "type='" + getTypes() + '\'' +
                 ", attributes=" + super.getAllAttributesList() +
                 '}';
     }
@@ -31,7 +31,7 @@ public class dataVertex extends vertex {
 
     @Override
     public boolean isEqual(vertex v) {
-        if (!super.getType().equals(v.getType()))
+        if (!super.getTypes().containsAll(v.getTypes()))
             return false;
         if(!super.getAllAttributesNames().containsAll(v.getAllAttributesNames()))
             return false;

@@ -2,7 +2,6 @@ package infra;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
-import util.myExceptions;
 
 import java.util.HashMap;
 
@@ -22,9 +21,8 @@ public class VF2DataGraph {
         return graph;
     }
 
-    public void addVertex(dataVertex v) throws myExceptions.NodeAlreadyExistsException
+    public void addVertex(dataVertex v)
     {
-
         if(!nodeMap.containsKey(v.getHashValue()))
         {
             graph.addVertex(v);
@@ -32,13 +30,22 @@ public class VF2DataGraph {
         }
         else
         {
-            throw new myExceptions.NodeAlreadyExistsException("Vertex URI: " + v.getVertexURI());
+            System.out.println("Vertex URI: " + v.getVertexURI());
         }
+    }
 
+    public vertex getNode(int nodeID)
+    {
+        return nodeMap.getOrDefault(nodeID,null);
     }
 
     public void addEdge(dataVertex v1, dataVertex v2, relationshipEdge edge)
     {
         graph.addEdge(v1,v2,edge);
+    }
+
+    public int getSize()
+    {
+        return nodeMap.size();
     }
 }

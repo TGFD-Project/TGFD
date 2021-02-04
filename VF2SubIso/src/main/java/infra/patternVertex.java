@@ -10,7 +10,7 @@ public class patternVertex extends vertex {
     @Override
     public String toString() {
         return "pattern vertex{" +
-                "type='" + getType() + '\'' +
+                "type='" + getTypes() + '\'' +
                 ", literals=" + getAllAttributesList() +
                 '}';
     }
@@ -18,7 +18,7 @@ public class patternVertex extends vertex {
     @Override
     public boolean isEqual(vertex v)
     {
-        if (!super.getType().equals(v.getType()))
+        if (!v.getTypes().containsAll(super.getTypes()))
             return false;
         if(!v.getAllAttributesNames().containsAll(super.getAllAttributesNames()))
             return false;
