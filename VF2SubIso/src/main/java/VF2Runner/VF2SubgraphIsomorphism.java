@@ -1,6 +1,7 @@
 package VF2Runner;
 
-import infra.VF2Graph;
+import infra.VF2DataGraph;
+import infra.VF2PatternGraph;
 import infra.relationshipEdge;
 import infra.vertex;
 import org.jgrapht.GraphMapping;
@@ -33,7 +34,7 @@ public class VF2SubgraphIsomorphism {
         };
     }
 
-    public void executeAndPrintResults(VF2Graph dataGraph, VF2Graph pattern)
+    public void executeAndPrintResults(VF2DataGraph dataGraph, VF2PatternGraph pattern)
     {
  
         System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
@@ -68,7 +69,7 @@ public class VF2SubgraphIsomorphism {
         }
     }
 
-    public Iterator<GraphMapping<vertex, relationshipEdge>> execute(VF2Graph dataGraph, VF2Graph pattern)
+    public Iterator<GraphMapping<vertex, relationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern)
     {
 
         System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());

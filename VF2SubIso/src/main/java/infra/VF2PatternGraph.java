@@ -5,30 +5,30 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 
 import java.util.HashMap;
 
-public class VF2Graph {
+public class VF2PatternGraph {
 
     private Graph<vertex, relationshipEdge> graph;
 
     private HashMap<Integer,vertex> nodeMap;
 
-    public VF2Graph()
+    public VF2PatternGraph()
     {
         graph= new DefaultDirectedGraph<>(relationshipEdge.class);
-        nodeMap=new HashMap<Integer, vertex>();
+        nodeMap= new HashMap<>();
     }
 
     public Graph<vertex, relationshipEdge> getGraph() {
         return graph;
     }
 
-    public void addVertex(vertex v)
+    public void addVertex(patternVertex v)
     {
         graph.addVertex(v);
-        //if(!nodeMap.containsKey(v.))
     }
 
-    public void addEdge(vertex v1, vertex v2, relationshipEdge edge)
+    public void addEdge(patternVertex v1, patternVertex v2, relationshipEdge edge)
     {
         graph.addEdge(v1,v2,edge);
     }
+
 }
