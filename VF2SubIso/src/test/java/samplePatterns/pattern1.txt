@@ -1,0 +1,4 @@
+#pattern p1
+#v v1,player,(name),(age@36)
+#v v2,team,(league)
+#e v1,v2,playing

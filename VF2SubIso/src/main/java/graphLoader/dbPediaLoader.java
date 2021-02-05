@@ -15,13 +15,15 @@ public class dbPediaLoader {
 
     private VF2DataGraph graph;
 
-    public dbPediaLoader(String nodeTypeFilePath, String nodeDataPath)
+    public dbPediaLoader(String nodeTypeFilePath, String nodeLiteralDataPath, String nodeVariableDataPath)
     {
         graph=new VF2DataGraph();
 
         loadNodeMap(nodeTypeFilePath);
 
-        loadDataGraph(nodeDataPath);
+        loadDataGraph(nodeLiteralDataPath);
+
+        loadDataGraph(nodeVariableDataPath);
     }
 
     public VF2DataGraph getGraph() {

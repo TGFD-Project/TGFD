@@ -20,7 +20,9 @@ public class VF2SubgraphIsomorphism {
     public VF2SubgraphIsomorphism()
     {
         myEdgeComparator = (o1, o2) -> {
-            if (o1.getLabel().equals(o2.getLabel()))
+            if(o1.getLabel().equals("*") || o2.getLabel().equals("*"))
+                return 0;
+            else if (o1.getLabel().equals(o2.getLabel()))
                 return 0;
             else
                 return 1;
