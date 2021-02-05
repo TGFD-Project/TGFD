@@ -1,0 +1,8 @@
+#pattern p1
+#v v1,player,(name)
+#v v2,team,(name)
+#e v1,v2,*
+#pattern p2
+#v v1,player,(name),(number)
+#v v2,team,(league)
+#e v1,v2,playing

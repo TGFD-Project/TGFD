@@ -49,9 +49,9 @@ public class dbPediaLoader {
         while (typeTriples.hasNext()) {
             Statement stmt = typeTriples.nextStatement();
 
-            String subject = stmt.getSubject().getURI();
+            String subject = stmt.getSubject().getURI().toLowerCase();
             if (subject.length() > 28) {
-                subject = subject.substring(28).toLowerCase();
+                subject = subject.substring(28);
             }
             String object = stmt.getObject().asResource().getLocalName().toLowerCase();
 
@@ -110,12 +110,13 @@ public class dbPediaLoader {
             }
 
             int subjectNodeId = subjectString.toLowerCase().hashCode();
-            int objectNodeId = objectString.hashCode();
+            int objectNodeId = objectString.toLowerCase().hashCode();
 
             dataVertex subjVertex= (dataVertex) graph.getNode(subjectNodeId);
 
             if (subjVertex==null) {
-                System.out.println("Node not found: " + subjectString);
+
+                System.out.println("Subject node not found: " + subjectString);
                 continue;
             }
 
@@ -124,7 +125,7 @@ public class dbPediaLoader {
                 dataVertex objVertex= (dataVertex) graph.getNode(objectNodeId);
                 if(objVertex==null)
                 {
-                    System.out.println("Node not found: " + subjectString);
+                    System.out.println("Object node not found: " + subjectString);
                     continue;
                 }
                 else if (subjectNodeId == objectNodeId) {

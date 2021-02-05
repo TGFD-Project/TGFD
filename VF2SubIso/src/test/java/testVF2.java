@@ -7,7 +7,7 @@ public class testVF2 {
     public static void main(String []args) {
 
         VF2SubgraphIsomorphism VF2=new VF2SubgraphIsomorphism();
-        patternGenerator generator=new patternGenerator("D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt");
+        patternGenerator generator=new patternGenerator("D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern2.txt");
         for (VF2PatternGraph pattern:generator.getPattern()) {
             System.out.println("\n########## Graph pattern ##########");
             System.out.println(pattern.toString());
@@ -35,7 +35,7 @@ public class testVF2 {
         graph.addVertex(v2);
 
         graph.addEdge(v1,v2,new relationshipEdge("playing"));
-        graph.addEdge(v3,v2,new relationshipEdge("playing"));
+        graph.addEdge(v3,v2,new relationshipEdge("play"));
 
         return graph;
     }

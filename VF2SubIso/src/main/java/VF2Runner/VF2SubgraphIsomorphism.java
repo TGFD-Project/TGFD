@@ -20,7 +20,7 @@ public class VF2SubgraphIsomorphism {
     public VF2SubgraphIsomorphism()
     {
         myEdgeComparator = (o1, o2) -> {
-            if(o1.getLabel().equals("*") || o2.getLabel().equals("*"))
+            if (o1.getLabel().equals("*") || o2.getLabel().equals("*"))
                 return 0;
             else if (o1.getLabel().equals(o2.getLabel()))
                 return 0;
@@ -71,7 +71,7 @@ public class VF2SubgraphIsomorphism {
         }
     }
 
-    public Iterator<GraphMapping<vertex, relationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern)
+    public Iterator<GraphMapping<vertex, relationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean print)
     {
 
         System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
@@ -82,24 +82,29 @@ public class VF2SubgraphIsomorphism {
         long endTime = System.currentTimeMillis();
 
         System.out.println("Search Cost Time:" + (endTime - startTime) + "ms");
-
+        int size=0;
         if (inspector.isomorphismExists()) {
-
             Iterator<GraphMapping<vertex, relationshipEdge>> iterator = inspector.getMappings();
 
             while (iterator.hasNext()) {
+                if(print)
+                {
+                    System.out.println("---------- Match found ---------- ");
+                    GraphMapping<vertex, relationshipEdge> mappings = iterator.next();
 
-                System.out.println("---------- Match found ---------- ");
-                GraphMapping<vertex, relationshipEdge> mappings = iterator.next();
-
-                for (vertex v : pattern.getGraph().vertexSet()) {
-                    vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
-                    if (currentMatchedVertex != null) {
-                        System.out.println(v + " --> " + currentMatchedVertex);
+                    for (vertex v : pattern.getGraph().vertexSet()) {
+                        vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
+                        if (currentMatchedVertex != null) {
+                            System.out.println(v + " --> " + currentMatchedVertex);
+                        }
                     }
                 }
+                else
+                    iterator.next();
+                size++;
             }
 
+            System.out.println("Number of matches: " + size);
             return iterator;
         }
         else

@@ -3,7 +3,7 @@ package infra;
 public class patternVertex extends vertex {
 
     public patternVertex(String type) {
-        super(type);
+        super(type.toLowerCase());
     }
     private boolean isPatternNode=true;
 

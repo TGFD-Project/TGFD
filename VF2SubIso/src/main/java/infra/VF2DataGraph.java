@@ -7,13 +7,12 @@ import java.util.HashMap;
 
 public class VF2DataGraph {
 
-    private Graph<vertex, relationshipEdge> graph;
+    private Graph<vertex, relationshipEdge> graph = new DefaultDirectedGraph<>(relationshipEdge.class);
 
     private HashMap<Integer,vertex> nodeMap;
 
     public VF2DataGraph()
     {
-        graph= new DefaultDirectedGraph<>(relationshipEdge.class);
         nodeMap= new HashMap<>();
     }
 
@@ -36,7 +35,7 @@ public class VF2DataGraph {
 
     public vertex getNode(int nodeID)
     {
-        return nodeMap.getOrDefault(nodeID,null);
+        return nodeMap.getOrDefault(nodeID, null);
     }
 
     public void addEdge(dataVertex v1, dataVertex v2, relationshipEdge edge)

@@ -8,8 +8,8 @@ public class dataVertex extends vertex {
 
 
     public dataVertex(String type, String uri) {
-        super(type);
-        this.vertexURI=uri;
+        super(type.toLowerCase());
+        this.vertexURI=uri.toLowerCase();
         this.hashValue=vertexURI.hashCode();
     }
 
