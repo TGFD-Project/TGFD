@@ -7,16 +7,18 @@ import infra.relationshipEdge;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 
 public class patternGenerator {
 
-    VF2PatternGraph pattern;
+     private List<VF2PatternGraph> allPatterns;
 
     public patternGenerator(String path)
     {
-        pattern=new VF2PatternGraph();
+        allPatterns=new ArrayList<>();
         try {
             loadGraphPattern(path);
         } catch (FileNotFoundException e) {
@@ -24,17 +26,25 @@ public class patternGenerator {
         }
     }
 
-    public VF2PatternGraph getPattern() {
-        return pattern;
+    public List<VF2PatternGraph> getPattern() {
+        return allPatterns;
     }
 
     private void loadGraphPattern(String path) throws FileNotFoundException {
 
         HashMap<String, patternVertex> allVertices=new HashMap<>();
+        VF2PatternGraph currentPattern=null;
 
         Scanner scanner = new Scanner(new File(path));
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
+            if(line.startsWith("#pattern"))
+            {
+                if(currentPattern!=null)
+                    allPatterns.add(currentPattern);
+                currentPattern=new VF2PatternGraph();
+                allVertices=new HashMap<>();
+            }
             if(line.startsWith("#v"))
             {
                 String args[] = line.split(" ")[1].split(",");
@@ -52,16 +62,17 @@ public class patternGenerator {
                         v.addAttribute(new attribute(args[i].substring(1,args[i].length()-1)));
                     }
                 }
-                pattern.addVertex(v);
+                currentPattern.addVertex(v);
                 allVertices.put(args[0],v);
             }
             else if(line.startsWith("#e"))
             {
                 String args[] = line.split(" ")[1].split(",");
-                pattern.addEdge(allVertices.get(args[0]),allVertices.get(args[1]),new relationshipEdge(args[2]));
+                currentPattern.addEdge(allVertices.get(args[0]),allVertices.get(args[1]),new relationshipEdge(args[2]));
             }
         }
-
+        if(currentPattern!=null)
+            allPatterns.add(currentPattern);
     }
 
 }

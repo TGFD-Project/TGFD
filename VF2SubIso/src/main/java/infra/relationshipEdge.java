@@ -9,7 +9,7 @@ public class relationshipEdge extends DefaultEdge {
 
     @Override
     public String toString() {
-        return "(" + getSource() + " : " + getTarget() + " : " + label + ")";
+        return "(" + getSource() + " -> " + getTarget() + " : " + label + ")";
     }
 
 //    public int hashCode() {

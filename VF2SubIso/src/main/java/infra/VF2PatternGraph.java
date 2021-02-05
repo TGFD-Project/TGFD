@@ -3,8 +3,6 @@ package infra;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 
-import java.util.HashMap;
-
 public class VF2PatternGraph {
 
     private Graph<vertex, relationshipEdge> graph;
@@ -28,4 +26,13 @@ public class VF2PatternGraph {
         graph.addEdge(v1,v2,edge);
     }
 
+    @Override
+    public String toString() {
+        String res="VF2PatternGraph{";
+        for (relationshipEdge edge:graph.edgeSet()) {
+            res+=edge.toString();
+        }
+        res+='}';
+        return res;
+    }
 }

@@ -8,8 +8,11 @@ public class testVF2 {
 
         VF2SubgraphIsomorphism VF2=new VF2SubgraphIsomorphism();
         patternGenerator generator=new patternGenerator("D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt");
-        VF2.executeAndPrintResults(generateDataGraph(),generator.getPattern());
-
+        for (VF2PatternGraph pattern:generator.getPattern()) {
+            System.out.println("\n########## Graph pattern ##########");
+            System.out.println(pattern.toString());
+            VF2.executeAndPrintResults(generateDataGraph(),pattern);
+        }
     }
 
     public static VF2DataGraph generateDataGraph()  {
