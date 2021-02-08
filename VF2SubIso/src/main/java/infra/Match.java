@@ -22,6 +22,14 @@ public class Match {
     }
 
     /**
+     * Gets the intervals of the match.
+     */
+    public List<Interval> getIntervals() {
+        // TODO: implement [2021-02-07]
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    /**
      * Gets the signature of the match for comparison across time.
      * @note Signature is consists of the attributes of the vertices on X.
      */
