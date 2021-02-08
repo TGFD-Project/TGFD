@@ -8,6 +8,8 @@ public abstract class vertex {
 
     private Map<String, attribute> attributes;
 
+    // CONSIDER: add id field (e.e.g. g. vertexURI from dataVertex) [2021-02-07]
+
     public vertex(String type) {
         this.types=new HashSet<>();
         types.add(type);
@@ -65,4 +67,10 @@ public abstract class vertex {
     {
         return true;
     }
+
+    // TODO: implement hashCode because Match uses vertex's hashcode as the signature [2021-02-07]
+    //@Override
+    //public int hashCode() {
+    //    return Objects.hash(intervals, vertices);
+    //}
 }

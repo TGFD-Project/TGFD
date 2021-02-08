@@ -10,6 +10,7 @@ public class dataVertex extends vertex {
     public dataVertex(String type, String uri) {
         super(type.toLowerCase());
         this.vertexURI=uri.toLowerCase();
+        // ???: Is Integer large enough for our use case of possible 10+ million vertices? [2021-02-07]
         this.hashValue=vertexURI.hashCode();
     }
 
