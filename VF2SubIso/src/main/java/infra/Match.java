@@ -7,7 +7,7 @@ import java.util.Objects;
  * Represents a match.
  * @note We do not need the edges of a match
  */
-public class Match {
+public final class Match {
     // Intervals where the match exists.
     private List<Interval> intervals;
     // Vertices of the match that are valid for the corresponding intervals.
@@ -25,8 +25,7 @@ public class Match {
      * Gets the intervals of the match.
      */
     public List<Interval> getIntervals() {
-        // TODO: implement [2021-02-07]
-        throw new UnsupportedOperationException("Not implemented");
+        return this.intervals;
     }
 
     /**
@@ -42,7 +41,6 @@ public class Match {
      * Gets the vertices of the match.
      */
     public List<vertex> getVertices() {
-        // TODO: implement [2021-02-07]
-        throw new UnsupportedOperationException("Not implemented");
+        return vertices;
     }
 }
