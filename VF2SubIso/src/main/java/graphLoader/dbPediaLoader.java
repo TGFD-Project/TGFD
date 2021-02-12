@@ -115,7 +115,6 @@ public class dbPediaLoader {
                     if (object.isLiteral()) {
                         objectNodeURI = object.asLiteral().getString().toLowerCase();
                     } else {
-
                         objectNodeURI = object.toString().substring(object.toString().lastIndexOf("/")+1).toLowerCase();
                     }
                 } catch (DatatypeFormatException e) {
