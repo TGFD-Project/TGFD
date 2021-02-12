@@ -17,8 +17,7 @@ public final class Match {
      * Creates a new Match.
      */
     public Match() {
-        // TODO: implement [2021-02-07]
-        throw new UnsupportedOperationException("Not implemented");
+        // TODO: add argument for X to be used in getSignature [2021-02-12]
     }
 
     /**
@@ -33,8 +32,23 @@ public final class Match {
      * @note Signature is consists of the attributes of the vertices on X.
      */
     public String getSignature() {
-        // TODO: implement [2021-02-07]
-        throw new UnsupportedOperationException("Not implemented");
+        var builder = new StringBuilder();
+        vertices
+            .stream()
+            .sorted() // Ensure stable sorting of vertices
+            .forEach(vertex -> {
+                vertex
+                    .getAllAttributesList()
+                    .stream()
+                    .sorted() // Ensure stable sorting of attributes
+                    .forEach(attr -> {
+                        // TODO: filter for only attributes of X [2021-02-12]
+                        builder.append(attr.getAttrValue());
+                        builder.append(",");
+                    });
+            });
+        // CONSIDER: Return a hash [2021-02-12]
+        return builder.toString();
     }
 
     /**
