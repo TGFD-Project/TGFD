@@ -3,6 +3,8 @@ import graphLoader.dbPediaLoader;
 import infra.VF2PatternGraph;
 import patternLoader.patternGenerator;
 
+import java.util.ArrayList;
+
 public class testDBPedia {
 
     public static void main(String []args) {
@@ -12,11 +14,28 @@ public class testDBPedia {
         // arges[2]: Literal mapping file,  sample ->  "F:\\MorteZa\\Datasets\\Statistical\\2016\\literals.ttl"
         // arges[3]: Graph pattern file,    sample ->  "D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt"
 
+
+        ArrayList<String> typesPath=new ArrayList<>();
+        ArrayList<String> dataPath=new ArrayList<>();
+        String patternPath="";
+
+
         System.out.println("Test DBPedia subgraph isomorphism");
 
-        dbPediaLoader dbpedia = new dbPediaLoader(args[0],args[1],args[2]);
 
-        patternGenerator generator = new patternGenerator(args[3]);
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-t")) {
+                typesPath.add(args[++i]);
+            } else if (args[i].equals("-d")) {
+                dataPath.add(args[++i]);
+            } else if (args[i].equals("-p")) {
+                patternPath = args[++i];
+            }
+        }
+
+        dbPediaLoader dbpedia = new dbPediaLoader(typesPath,dataPath);
+
+        patternGenerator generator = new patternGenerator(patternPath);
 
         VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
         for (VF2PatternGraph pattern : generator.getPattern()) {

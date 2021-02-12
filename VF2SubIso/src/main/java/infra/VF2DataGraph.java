@@ -9,7 +9,7 @@ public class VF2DataGraph {
 
     private Graph<vertex, relationshipEdge> graph = new DefaultDirectedGraph<>(relationshipEdge.class);
 
-    private HashMap<Integer,vertex> nodeMap;
+    private HashMap<String,vertex> nodeMap;
 
     public VF2DataGraph()
     {
@@ -22,20 +22,20 @@ public class VF2DataGraph {
 
     public void addVertex(dataVertex v)
     {
-        if(!nodeMap.containsKey(v.getHashValue()))
+        if(!nodeMap.containsKey(v.getVertexURI()))
         {
             graph.addVertex(v);
-            nodeMap.put(v.getHashValue(),v);
+            nodeMap.put(v.getVertexURI(),v);
         }
         else
         {
-            System.out.println("Vertex URI: " + v.getVertexURI());
+            System.out.println("Node already existed, Vertex URI: " + v.getVertexURI());
         }
     }
 
-    public vertex getNode(int nodeID)
+    public vertex getNode(String vertexURI)
     {
-        return nodeMap.getOrDefault(nodeID, null);
+        return nodeMap.getOrDefault(vertexURI, null);
     }
 
     public void addEdge(dataVertex v1, dataVertex v2, relationshipEdge edge)

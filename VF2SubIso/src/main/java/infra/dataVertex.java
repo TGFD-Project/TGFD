@@ -4,14 +4,14 @@ public class dataVertex extends vertex {
 
 
     private String vertexURI="";
-    private final int hashValue;
+//    private final int hashValue;
 
 
-    public dataVertex(String type, String uri) {
+    public dataVertex(String uri, String type) {
         super(type.toLowerCase());
         this.vertexURI=uri.toLowerCase();
         // ???: Is Integer large enough for our use case of possible 10+ million vertices? [2021-02-07]
-        this.hashValue=vertexURI.hashCode();
+//        this.hashValue=vertexURI.hashCode();
     }
 
     @Override
@@ -22,9 +22,9 @@ public class dataVertex extends vertex {
                 '}';
     }
 
-    public int getHashValue() {
-        return hashValue;
-    }
+//    public int getHashValue() {
+//        return hashValue;
+//    }
 
     public String getVertexURI() {
         return vertexURI;
