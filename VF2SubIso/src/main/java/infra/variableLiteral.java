@@ -2,6 +2,7 @@ package infra;
 
 public class variableLiteral extends literal{
 
+
     String vertexType_1, vertexType_2, attrName_1, attrName_2;
     public variableLiteral(literalType t,String vertexType_1, String vertexType_2,String attrName_1,String attrName_2) {
         super(t);

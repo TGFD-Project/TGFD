@@ -39,12 +39,10 @@ public class dbPediaLoader {
             System.out.println("No Input Node Types File Path!");
             return;
         }
-        System.out.println("Start Loading DBPedia Node Map...");
-
         try
         {
             Model model = ModelFactory.createDefaultModel();
-            System.out.println("Loading Node Types...");
+            System.out.println("Loading Node Types: " + nodeTypesPath);
 
             Path input= Paths.get(nodeTypesPath);
             model.read(input.toUri().toString());
@@ -71,8 +69,7 @@ public class dbPediaLoader {
                     v.addTypes(nodeType);
                 }
             }
-            System.out.println("Done Loading DBPedia Node Map!!!");
-            System.out.println("DBPedia NodesMap Size: " + graph.getSize());
+            System.out.println("Done. DBPedia types Size: " + graph.getSize());
         }
         catch (Exception e)
         {
@@ -86,8 +83,8 @@ public class dbPediaLoader {
             System.out.println("No Input Graph Data File Path!");
             return;
         }
-        System.out.println("Loading DBPedia Graph...");
-        int numberOfObjectsNotFound=0,numberOfSubjectsNotFound=0;
+        System.out.println("Loading DBPedia Graph: "+dataGraphFilePath);
+        int numberOfObjectsNotFound=0,numberOfSubjectsNotFound=0, numberOfLoops=0;
 
         try
         {
@@ -142,12 +139,13 @@ public class dbPediaLoader {
                     dataVertex objVertex= (dataVertex) graph.getNode(objectNodeURI);
                     if(objVertex==null)
                     {
-                        System.out.println("Object node not found: " + subjectNodeURI + "  ->  " + predicate + "  ->  " + objectNodeURI);
+                        //System.out.println("Object node not found: " + subjectNodeURI + "  ->  " + predicate + "  ->  " + objectNodeURI);
                         numberOfObjectsNotFound++;
                         continue;
                     }
-                    else if (subjectNodeURI == objectNodeURI) {
-                        System.out.println("Loop found: " + subjectNodeURI + " -> " + objectNodeURI);
+                    else if (subjectNodeURI.equals(objectNodeURI)) {
+                        //System.out.println("Loop found: " + subjectNodeURI + " -> " + objectNodeURI);
+                        numberOfLoops++;
                         continue;
                     }
                     graph.addEdge(subjVertex, objVertex, new relationshipEdge(predicate));
@@ -157,11 +155,12 @@ public class dbPediaLoader {
                     subjVertex.addAttribute(new attribute(predicate,objectNodeURI));
                 }
             }
+            System.out.println("Done Loading DBPedia Graph.");
             System.out.println("Number of Nodes: " + graph.getGraph().vertexSet().size());
             System.out.println("Number of Edges: " + graph.getGraph().edgeSet().size());
             System.out.println("Number of objects not found: " + numberOfObjectsNotFound);
             System.out.println("Number of subjects not found: " + numberOfSubjectsNotFound);
-            System.out.println("Done Loading DBPedia Graph!!!");
+            System.out.println("Number of loops found: " + numberOfLoops);
         }
         catch (Exception e)
         {

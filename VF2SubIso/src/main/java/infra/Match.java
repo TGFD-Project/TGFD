@@ -1,7 +1,8 @@
 package infra;
 
+import org.jgrapht.GraphMapping;
+
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Represents a match.
@@ -10,8 +11,12 @@ import java.util.Objects;
 public final class Match {
     // Intervals where the match exists.
     private List<Interval> intervals;
+
     // Vertices of the match that are valid for the corresponding intervals.
-    private List<vertex> vertices;
+    //private List<dataVertex> vertices;
+
+    // graph mapping of the matched vertices for the corresponding intervals.
+    private GraphMapping<vertex, relationshipEdge> mapping;
 
     /**
      * Creates a new Match.
@@ -54,7 +59,7 @@ public final class Match {
     /**
      * Gets the vertices of the match.
      */
-    public List<vertex> getVertices() {
-        return vertices;
+    public GraphMapping<vertex, relationshipEdge> getMapping() {
+        return mapping;
     }
 }

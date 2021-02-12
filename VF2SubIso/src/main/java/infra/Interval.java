@@ -6,15 +6,18 @@ package infra;
 public class Interval {
     private int start;
     private int end;
+    private int granularity;
 
     /**
      * Creates an interval.
      * @param start Start of the interval.
      * @param end   End of the inteval.
+     * @param granularity granularity of the steps from start to end
      */
-    public Interval(int start, int end) {
+    public Interval(int start, int end, int granularity) {
         this.start = start;
         this.end = end;
+        this.granularity=granularity;
     }
 
     /**
@@ -37,5 +40,10 @@ public class Interval {
      */
     public int getEnd() {
         return this.end;
+    }
+
+
+    public int getGranularity() {
+        return granularity;
     }
 }
