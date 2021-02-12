@@ -62,7 +62,11 @@ public class MatchCollection {
      * Returns matches applicable for only the given timepoint.
      */
     public List<Match> get(int timepoint) {
-        // TODO: implement [2021-02-07]
-        throw new UnsupportedOperationException("Not implemented");
+        // TODO: consider modify the result matches intervals to only be the given timepoint [2021-02-12]
+        return matchesBySignature
+            .values()
+            .stream()
+            .filter(match -> match.getIntervals().stream().anyMatch(i -> i.contains(timepoint)))
+            .collect(toCollection(ArrayList::new));
     }
 }

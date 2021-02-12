@@ -18,6 +18,14 @@ public class Interval {
     }
 
     /**
+     * Returns true if timepoint within the interval.
+     */
+    public boolean contains(int timepoint) {
+        // TODO: determine if we should make the end exclusive? [2021-02-12]
+        return start >= timepoint && timepoint <= end;
+    }
+
+    /**
      * Returns the start of the interval.
      */
     public int getStart() {

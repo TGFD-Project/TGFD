@@ -8,7 +8,7 @@ public abstract class vertex {
 
     private Map<String, attribute> attributes;
 
-    // CONSIDER: add id field (e.e.g. g. vertexURI from dataVertex) [2021-02-07]
+    // TODO: consider adding an id field (e.g. vertexURI from dataVertex) [2021-02-07]
 
     public vertex(String type) {
         this.types=new HashSet<>();
