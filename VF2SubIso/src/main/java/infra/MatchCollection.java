@@ -1,8 +1,8 @@
 package infra;
 
 import java.util.*;
-
 import org.jgrapht.GraphMapping;
+import static java.util.stream.Collectors.toCollection;
 
 /**
  * Class that stores matches across timepoints.
@@ -24,19 +24,19 @@ public class MatchCollection {
             VF2PatternGraph pattern,
             Iterator<GraphMapping<vertex, relationshipEdge>> mappingIterator) {
         // TODO: implement [2021-02-07]
-        //throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
 
-        Set<vertex> patternVertices = pattern.getGraph().vertexSet();
-        List<vertex> vertices = new ArrayList<vertex>();
-        while (mappingIterator.hasNext()) {
-            GraphMapping<vertex, relationshipEdge> mapping = mappingIterator.next();
-            for (vertex patternVertex : patternVertices) {
-                vertex v = mapping.getVertexCorrespondence(patternVertex, false);
-                if (v != null) {
-                    vertices.add(v);
-                }
-            }
-        }
+        //Set<vertex> patternVertices = pattern.getGraph().vertexSet();
+        //List<vertex> vertices = new ArrayList<vertex>();
+        //while (mappingIterator.hasNext()) {
+        //    GraphMapping<vertex, relationshipEdge> mapping = mappingIterator.next();
+        //    for (vertex patternVertex : patternVertices) {
+        //        vertex v = mapping.getVertexCorrespondence(patternVertex, false);
+        //        if (v != null) {
+        //            vertices.add(v);
+        //        }
+        //    }
+        //}
 
         // TODO: get match of previous timepoint by match signature [2021-02-07]
         // TODO: get corresponding match out of previous timepoint [2021-02-07]
@@ -52,8 +52,10 @@ public class MatchCollection {
      * Returns matches across all time.
      */
     public List<Match> get() {
-        // TODO: implement [2021-02-07]
-        throw new UnsupportedOperationException("Not implemented");
+        return matchesBySignature
+            .values()
+            .stream()
+            .collect(toCollection(ArrayList::new));
     }
 
     /**
