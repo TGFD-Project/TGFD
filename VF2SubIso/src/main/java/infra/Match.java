@@ -26,12 +26,47 @@ public final class Match {
     /**
      * Creates a new Match.
      */
-    public Match() {
-        // TODO: add argument for X to be used in getSignature [2021-02-12]
+    public Match(
+        VF2PatternGraph pattern,
+        GraphMapping<Vertex, RelationshipEdge> mapping)
+    {
+        this.pattern = pattern;
+        this.mapping = mapping;
     }
     //endregion
 
     //region --[Methods: Public]---------------------------------------
+    /**
+     * Gets the signature of a match for comparison across time w.r.t. the pattern.
+     * @param pattern Pattern of the match.
+     * @param mapping Mapping of the match.
+     */
+    public static String signatureFromPattern(
+        VF2PatternGraph pattern,
+        GraphMapping<Vertex, RelationshipEdge> mapping)
+    {
+        var builder = new StringBuilder();
+
+        // NOTE: Ensure stable sorting of vertices [2021-02-13]
+        var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
+        sortedPatternVertices.forEach(patternVertex ->
+        {
+            var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
+            if (matchVertex == null)
+                return;
+
+            // NOTE: Ensure stable sorting of attributes [2021-02-13]
+            var sortedAttributes = matchVertex.getAllAttributesList().stream().sorted();
+            sortedAttributes.forEach(attribute ->
+            {
+                builder.append(attribute.getAttrValue());
+                builder.append(",");
+            });
+        });
+        // TODO: consider returning a hash [2021-02-13]
+        return builder.toString();
+    }
+
     /**
      * Gets the signature of a match for comparison across time w.r.t. the x of the dependency.
      * @param pattern Pattern of the match.
