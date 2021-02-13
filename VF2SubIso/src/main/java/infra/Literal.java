@@ -2,19 +2,20 @@ package infra;
 
 public class Literal {
 
-    public enum literalType
+    public enum LiteralType
     {
-        constant, variable
+        Constant,
+        Variable
     }
 
-    private literalType type;
+    private LiteralType type;
 
-    public Literal(literalType t)
+    public Literal(LiteralType t)
     {
         this.type=t;
     }
 
-    public literalType getLiteralType() {
+    public LiteralType getLiteralType() {
         return type;
     }
 }

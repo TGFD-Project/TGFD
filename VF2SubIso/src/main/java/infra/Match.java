@@ -1,5 +1,6 @@
 package infra;
 
+import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 
 import java.util.List;
@@ -13,11 +14,11 @@ public final class Match {
     // Intervals where the match exists.
     private List<Interval> intervals;
 
-    // Pattern graph
-    private VF2PatternGraph pattern;
-
-    // graph mapping of the matched vertices for the corresponding intervals.
+    // Graph mapping from pattern graph to match graph.
     private GraphMapping<Vertex, RelationshipEdge> mapping;
+
+    // Pattern graph.
+    private VF2PatternGraph pattern;
     //endregion
 
     //region --[Constructors]------------------------------------------
@@ -31,27 +32,54 @@ public final class Match {
 
     //region --[Methods: Public]---------------------------------------
     /**
-     * Gets the signature of the match for comparison across time.
-     * @note Signature is consists of the attributes of the vertices on X.
+     * Gets the signature of a match for comparison across time.
+     * @note Signature consists of the attributes of the vertices on X.
      */
-    public String getSignature() {
-        var builder = new StringBuilder();
-        getVertices()
-            .stream()
-            .sorted() // Ensure stable sorting of vertices
-            .forEach(vertex -> {
-                vertex
-                    .getAllAttributesList()
-                    .stream()
-                    .sorted() // Ensure stable sorting of attributes
-                    .forEach(attr -> {
-                        // TODO: filter for only attributes of X [2021-02-12]
-                        builder.append(attr.getAttrValue());
-                        builder.append(",");
-                    });
-            });
-        // CONSIDER: Return a hash [2021-02-12]
-        return builder.toString();
+    public static String getSignature(
+        VF2PatternGraph pattern,
+        GraphMapping<Vertex, RelationshipEdge> mapping)
+    {
+        return "";
+        //for (var patternVertex : pattern.getGraph().vertexSet())
+        //{
+        //    var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
+        //    if (matchVertex == null)
+        //        continue;
+        //
+        //
+
+        //    for (Literal l : tgfd.getDependency().getX())
+        //    {
+        //        if (l instanceof ConstantLiteral)
+        //        {
+        //            if (matchVertex.getTypes().contains(((constantLiteral) l).getVertexType()))
+        //            {
+        //                //if(matchVertex.attContains())
+        //            }
+        //        }
+        //        else if (l instanceof VariableLiteral)
+        //        {
+        //        }
+        //    }
+        //}
+
+        //var builder = new StringBuilder();
+        //getVertices()
+        //    .stream()
+        //    .sorted() // Ensure stable sorting of vertices
+        //    .forEach(vertex -> {
+        //        vertex
+        //            .getAllAttributesList()
+        //            .stream()
+        //            .sorted() // Ensure stable sorting of attributes
+        //            .forEach(attr -> {
+        //                // TODO: filter for only attributes of X [2021-02-12]
+        //                builder.append(attr.getAttrValue());
+        //                builder.append(",");
+        //            });
+        //    });
+        //// CONSIDER: Return a hash [2021-02-12]
+        //return builder.toString();
     }
     //endregion
 
@@ -69,6 +97,11 @@ public final class Match {
     public GraphMapping<Vertex, RelationshipEdge> getMapping() {
         return this.mapping;
     }
+
+    /**
+     * Gets the pattern graph.
+     */
+    public VF2PatternGraph getPattern() { return pattern; }
 
     /**
      * Gets the vertices of the match that are valid for the corresponding intervals.
