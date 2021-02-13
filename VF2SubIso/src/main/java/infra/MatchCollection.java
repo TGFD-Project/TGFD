@@ -71,29 +71,11 @@ public class MatchCollection
         VF2PatternGraph pattern,
         Iterator<GraphMapping<Vertex, RelationshipEdge>> mappingIterator)
     {
-        // TODO: implement [2021-02-07]
-        throw new UnsupportedOperationException("Not implemented");
-
-        //Set<vertex> patternVertices = pattern.getGraph().vertexSet();
-        //List<vertex> vertices = new ArrayList<vertex>();
-        //while (mappingIterator.hasNext()) {
-        //    GraphMapping<vertex, relationshipEdge> mapping = mappingIterator.next();
-        //    for (vertex patternVertex : patternVertices) {
-        //        vertex v = mapping.getVertexCorrespondence(patternVertex, false);
-        //        if (v != null) {
-        //            vertices.add(v);
-        //        }
-        //    }
-        //}
-
-        // TODO: get match of previous timepoint by match signature [2021-02-07]
-        // TODO: get corresponding match out of previous timepoint [2021-02-07]
-        // TODO: handle interval [2021-02-07]
-        //   if signature found in previous match
-        //     if interval end is the same
-        //       extend
-        //     else
-        //       add new interval
+        while (mappingIterator.hasNext())
+        {
+            var mapping = mappingIterator.next();
+            addMatch(timepoint, pattern, mapping);
+        }
     }
     //endregion
 
