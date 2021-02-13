@@ -46,10 +46,24 @@ public class Interval {
     }
 
     /**
+     * Sets the start of the interval
+     */
+    public void setStart(LocalDate start) {
+        this.start = start;
+    }
+
+    /**
      * Returns the end of the interval.
      */
     public LocalDate getEnd() {
         return this.end;
+    }
+
+    /**
+     * Sets the end of the interval
+     */
+    public void setEnd(LocalDate end) {
+        this.end = end;
     }
     //endregion
 }
