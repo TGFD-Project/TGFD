@@ -117,22 +117,6 @@ public final class Match {
         });
         // TODO: consider returning a hash [2021-02-13]
         return builder.toString();
-
-        //var builder = new StringBuilder();
-        //getVertices()
-        //    .stream()
-        //    .sorted() // Ensure stable sorting of vertices
-        //    .forEach(vertex -> {
-        //        vertex
-        //            .getAllAttributesList()
-        //            .stream()
-        //            .sorted() // Ensure stable sorting of attributes
-        //            .forEach(attr -> {
-        //                // TODO: filter for only attributes of X [2021-02-12]
-        //                builder.append(attr.getAttrValue());
-        //                builder.append(",");
-        //            });
-        //    });
     }
 
     /**
