@@ -1,6 +1,6 @@
 package infra;
 
-public class dataVertex extends vertex {
+public class dataVertex extends Vertex {
 
 
     private String vertexURI="";
@@ -31,7 +31,7 @@ public class dataVertex extends vertex {
     }
 
     @Override
-    public boolean isEqual(vertex v) {
+    public boolean isEqual(Vertex v) {
         if (!super.getTypes().containsAll(v.getTypes()))
             return false;
         if(!super.getAllAttributesNames().containsAll(v.getAllAttributesNames()))

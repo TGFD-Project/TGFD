@@ -22,7 +22,7 @@ public class MatchCollection {
     public void addMatches(
             int timepoint,
             VF2PatternGraph pattern,
-            Iterator<GraphMapping<vertex, relationshipEdge>> mappingIterator) {
+            Iterator<GraphMapping<Vertex, relationshipEdge>> mappingIterator) {
         // TODO: implement [2021-02-07]
         throw new UnsupportedOperationException("Not implemented");
 

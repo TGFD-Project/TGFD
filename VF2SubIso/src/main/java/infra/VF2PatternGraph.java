@@ -5,14 +5,14 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 
 public class VF2PatternGraph {
 
-    private Graph<vertex, relationshipEdge> graph;
+    private Graph<Vertex, relationshipEdge> graph;
 
     public VF2PatternGraph()
     {
         graph= new DefaultDirectedGraph<>(relationshipEdge.class);
     }
 
-    public Graph<vertex, relationshipEdge> getGraph() {
+    public Graph<Vertex, relationshipEdge> getGraph() {
         return graph;
     }
 

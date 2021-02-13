@@ -1,6 +1,6 @@
 package infra;
 
-public class patternVertex extends vertex {
+public class patternVertex extends Vertex {
 
     public patternVertex(String type) {
         super(type.toLowerCase());
@@ -16,7 +16,7 @@ public class patternVertex extends vertex {
     }
 
     @Override
-    public boolean isEqual(vertex v)
+    public boolean isEqual(Vertex v)
     {
         if (!v.getTypes().containsAll(super.getTypes()))
             return false;

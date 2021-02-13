@@ -39,8 +39,8 @@ public class NaiveBatchTED {
         String signiture="";
         ArrayList<String> res=new ArrayList<>();
 
-        for (vertex v : tgfd.getPattern().getGraph().vertexSet()) {
-            vertex currentMatchedVertex = match.getMapping().getVertexCorrespondence(v, false);
+        for (Vertex v : tgfd.getPattern().getGraph().vertexSet()) {
+            Vertex currentMatchedVertex = match.getMapping().getVertexCorrespondence(v, false);
             if (currentMatchedVertex != null) {
                 for (literal l:tgfd.getDependency().getX()) {
                     if(l instanceof constantLiteral)

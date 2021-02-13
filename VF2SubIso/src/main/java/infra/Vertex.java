@@ -2,7 +2,7 @@ package infra;
 
 import java.util.*;
 
-public abstract class vertex {
+public abstract class Vertex {
 
     private Set<String> types;
 
@@ -10,7 +10,7 @@ public abstract class vertex {
 
     // TODO: consider adding an id field (e.g. vertexURI from dataVertex) [2021-02-07]
 
-    public vertex(String type) {
+    public Vertex(String type) {
         this.types=new HashSet<>();
         types.add(type);
         attributes= new HashMap<>();
@@ -63,7 +63,7 @@ public abstract class vertex {
         return attributes.get(name.toLowerCase()).getAttrValue();
     }
 
-    public boolean isEqual(vertex v)
+    public boolean isEqual(Vertex v)
     {
         return true;
     }

@@ -3,7 +3,7 @@ package VF2Runner;
 import infra.VF2DataGraph;
 import infra.VF2PatternGraph;
 import infra.relationshipEdge;
-import infra.vertex;
+import infra.Vertex;
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
 import org.jgrapht.alg.isomorphism.VF2SubgraphIsomorphismInspector;
@@ -14,8 +14,8 @@ import java.util.Iterator;
 public class VF2SubgraphIsomorphism {
 
     private final Comparator<relationshipEdge> myEdgeComparator;
-    private final Comparator<vertex> myVertexComparator;
-    private VF2AbstractIsomorphismInspector<vertex, relationshipEdge> inspector;
+    private final Comparator<Vertex> myVertexComparator;
+    private VF2AbstractIsomorphismInspector<Vertex, relationshipEdge> inspector;
 
     public VF2SubgraphIsomorphism()
     {
@@ -50,15 +50,15 @@ public class VF2SubgraphIsomorphism {
 
         if (inspector.isomorphismExists()) {
 
-            Iterator<GraphMapping<vertex, relationshipEdge>> iterator = inspector.getMappings();
+            Iterator<GraphMapping<Vertex, relationshipEdge>> iterator = inspector.getMappings();
 
             while (iterator.hasNext()) {
 
                 System.out.println("---------- Match found ---------- ");
-                GraphMapping<vertex, relationshipEdge> mappings = iterator.next();
+                GraphMapping<Vertex, relationshipEdge> mappings = iterator.next();
 
-                for (vertex v : pattern.getGraph().vertexSet()) {
-                    vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
+                for (Vertex v : pattern.getGraph().vertexSet()) {
+                    Vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
                     if (currentMatchedVertex != null) {
                         System.out.println(v + " --> " + currentMatchedVertex);
                     }
@@ -71,7 +71,7 @@ public class VF2SubgraphIsomorphism {
         }
     }
 
-    public Iterator<GraphMapping<vertex, relationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean print)
+    public Iterator<GraphMapping<Vertex, relationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean print)
     {
         System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
 
@@ -84,16 +84,16 @@ public class VF2SubgraphIsomorphism {
         System.out.println("Search Cost Time:" + (endTime - startTime) + "ms");
         int size=0;
         if (inspector.isomorphismExists()) {
-            Iterator<GraphMapping<vertex, relationshipEdge>> iterator = inspector.getMappings();
+            Iterator<GraphMapping<Vertex, relationshipEdge>> iterator = inspector.getMappings();
 
             while (iterator.hasNext()) {
                 if(print)
                 {
                     System.out.println("---------- Match found ---------- ");
-                    GraphMapping<vertex, relationshipEdge> mappings = iterator.next();
+                    GraphMapping<Vertex, relationshipEdge> mappings = iterator.next();
 
-                    for (vertex v : pattern.getGraph().vertexSet()) {
-                        vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
+                    for (Vertex v : pattern.getGraph().vertexSet()) {
+                        Vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
                         if (currentMatchedVertex != null) {
                             System.out.println(v + " --> " + currentMatchedVertex);
                         }
