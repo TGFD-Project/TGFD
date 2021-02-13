@@ -78,31 +78,43 @@ public final class Match {
         GraphMapping<Vertex, RelationshipEdge> mapping,
         ArrayList<Literal> xLiterals)
     {
+        // TODO: can we assume that all x variable literals are also defined in the pattern? [2021-02-13]
         var builder = new StringBuilder();
-        for (var patternVertex : pattern.getGraph().vertexSet())
+
+        // NOTE: Ensure stable sorting of vertices [2021-02-13]
+        var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
+        sortedPatternVertices.forEach(patternVertex ->
         {
             var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
             if (matchVertex == null)
-                continue;
+                return;
 
-            for (Literal literal : xLiterals)
+            // NOTE: Ensure stable sorting of attributes [2021-02-13]
+            var sortedAttributes = matchVertex.getAllAttributesList().stream().sorted();
+            sortedAttributes.forEach(attribute ->
             {
-                if (literal instanceof ConstantLiteral)
+                for (Literal literal : xLiterals)
                 {
-                    var constantLiteral = (ConstantLiteral)literal;
-                    if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
-                        continue;
+                    if (literal instanceof ConstantLiteral)
+                    {
+                        var constantLiteral = (ConstantLiteral)literal;
+                        if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
+                            continue;
+                        if (attribute.getAttrName() != constantLiteral.attrName)
+                            continue;
+                        if (attribute.getAttrValue() != constantLiteral.attrValue)
+                            continue;
 
-                    //if (matchVertex.attContains())
-                    //{
-                    //    //if(matchVertex.attContains())
-                    //}
+                        builder.append(attribute.getAttrValue());
+                        builder.append(",");
+                    }
+                    else if (literal instanceof VariableLiteral)
+                    {
+                        // TODO: if variable literal then exclude from signature? [2021-02-13]
+                    }
                 }
-                else if (literal instanceof VariableLiteral)
-                {
-                }
-            }
-        }
+            });
+        });
         // TODO: consider returning a hash [2021-02-13]
         return builder.toString();
 
