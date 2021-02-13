@@ -1,5 +1,6 @@
 package infra;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,10 +14,25 @@ import static java.util.stream.Collectors.toCollection;
 public class MatchCollection
 {
     //region --[Fields: Private]---------------------------------------
+    /** The minimum timespan between matches. */
+    private Duration granularity;
+
+    /** Dependency of MatchCollection */
+    private Dependency dependency;
+
+    /** Mapping of match signatures to matches. */
+    private AbstractMap<String, Match> matchesBySignature = new HashMap<String, Match>();
+    //endregion
+
+    //region --[Constructors]------------------------------------------
     /**
-     * Mapping of match signatures to matches.
+     * Creates a MatchCollection.
+     * @param granularity Minimum timespan between matches.
      */
-    private HashMap<String, Match> matchesBySignature;
+    public MatchCollection(Duration granularity)
+    {
+        this.granularity = granularity;
+    }
     //endregion
 
     //region --[Methods: Private]--------------------------------------
@@ -27,11 +43,19 @@ public class MatchCollection
      * @param mapping The mapping of the match.
      */
     private void addMatch(
-        int timepoint,
+        LocalDate timepoint,
         VF2PatternGraph pattern,
         GraphMapping<Vertex, RelationshipEdge> mapping)
     {
+        var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var match = matchesBySignature.getOrDefault(signature, null);
+        if (match == null)
+        {
+            match = new Match(pattern, mapping);
+            matchesBySignature.put(signature, match);
+        }
 
+        match.addTimepoint(timepoint, granularity);
     }
     //endregion
 
@@ -43,7 +67,7 @@ public class MatchCollection
      * @param mappingIterator An iterator over all isomorphic mappings from the pattern.
      */
     public void addMatches(
-        int timepoint,
+        LocalDate timepoint,
         VF2PatternGraph pattern,
         Iterator<GraphMapping<Vertex, RelationshipEdge>> mappingIterator)
     {
@@ -74,9 +98,10 @@ public class MatchCollection
     //endregion
 
     //region --[Properties: Public]------------------------------------
-    /**
-     * Returns matches across all time.
-     */
+    /** Gets the minimum timespan between matches. */
+    public Duration getGranularity() { return this.granularity; }
+
+    /** Returns matches across all time. */
     public List<Match> getMatches() {
         return matchesBySignature
             .values()
@@ -84,15 +109,9 @@ public class MatchCollection
             .collect(Collectors.toList());
     }
 
-    /**
-     * Returns matches applicable for only the given timepoint.
-     */
+    /** Returns matches applicable for only the given timepoint. */
     public List<Match> getMatches(LocalDate timepoint) {
-        // TODO: consider modify the result matches intervals to only be the given timepoint [2021-02-12]
-        var intervals = new ArrayList<Interval>()
-        {{
-            add(new Interval(timepoint, timepoint));
-        }};
+        var intervals = List.of(new Interval(timepoint, timepoint));
         return matchesBySignature
             .values()
             .stream()
