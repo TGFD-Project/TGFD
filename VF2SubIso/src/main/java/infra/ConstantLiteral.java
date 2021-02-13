@@ -1,9 +1,9 @@
 package infra;
 
-public class constantLiteral extends literal{
+public class ConstantLiteral extends literal{
 
     String vertexType, attrName, attrValue;
-    public constantLiteral(literalType t,String vertexType, String attrName, String attrValue ) {
+    public ConstantLiteral(literalType t, String vertexType, String attrName, String attrValue ) {
         super(t);
         this.attrName=attrName;
         this.vertexType=vertexType;

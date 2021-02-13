@@ -43,9 +43,9 @@ public class NaiveBatchTED {
             Vertex currentMatchedVertex = match.getMapping().getVertexCorrespondence(v, false);
             if (currentMatchedVertex != null) {
                 for (literal l:tgfd.getDependency().getX()) {
-                    if(l instanceof constantLiteral)
+                    if(l instanceof ConstantLiteral)
                     {
-                        if(currentMatchedVertex.getTypes().contains(((constantLiteral) l).getVertexType()))
+                        if(currentMatchedVertex.getTypes().contains(((ConstantLiteral) l).getVertexType()))
                         {
                             //if(currentMatchedVertex.attContains())
                         }
