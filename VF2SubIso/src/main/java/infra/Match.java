@@ -1,11 +1,14 @@
 package infra;
 
-import org.apache.jena.atlas.iterator.Iter;
-import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -14,13 +17,13 @@ import java.util.List;
  */
 public final class Match {
     //region --[Fields: Private]---------------------------------------
-    // Intervals where the match exists.
+    /** Intervals where the match exists. */
     private List<Interval> intervals = new ArrayList<Interval>();
 
-    // Graph mapping from pattern graph to match graph.
+    /** Graph mapping from pattern graph to match graph. */
     private GraphMapping<Vertex, RelationshipEdge> mapping;
 
-    // Pattern graph.
+    /** Pattern graph. */
     private VF2PatternGraph pattern;
     //endregion
 
@@ -39,10 +42,9 @@ public final class Match {
      * Create a new Match.
      * @param pattern Pattern of the match.
      * @param mapping Mapping of the match.
+     * @param granularity Minimum timespan between timepoints.
      */
-    public Match(
-        VF2PatternGraph pattern,
-        GraphMapping<Vertex, RelationshipEdge> mapping)
+    public Match(VF2PatternGraph pattern, GraphMapping<Vertex, RelationshipEdge> mapping)
     {
         this.pattern = pattern;
         this.mapping = mapping;
@@ -52,8 +54,7 @@ public final class Match {
      * Creates a new Match.
      * @param intervals Intervals of the match.
      */
-    public Match WithIntervals(
-        List<Interval> intervals)
+    public Match WithIntervals(List<Interval> intervals)
     {
         return new Match(
             this.pattern,
@@ -63,6 +64,53 @@ public final class Match {
     //endregion
 
     //region --[Methods: Public]---------------------------------------
+    /**
+     * Adds a timepoint to the match.
+     *
+     * Will either extend the latest interval to include the new timepoint, or
+     * add a new interval (break in intervals represents that no match occurred).
+     *
+     * @param timepoint Timepoint of match.
+     * @param granularity Minimum timespan between matches.
+     * @exception IllegalArgumentException if timepoint is before the latest interval's end.
+     * @exception IllegalArgumentException if timepoint is less than the granularity away from the latest interval end.
+     */
+    public void addTimepoint(LocalDate timepoint, Duration granularity)
+    {
+        if (intervals.isEmpty())
+        {
+            intervals.add(new Interval(timepoint, timepoint));
+            return;
+        }
+
+        var latestInterval = intervals.stream()
+            .max(Comparator.comparing(Interval::getEnd))
+            .orElseThrow();
+
+        var latestEnd = latestInterval.getEnd();
+        if (timepoint.isBefore(latestEnd) || timepoint.isEqual(latestEnd))
+            throw new IllegalArgumentException("Timepoint is <= the latest interval's end");
+
+        var sinceEnd = Duration.between(latestEnd, timepoint);
+        var comparison = sinceEnd.compareTo(granularity);
+        if (comparison > 0)
+        {
+            // Time since end is greater than the granularity so add a new interval.
+            // This represents that the match did not exist between the latestInterval.end and newInterval.start.
+            intervals.add(new Interval(timepoint, timepoint));
+        }
+        else if (comparison == 0)
+        {
+            // Time since end is the granularity so extend the last interval.
+            // This represents that the match continued existing for this interval.
+            latestInterval.setEnd(timepoint);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Timepoint is less than the granularity away from the latest interval end");
+        }
+    }
+
     /**
      * Gets the signature of a match for comparison across time w.r.t. the pattern.
      * @param pattern Pattern of the match.
