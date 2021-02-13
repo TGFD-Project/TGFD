@@ -5,7 +5,7 @@ import patternLoader.PatternGenerator;
 
 import java.util.ArrayList;
 
-public class testDBPedia {
+public class TestDBPedia {
 
     public static void main(String []args) {
         //Expected arguments:
