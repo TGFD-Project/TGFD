@@ -1,13 +1,13 @@
 import VF2Runner.VF2SubgraphIsomorphism;
 import infra.*;
-import patternLoader.patternGenerator;
+import patternLoader.PatternGenerator;
 
 public class testVF2 {
 
     public static void main(String []args) {
 
         VF2SubgraphIsomorphism VF2=new VF2SubgraphIsomorphism();
-        patternGenerator generator=new patternGenerator("D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern2.txt");
+        PatternGenerator generator=new PatternGenerator("D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern2.txt");
         for (VF2PatternGraph pattern:generator.getPattern()) {
             System.out.println("\n########## Graph pattern ##########");
             System.out.println(pattern.toString());

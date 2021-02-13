@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
-public class patternGenerator {
+public class PatternGenerator {
 
      private List<VF2PatternGraph> allPatterns;
 
-    public patternGenerator(String path)
+    public PatternGenerator(String path)
     {
         allPatterns=new ArrayList<>();
         try {

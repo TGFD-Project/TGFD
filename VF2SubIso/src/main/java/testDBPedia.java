@@ -1,7 +1,7 @@
 import VF2Runner.VF2SubgraphIsomorphism;
 import graphLoader.dbPediaLoader;
 import infra.VF2PatternGraph;
-import patternLoader.patternGenerator;
+import patternLoader.PatternGenerator;
 
 import java.util.ArrayList;
 
@@ -35,7 +35,7 @@ public class testDBPedia {
 
         dbPediaLoader dbpedia = new dbPediaLoader(typesPath,dataPath);
 
-        patternGenerator generator = new patternGenerator(patternPath);
+        PatternGenerator generator = new PatternGenerator(patternPath);
 
         VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
         for (VF2PatternGraph pattern : generator.getPattern()) {
