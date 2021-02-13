@@ -4,6 +4,7 @@ package infra;
  * Represents an interval.
  */
 public class Interval {
+    // TODO: change to date and remove granularity [2021-02-13]
     private int start;
     private int end;
     private int granularity;
@@ -41,7 +42,6 @@ public class Interval {
     public int getEnd() {
         return this.end;
     }
-
 
     public int getGranularity() {
         return granularity;

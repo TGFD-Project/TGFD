@@ -25,7 +25,7 @@ public class NaiveBatchTED {
         Interval delta=tgfd.getDelta();
         for (int i=delta.getStart();i<=delta.getEnd();i+=delta.getGranularity())
         {
-            List<Match> currentMatches= matches.get(i);
+            List<Match> currentMatches= matches.getMatches(i);
         }
     }
 

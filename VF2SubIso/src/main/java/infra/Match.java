@@ -1,9 +1,11 @@
 package infra;
 
+import org.apache.jena.atlas.iterator.Iter;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -13,7 +15,7 @@ import java.util.List;
 public final class Match {
     //region --[Fields: Private]---------------------------------------
     // Intervals where the match exists.
-    private List<Interval> intervals;
+    private List<Interval> intervals = new ArrayList<Interval>();
 
     // Graph mapping from pattern graph to match graph.
     private GraphMapping<Vertex, RelationshipEdge> mapping;
@@ -23,8 +25,20 @@ public final class Match {
     //endregion
 
     //region --[Constructors]------------------------------------------
+    private Match(
+        VF2PatternGraph pattern,
+        GraphMapping<Vertex, RelationshipEdge> mapping,
+        List<Interval> intervals)
+    {
+        this.pattern = pattern;
+        this.mapping = mapping;
+        this.intervals = intervals;
+    }
+
     /**
-     * Creates a new Match.
+     * Create a new Match.
+     * @param pattern Pattern of the match.
+     * @param mapping Mapping of the match.
      */
     public Match(
         VF2PatternGraph pattern,
@@ -32,6 +46,19 @@ public final class Match {
     {
         this.pattern = pattern;
         this.mapping = mapping;
+    }
+
+    /**
+     * Creates a new Match.
+     * @param intervals Intervals of the match.
+     */
+    public Match WithIntervals(
+        List<Interval> intervals)
+    {
+        return new Match(
+            this.pattern,
+            this.mapping,
+            intervals);
     }
     //endregion
 
@@ -138,28 +165,16 @@ public final class Match {
     /**
      * Gets the intervals of the match.
      */
-    public List<Interval> getIntervals() {
-        return this.intervals;
-    }
+    public List<Interval> getIntervals() { return this.intervals; }
 
     /**
      * Gets the vertices of the match.
      */
-    public GraphMapping<Vertex, RelationshipEdge> getMapping() {
-        return this.mapping;
-    }
+    public GraphMapping<Vertex, RelationshipEdge> getMapping() { return this.mapping; }
 
     /**
      * Gets the pattern graph.
      */
     public VF2PatternGraph getPattern() { return pattern; }
-
-    /**
-     * Gets the vertices of the match that are valid for the corresponding intervals.
-     */
-    public List<DataVertex> getVertices() {
-        // TODO: remove if not needed (if TGFD ond Signature just uses pattern + mapping) [2021-02-13]
-        throw new UnsupportedOperationException("not implemented");
-    }
     //endregion
 }
