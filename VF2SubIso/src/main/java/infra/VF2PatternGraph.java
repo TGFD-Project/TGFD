@@ -16,12 +16,12 @@ public class VF2PatternGraph {
         return graph;
     }
 
-    public void addVertex(patternVertex v)
+    public void addVertex(PatternVertex v)
     {
         graph.addVertex(v);
     }
 
-    public void addEdge(patternVertex v1, patternVertex v2, relationshipEdge edge)
+    public void addEdge(PatternVertex v1, PatternVertex v2, relationshipEdge edge)
     {
         graph.addEdge(v1,v2,edge);
     }

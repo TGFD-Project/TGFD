@@ -44,7 +44,7 @@ public class testVF2 {
     {
         VF2PatternGraph pattern=new VF2PatternGraph();
 
-        patternVertex v1=new patternVertex("player");
+        PatternVertex v1=new PatternVertex("player");
         //variable literal
         v1.addAttribute(new Attribute("name"));
         //constant literal
@@ -52,7 +52,7 @@ public class testVF2 {
 
         pattern.addVertex(v1);
 
-        patternVertex v2=new patternVertex("team");
+        PatternVertex v2=new PatternVertex("team");
         //variable literal
         v2.addAttribute(new Attribute("league"));
         pattern.addVertex(v2);

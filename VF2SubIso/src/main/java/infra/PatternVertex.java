@@ -1,8 +1,8 @@
 package infra;
 
-public class patternVertex extends Vertex {
+public class PatternVertex extends Vertex {
 
-    public patternVertex(String type) {
+    public PatternVertex(String type) {
         super(type.toLowerCase());
     }
     private boolean isPatternNode=true;

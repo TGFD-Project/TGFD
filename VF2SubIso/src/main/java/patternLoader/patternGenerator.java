@@ -2,7 +2,7 @@ package patternLoader;
 
 import infra.VF2PatternGraph;
 import infra.Attribute;
-import infra.patternVertex;
+import infra.PatternVertex;
 import infra.relationshipEdge;
 
 import java.io.File;
@@ -32,7 +32,7 @@ public class patternGenerator {
 
     private void loadGraphPattern(String path) throws FileNotFoundException {
 
-        HashMap<String, patternVertex> allVertices=new HashMap<>();
+        HashMap<String, PatternVertex> allVertices=new HashMap<>();
         VF2PatternGraph currentPattern=null;
 
         Scanner scanner = new Scanner(new File(path));
@@ -48,7 +48,7 @@ public class patternGenerator {
             if(line.startsWith("#v"))
             {
                 String args[] = line.split(" ")[1].split(",");
-                patternVertex v=new patternVertex(args[1]);
+                PatternVertex v=new PatternVertex(args[1]);
                 for (int i=2;i<args.length;i++)
                 {
                     if(args[i].contains("@"))
