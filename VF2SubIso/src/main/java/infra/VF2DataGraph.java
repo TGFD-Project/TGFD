@@ -20,7 +20,7 @@ public class VF2DataGraph {
         return graph;
     }
 
-    public void addVertex(dataVertex v)
+    public void addVertex(DataVertex v)
     {
         if(!nodeMap.containsKey(v.getVertexURI()))
         {
@@ -38,7 +38,7 @@ public class VF2DataGraph {
         return nodeMap.getOrDefault(vertexURI, null);
     }
 
-    public void addEdge(dataVertex v1, dataVertex v2, relationshipEdge edge)
+    public void addEdge(DataVertex v1, DataVertex v2, relationshipEdge edge)
     {
         graph.addEdge(v1,v2,edge);
     }

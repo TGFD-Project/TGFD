@@ -73,7 +73,7 @@ public final class Match {
     /**
      * Gets the vertices of the match that are valid for the corresponding intervals.
      */
-    public List<dataVertex> getVertices() {
+    public List<DataVertex> getVertices() {
         // TODO: remove if not needed (if TGFD ond Signature just uses pattern + mapping) [2021-02-13]
         throw new UnsupportedOperationException("not implemented");
     }

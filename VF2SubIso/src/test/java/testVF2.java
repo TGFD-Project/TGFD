@@ -18,18 +18,18 @@ public class testVF2 {
     public static VF2DataGraph generateDataGraph()  {
         VF2DataGraph graph=new VF2DataGraph();
 
-        dataVertex v1=new dataVertex("player","Frank_Lampard");
+        DataVertex v1=new DataVertex("player","Frank_Lampard");
         v1.addAttribute("name","lampard");
         v1.addAttribute("age","34");
         v1.addAttribute("number","11");
         graph.addVertex(v1);
 
-        dataVertex v3=new dataVertex("player","Didier_Drogba");
+        DataVertex v3=new DataVertex("player","Didier_Drogba");
         v3.addAttribute("name","Drogba");
         v3.addAttribute("age","36");
         graph.addVertex(v3);
 
-        dataVertex v2=new dataVertex("team","Team_Chelsea");
+        DataVertex v2=new DataVertex("team","Team_Chelsea");
         v2.addAttribute("name","Chelsea");
         v2.addAttribute("league","Premiere League");
         graph.addVertex(v2);

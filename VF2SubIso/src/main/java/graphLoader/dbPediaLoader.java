@@ -2,7 +2,7 @@ package graphLoader;
 
 import infra.VF2DataGraph;
 import infra.Attribute;
-import infra.dataVertex;
+import infra.DataVertex;
 import infra.relationshipEdge;
 import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.*;
@@ -59,10 +59,10 @@ public class dbPediaLoader {
                 String nodeType = stmt.getObject().asResource().getLocalName().toLowerCase();
 
                 //int nodeId = subject.hashCode();
-                dataVertex v= (dataVertex) graph.getNode(nodeURI);
+                DataVertex v= (DataVertex) graph.getNode(nodeURI);
 
                 if (v==null) {
-                    v=new dataVertex(nodeURI,nodeType);
+                    v=new DataVertex(nodeURI,nodeType);
                     graph.addVertex(v);
                 }
                 else {
@@ -125,7 +125,7 @@ public class dbPediaLoader {
                     continue;
                 }
 
-                dataVertex subjVertex= (dataVertex) graph.getNode(subjectNodeURI);
+                DataVertex subjVertex= (DataVertex) graph.getNode(subjectNodeURI);
 
                 if (subjVertex==null) {
 
@@ -136,7 +136,7 @@ public class dbPediaLoader {
 
 
                 if (!object.isLiteral()) {
-                    dataVertex objVertex= (dataVertex) graph.getNode(objectNodeURI);
+                    DataVertex objVertex= (DataVertex) graph.getNode(objectNodeURI);
                     if(objVertex==null)
                     {
                         //System.out.println("Object node not found: " + subjectNodeURI + "  ->  " + predicate + "  ->  " + objectNodeURI);

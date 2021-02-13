@@ -1,13 +1,13 @@
 package infra;
 
-public class dataVertex extends Vertex {
+public class DataVertex extends Vertex {
 
 
     private String vertexURI="";
 //    private final int hashValue;
 
 
-    public dataVertex(String uri, String type) {
+    public DataVertex(String uri, String type) {
         super(type.toLowerCase());
         this.vertexURI=uri.toLowerCase();
         // ???: Is Integer large enough for our use case of possible 10+ million vertices? [2021-02-07]
