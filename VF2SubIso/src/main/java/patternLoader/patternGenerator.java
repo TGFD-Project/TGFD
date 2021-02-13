@@ -1,7 +1,7 @@
 package patternLoader;
 
 import infra.VF2PatternGraph;
-import infra.attribute;
+import infra.Attribute;
 import infra.patternVertex;
 import infra.relationshipEdge;
 
@@ -55,11 +55,11 @@ public class patternGenerator {
                     {
                         String []attr=args[i].substring(1,args[i].length()-1).split("@");
 
-                        v.addAttribute(new attribute(attr[0],attr[1]));
+                        v.addAttribute(new Attribute(attr[0],attr[1]));
                     }
                     else
                     {
-                        v.addAttribute(new attribute(args[i].substring(1,args[i].length()-1)));
+                        v.addAttribute(new Attribute(args[i].substring(1,args[i].length()-1)));
                     }
                 }
                 currentPattern.addVertex(v);

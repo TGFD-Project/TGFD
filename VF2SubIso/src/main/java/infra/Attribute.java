@@ -1,19 +1,19 @@
 package infra;
 
-public class attribute {
+public class Attribute {
 
     private String attrName;
     private String attrValue;
     private boolean isNull;
 
-    public attribute(String attrName,String attrValue)
+    public Attribute(String attrName, String attrValue)
     {
         this.attrName=attrName.toLowerCase();
         this.attrValue=attrValue.toLowerCase();
         isNull=false;
     }
 
-    public attribute(String attrName)
+    public Attribute(String attrName)
     {
         this.attrName=attrName.toLowerCase();
         this.attrValue=null;

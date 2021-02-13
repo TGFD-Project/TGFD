@@ -46,15 +46,15 @@ public class testVF2 {
 
         patternVertex v1=new patternVertex("player");
         //variable literal
-        v1.addAttribute(new attribute("name"));
+        v1.addAttribute(new Attribute("name"));
         //constant literal
-        v1.addAttribute(new attribute("age","36"));
+        v1.addAttribute(new Attribute("age","36"));
 
         pattern.addVertex(v1);
 
         patternVertex v2=new patternVertex("team");
         //variable literal
-        v2.addAttribute(new attribute("league"));
+        v2.addAttribute(new Attribute("league"));
         pattern.addVertex(v2);
 
         pattern.addEdge(v1,v2,new relationshipEdge("playing"));

@@ -22,7 +22,7 @@ public class patternVertex extends Vertex {
             return false;
         if(!v.getAllAttributesNames().containsAll(super.getAllAttributesNames()))
             return false;
-        for (attribute attr:super.getAllAttributesList())
+        for (Attribute attr:super.getAllAttributesList())
             if(!attr.isNull() && !v.getAttributeByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 return false;
         return true;

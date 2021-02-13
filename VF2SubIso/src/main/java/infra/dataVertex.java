@@ -36,7 +36,7 @@ public class dataVertex extends Vertex {
             return false;
         if(!super.getAllAttributesNames().containsAll(v.getAllAttributesNames()))
             return false;
-        for (attribute attr:v.getAllAttributesList())
+        for (Attribute attr:v.getAllAttributesList())
             if(!attr.isNull() && !super.getAttributeByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 return false;
         return true;

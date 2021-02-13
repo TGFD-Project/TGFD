@@ -6,7 +6,7 @@ public abstract class Vertex {
 
     private Set<String> types;
 
-    private Map<String, attribute> attributes;
+    private Map<String, Attribute> attributes;
 
     // TODO: consider adding an id field (e.g. vertexURI from dataVertex) [2021-02-07]
 
@@ -17,11 +17,11 @@ public abstract class Vertex {
     }
 
 
-    public Map<String, attribute> getAllAttributesHashMap() {
+    public Map<String, Attribute> getAllAttributesHashMap() {
         return attributes;
     }
 
-    public Collection<attribute> getAllAttributesList() {
+    public Collection<Attribute> getAllAttributesList() {
         return attributes.values();
     }
 
@@ -29,8 +29,8 @@ public abstract class Vertex {
         return attributes.keySet();
     }
 
-    public void setAllAttributes(List<attribute> attributes) {
-        for (attribute attr:attributes)
+    public void setAllAttributes(List<Attribute> attributes) {
+        for (Attribute attr:attributes)
             this.attributes.put(attr.getAttrName(),attr);
     }
 
@@ -45,10 +45,10 @@ public abstract class Vertex {
 
     public void addAttribute(String name, String value)
     {
-        attributes.put(name.toLowerCase(),new attribute(name.toLowerCase(),value.toLowerCase()));
+        attributes.put(name.toLowerCase(),new Attribute(name.toLowerCase(),value.toLowerCase()));
     }
 
-    public void addAttribute(attribute attr)
+    public void addAttribute(Attribute attr)
     {
         attributes.put(attr.getAttrName(),attr);
     }

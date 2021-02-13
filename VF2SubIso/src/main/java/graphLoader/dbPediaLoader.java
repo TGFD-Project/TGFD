@@ -1,7 +1,7 @@
 package graphLoader;
 
 import infra.VF2DataGraph;
-import infra.attribute;
+import infra.Attribute;
 import infra.dataVertex;
 import infra.relationshipEdge;
 import org.apache.jena.datatypes.DatatypeFormatException;
@@ -152,7 +152,7 @@ public class dbPediaLoader {
                 }
                 else
                 {
-                    subjVertex.addAttribute(new attribute(predicate,objectNodeURI));
+                    subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
                 }
             }
             System.out.println("Done Loading DBPedia Graph.");
