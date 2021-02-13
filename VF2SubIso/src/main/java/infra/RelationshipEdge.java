@@ -2,7 +2,7 @@ package infra;
 
 import org.jgrapht.graph.DefaultEdge;
 
-public class relationshipEdge extends DefaultEdge {
+public class RelationshipEdge extends DefaultEdge {
 
     private String label;
 
@@ -28,10 +28,10 @@ public class relationshipEdge extends DefaultEdge {
             return true;
         if (obj == null)
             return false;
-        if (!(obj instanceof relationshipEdge))
+        if (!(obj instanceof RelationshipEdge))
             return false;
 
-        relationshipEdge edge = (relationshipEdge) obj;
+        RelationshipEdge edge = (RelationshipEdge) obj;
         return label.equals(edge.label) && getSource().equals(edge.getSource()) && getTarget().equals(edge.getTarget());
 
     }
@@ -40,7 +40,7 @@ public class relationshipEdge extends DefaultEdge {
         return label;
     }
 
-    public relationshipEdge(String label) {
+    public RelationshipEdge(String label) {
         this.label = label;
     }
 

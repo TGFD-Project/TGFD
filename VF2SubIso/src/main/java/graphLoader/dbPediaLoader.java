@@ -3,7 +3,7 @@ package graphLoader;
 import infra.VF2DataGraph;
 import infra.Attribute;
 import infra.DataVertex;
-import infra.relationshipEdge;
+import infra.RelationshipEdge;
 import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.*;
 
@@ -148,7 +148,7 @@ public class dbPediaLoader {
                         numberOfLoops++;
                         continue;
                     }
-                    graph.addEdge(subjVertex, objVertex, new relationshipEdge(predicate));
+                    graph.addEdge(subjVertex, objVertex, new RelationshipEdge(predicate));
                 }
                 else
                 {

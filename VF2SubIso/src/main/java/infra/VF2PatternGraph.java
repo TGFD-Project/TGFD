@@ -5,14 +5,14 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 
 public class VF2PatternGraph {
 
-    private Graph<Vertex, relationshipEdge> graph;
+    private Graph<Vertex, RelationshipEdge> graph;
 
     public VF2PatternGraph()
     {
-        graph= new DefaultDirectedGraph<>(relationshipEdge.class);
+        graph= new DefaultDirectedGraph<>(RelationshipEdge.class);
     }
 
-    public Graph<Vertex, relationshipEdge> getGraph() {
+    public Graph<Vertex, RelationshipEdge> getGraph() {
         return graph;
     }
 
@@ -21,7 +21,7 @@ public class VF2PatternGraph {
         graph.addVertex(v);
     }
 
-    public void addEdge(PatternVertex v1, PatternVertex v2, relationshipEdge edge)
+    public void addEdge(PatternVertex v1, PatternVertex v2, RelationshipEdge edge)
     {
         graph.addEdge(v1,v2,edge);
     }
@@ -29,7 +29,7 @@ public class VF2PatternGraph {
     @Override
     public String toString() {
         String res="VF2PatternGraph{";
-        for (relationshipEdge edge:graph.edgeSet()) {
+        for (RelationshipEdge edge:graph.edgeSet()) {
             res+=edge.toString();
         }
         res+='}';

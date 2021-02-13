@@ -34,8 +34,8 @@ public class testVF2 {
         v2.addAttribute("league","Premiere League");
         graph.addVertex(v2);
 
-        graph.addEdge(v1,v2,new relationshipEdge("playing"));
-        graph.addEdge(v3,v2,new relationshipEdge("play"));
+        graph.addEdge(v1,v2,new RelationshipEdge("playing"));
+        graph.addEdge(v3,v2,new RelationshipEdge("play"));
 
         return graph;
     }
@@ -57,7 +57,7 @@ public class testVF2 {
         v2.addAttribute(new Attribute("league"));
         pattern.addVertex(v2);
 
-        pattern.addEdge(v1,v2,new relationshipEdge("playing"));
+        pattern.addEdge(v1,v2,new RelationshipEdge("playing"));
 
         return pattern;
     }

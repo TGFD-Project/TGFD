@@ -17,7 +17,7 @@ public final class Match {
     private VF2PatternGraph pattern;
 
     // graph mapping of the matched vertices for the corresponding intervals.
-    private GraphMapping<Vertex, relationshipEdge> mapping;
+    private GraphMapping<Vertex, RelationshipEdge> mapping;
     //endregion
 
     //region --[Constructors]------------------------------------------
@@ -66,7 +66,7 @@ public final class Match {
     /**
      * Gets the vertices of the match.
      */
-    public GraphMapping<Vertex, relationshipEdge> getMapping() {
+    public GraphMapping<Vertex, RelationshipEdge> getMapping() {
         return this.mapping;
     }
 

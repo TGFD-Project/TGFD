@@ -3,7 +3,7 @@ package patternLoader;
 import infra.VF2PatternGraph;
 import infra.Attribute;
 import infra.PatternVertex;
-import infra.relationshipEdge;
+import infra.RelationshipEdge;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -68,7 +68,7 @@ public class patternGenerator {
             else if(line.startsWith("#e"))
             {
                 String args[] = line.split(" ")[1].split(",");
-                currentPattern.addEdge(allVertices.get(args[0]),allVertices.get(args[1]),new relationshipEdge(args[2]));
+                currentPattern.addEdge(allVertices.get(args[0]),allVertices.get(args[1]),new RelationshipEdge(args[2]));
             }
         }
         if(currentPattern!=null)
