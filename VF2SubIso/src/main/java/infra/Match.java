@@ -9,36 +9,34 @@ import java.util.List;
  * @note We do not need the edges of a match
  */
 public final class Match {
+    //region --[Fields: Private]---------------------------------------
     // Intervals where the match exists.
     private List<Interval> intervals;
 
-    // Vertices of the match that are valid for the corresponding intervals.
-    //private List<dataVertex> vertices;
+    // Pattern graph
+    private VF2PatternGraph pattern;
 
     // graph mapping of the matched vertices for the corresponding intervals.
     private GraphMapping<vertex, relationshipEdge> mapping;
+    //endregion
 
+    //region --[Constructors]------------------------------------------
     /**
      * Creates a new Match.
      */
     public Match() {
         // TODO: add argument for X to be used in getSignature [2021-02-12]
     }
+    //endregion
 
-    /**
-     * Gets the intervals of the match.
-     */
-    public List<Interval> getIntervals() {
-        return this.intervals;
-    }
-
+    //region --[Methods: Public]---------------------------------------
     /**
      * Gets the signature of the match for comparison across time.
      * @note Signature is consists of the attributes of the vertices on X.
      */
     public String getSignature() {
         var builder = new StringBuilder();
-        vertices
+        getVertices()
             .stream()
             .sorted() // Ensure stable sorting of vertices
             .forEach(vertex -> {
@@ -55,11 +53,29 @@ public final class Match {
         // CONSIDER: Return a hash [2021-02-12]
         return builder.toString();
     }
+    //endregion
+
+    //region --[Properties: Public]------------------------------------
+    /**
+     * Gets the intervals of the match.
+     */
+    public List<Interval> getIntervals() {
+        return this.intervals;
+    }
 
     /**
      * Gets the vertices of the match.
      */
     public GraphMapping<vertex, relationshipEdge> getMapping() {
-        return mapping;
+        return this.mapping;
     }
+
+    /**
+     * Gets the vertices of the match that are valid for the corresponding intervals.
+     */
+    public List<dataVertex> getVertices() {
+        // TODO: remove if not needed (if TGFD ond Signature just uses pattern + mapping) [2021-02-13]
+        throw new UnsupportedOperationException("not implemented");
+    }
+    //endregion
 }
