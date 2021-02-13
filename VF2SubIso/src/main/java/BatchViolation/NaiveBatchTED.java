@@ -23,10 +23,11 @@ public class NaiveBatchTED {
     public void findViolations()
     {
         Interval delta=tgfd.getDelta();
-        for (int i=delta.getStart();i<=delta.getEnd();i+=delta.getGranularity())
-        {
-            List<Match> currentMatches= matches.getMatches(i);
-        }
+        // TODO: FIXME to use Interval with LocalDate and without getGranularity [2021-02-13]
+        //for (int i = delta.getStart(); i <= delta.getEnd(); i += delta.getGranularity())
+        //{
+        //    List<Match> currentMatches= matches.getMatches(i);
+        //}
     }
 
     private void analyzeMatches(List<Match> currentMaches, int timePoint)

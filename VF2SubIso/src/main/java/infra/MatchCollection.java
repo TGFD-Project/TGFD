@@ -1,5 +1,6 @@
 package infra;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,16 +87,16 @@ public class MatchCollection
     /**
      * Returns matches applicable for only the given timepoint.
      */
-    public List<Match> getMatches(int timepoint) {
+    public List<Match> getMatches(LocalDate timepoint) {
         // TODO: consider modify the result matches intervals to only be the given timepoint [2021-02-12]
         var intervals = new ArrayList<Interval>()
         {{
-            add(new Interval(timepoint, timepoint, 1));
+            add(new Interval(timepoint, timepoint));
         }};
         return matchesBySignature
             .values()
             .stream()
-            .filter(match -> match.getIntervals().stream().anyMatch(i -> i.contains(timepoint)))
+            .filter(match -> match.getIntervals().stream().anyMatch(intv -> intv.contains(timepoint)))
             .map(match -> match.WithIntervals(intervals))
             .collect(Collectors.toList());
     }

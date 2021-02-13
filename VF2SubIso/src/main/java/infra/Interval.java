@@ -1,49 +1,55 @@
 package infra;
 
+import java.time.LocalDate;
+
 /**
  * Represents an interval.
  */
 public class Interval {
-    // TODO: change to date and remove granularity [2021-02-13]
-    private int start;
-    private int end;
-    private int granularity;
+    //region --[Fields: Private]---------------------------------------
+    // Start of the interval.
+    private LocalDate start;
+    // End of the interval.
+    private LocalDate end;
+    //endregion
 
+    //region --[Constructors]------------------------------------------
     /**
      * Creates an interval.
      * @param start Start of the interval.
      * @param end   End of the inteval.
-     * @param granularity granularity of the steps from start to end
      */
-    public Interval(int start, int end, int granularity) {
+    public Interval(LocalDate start, LocalDate end)
+    {
         this.start = start;
         this.end = end;
-        this.granularity=granularity;
     }
+    //endregion
 
+    //region --[Methods: Public]---------------------------------------
     /**
-     * Returns true if timepoint within the interval.
+     * Returns true if timepoint within the interval (start and end inclusive).
      */
-    public boolean contains(int timepoint) {
-        // TODO: determine if we should make the end exclusive? [2021-02-12]
-        return start >= timepoint && timepoint <= end;
+    public boolean contains(LocalDate timepoint) {
+        return
+            (timepoint.isEqual(start) || timepoint.isAfter(start)) &&
+            (timepoint.isEqual(end)   || timepoint.isBefore(end));
     }
+    //endregion
 
+    //region --[Properties: Public]------------------------------------
     /**
      * Returns the start of the interval.
      */
-    public int getStart() {
+    public LocalDate getStart() {
         return this.start;
     }
 
     /**
      * Returns the end of the interval.
      */
-    public int getEnd() {
+    public LocalDate getEnd() {
         return this.end;
     }
-
-    public int getGranularity() {
-        return granularity;
-    }
+    //endregion
 }
