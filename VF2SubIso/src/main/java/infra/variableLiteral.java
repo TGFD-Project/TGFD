@@ -1,6 +1,6 @@
 package infra;
 
-public class variableLiteral extends literal{
+public class variableLiteral extends Literal {
 
 
     String vertexType_1, vertexType_2, attrName_1, attrName_2;

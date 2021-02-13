@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 public class Dependency {
 
-    private ArrayList<literal> X, Y;
+    private ArrayList<Literal> X, Y;
 
-    public Dependency(ArrayList<literal> X, ArrayList<literal> Y)
+    public Dependency(ArrayList<Literal> X, ArrayList<Literal> Y)
     {
         this.X=X;
         this.Y=Y;
@@ -18,21 +18,21 @@ public class Dependency {
         this.Y=new ArrayList<>();
     }
 
-    public void addLiteralToX(literal l)
+    public void addLiteralToX(Literal l)
     {
         this.X.add(l);
     }
 
-    public void addLiteralToY(literal l)
+    public void addLiteralToY(Literal l)
     {
         this.Y.add(l);
     }
 
-    public ArrayList<literal> getX() {
+    public ArrayList<Literal> getX() {
         return X;
     }
 
-    public ArrayList<literal> getY() {
+    public ArrayList<Literal> getY() {
         return Y;
     }
 }

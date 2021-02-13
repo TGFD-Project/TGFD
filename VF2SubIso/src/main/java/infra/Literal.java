@@ -1,6 +1,6 @@
 package infra;
 
-public class literal {
+public class Literal {
 
     public enum literalType
     {
@@ -9,7 +9,7 @@ public class literal {
 
     private literalType type;
 
-    public literal(literalType t)
+    public Literal(literalType t)
     {
         this.type=t;
     }

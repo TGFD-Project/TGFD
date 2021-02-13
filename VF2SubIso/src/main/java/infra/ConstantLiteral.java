@@ -1,6 +1,6 @@
 package infra;
 
-public class ConstantLiteral extends literal{
+public class ConstantLiteral extends Literal {
 
     String vertexType, attrName, attrValue;
     public ConstantLiteral(literalType t, String vertexType, String attrName, String attrValue ) {
