@@ -4,7 +4,8 @@ import java.util.ArrayList;
 
 public class Dependency {
 
-    private ArrayList<Literal> X, Y;
+    private ArrayList<Literal> X;
+    private ArrayList<Literal> Y;
 
     public Dependency(ArrayList<Literal> X, ArrayList<Literal> Y)
     {

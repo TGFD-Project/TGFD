@@ -3,6 +3,7 @@ package infra;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,36 +33,43 @@ public final class Match {
 
     //region --[Methods: Public]---------------------------------------
     /**
-     * Gets the signature of a match for comparison across time.
-     * @note Signature consists of the attributes of the vertices on X.
+     * Gets the signature of a match for comparison across time w.r.t. the x of the dependency.
+     * @param pattern Pattern of the match.
+     * @param mapping Mapping of the match.
+     * @param xLiterals Literals of the X dependency.
      */
-    public static String getSignature(
+    public static String signatureFromX(
         VF2PatternGraph pattern,
-        GraphMapping<Vertex, RelationshipEdge> mapping)
+        GraphMapping<Vertex, RelationshipEdge> mapping,
+        ArrayList<Literal> xLiterals)
     {
-        return "";
-        //for (var patternVertex : pattern.getGraph().vertexSet())
-        //{
-        //    var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
-        //    if (matchVertex == null)
-        //        continue;
-        //
-        //
+        var builder = new StringBuilder();
+        for (var patternVertex : pattern.getGraph().vertexSet())
+        {
+            var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
+            if (matchVertex == null)
+                continue;
 
-        //    for (Literal l : tgfd.getDependency().getX())
-        //    {
-        //        if (l instanceof ConstantLiteral)
-        //        {
-        //            if (matchVertex.getTypes().contains(((constantLiteral) l).getVertexType()))
-        //            {
-        //                //if(matchVertex.attContains())
-        //            }
-        //        }
-        //        else if (l instanceof VariableLiteral)
-        //        {
-        //        }
-        //    }
-        //}
+            for (Literal literal : xLiterals)
+            {
+                if (literal instanceof ConstantLiteral)
+                {
+                    var constantLiteral = (ConstantLiteral)literal;
+                    if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
+                        continue;
+
+                    //if (matchVertex.attContains())
+                    //{
+                    //    //if(matchVertex.attContains())
+                    //}
+                }
+                else if (literal instanceof VariableLiteral)
+                {
+                }
+            }
+        }
+        // TODO: consider returning a hash [2021-02-13]
+        return builder.toString();
 
         //var builder = new StringBuilder();
         //getVertices()
@@ -78,8 +86,20 @@ public final class Match {
         //                builder.append(",");
         //            });
         //    });
-        //// CONSIDER: Return a hash [2021-02-12]
-        //return builder.toString();
+    }
+
+    /**
+     * Gets the signature of a match for comparison across time w.r.t. the dependency.
+     * @param pattern Pattern of the match.
+     * @param mapping Mapping of the match.
+     * @param dependency TGFD dependency.
+     */
+    public static String signatureFromDependency(
+        VF2PatternGraph pattern,
+        GraphMapping<Vertex, RelationshipEdge> mapping,
+        Dependency dependency)
+    {
+        throw new UnsupportedOperationException("not implemented");
     }
     //endregion
 
