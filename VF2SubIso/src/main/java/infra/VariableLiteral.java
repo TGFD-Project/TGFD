@@ -1,10 +1,10 @@
 package infra;
 
-public class variableLiteral extends Literal {
+public class VariableLiteral extends Literal {
 
 
     String vertexType_1, vertexType_2, attrName_1, attrName_2;
-    public variableLiteral(literalType t,String vertexType_1, String vertexType_2,String attrName_1,String attrName_2) {
+    public VariableLiteral(literalType t, String vertexType_1, String vertexType_2, String attrName_1, String attrName_2) {
         super(t);
 
         this.vertexType_1=vertexType_1;

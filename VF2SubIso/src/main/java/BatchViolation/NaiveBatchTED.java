@@ -50,7 +50,7 @@ public class NaiveBatchTED {
                             //if(currentMatchedVertex.attContains())
                         }
                     }
-                    else if(l instanceof variableLiteral)
+                    else if(l instanceof VariableLiteral)
                     {
                     }
                 }
