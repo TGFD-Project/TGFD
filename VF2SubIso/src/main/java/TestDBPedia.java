@@ -4,6 +4,7 @@ import infra.VF2PatternGraph;
 import patternLoader.PatternGenerator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TestDBPedia {
 
@@ -15,8 +16,8 @@ public class TestDBPedia {
         // arges[3]: Graph pattern file,    sample ->  "D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt"
 
 
-        ArrayList<String> typesPath=new ArrayList<>();
-        ArrayList<String> dataPath=new ArrayList<>();
+        HashMap<Integer,ArrayList<String>> typesPath=new HashMap<>();
+        HashMap<Integer,ArrayList<String>> dataPath=new HashMap<>();
         String patternPath="";
 
 
@@ -24,8 +25,11 @@ public class TestDBPedia {
 
 
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-t")) {
-                typesPath.add(args[++i]);
+            if (args[i].startsWith("-t")) {
+                int snapShotIndex=Integer.parseInt(args[i].substring(2));
+                if(!typesPath.containsKey(snapShotIndex))
+                    typesPath.put(snapShotIndex,new ArrayList<>());
+                typesPath.get(snapShotIndex).add(args[++i]);
             } else if (args[i].equals("-d")) {
                 dataPath.add(args[++i]);
             } else if (args[i].equals("-p")) {
