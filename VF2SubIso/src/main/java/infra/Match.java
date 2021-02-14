@@ -4,9 +4,6 @@ import org.jgrapht.GraphMapping;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.Period;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,6 +22,9 @@ public final class Match {
 
     /** Pattern graph. */
     private VF2PatternGraph pattern;
+
+    /** Signature of the match computed from X. */
+    private String signatureX;
     //endregion
 
     //region --[Constructors]------------------------------------------
@@ -42,12 +42,13 @@ public final class Match {
      * Create a new Match.
      * @param pattern Pattern of the match.
      * @param mapping Mapping of the match.
-     * @param granularity Minimum timespan between timepoints.
+     * @param signatureX Signature of the match computed from X.
      */
-    public Match(VF2PatternGraph pattern, GraphMapping<Vertex, RelationshipEdge> mapping)
+    public Match(VF2PatternGraph pattern, GraphMapping<Vertex, RelationshipEdge> mapping, String signatureX)
     {
         this.pattern = pattern;
         this.mapping = mapping;
+        this.signatureX=signatureX;
     }
 
     /**
@@ -175,9 +176,9 @@ public final class Match {
                         var constantLiteral = (ConstantLiteral)literal;
                         if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
                             continue;
-                        if (attribute.getAttrName() != constantLiteral.attrName)
+                        if (!attribute.getAttrName().equals(constantLiteral.attrName))
                             continue;
-                        if (attribute.getAttrValue() != constantLiteral.attrValue)
+                        if (!attribute.getAttrValue().equals(constantLiteral.attrValue))
                             continue;
 
                         builder.append(attribute.getAttrValue());
@@ -224,5 +225,13 @@ public final class Match {
      * Gets the pattern graph.
      */
     public VF2PatternGraph getPattern() { return pattern; }
+
+    /**
+     * Gets the signature of the match computed from X.
+     */
+    public String getSignatureX() {
+        return signatureX;
+    }
+
     //endregion
 }

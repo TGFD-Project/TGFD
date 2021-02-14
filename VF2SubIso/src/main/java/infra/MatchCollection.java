@@ -1,12 +1,14 @@
 package infra;
 
+import org.jgrapht.GraphMapping;
+
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
-
-import org.jgrapht.GraphMapping;
-import static java.util.stream.Collectors.toCollection;
 
 /**
  * Class that stores matches across timepoints.
@@ -51,7 +53,7 @@ public class MatchCollection
         var match = matchesBySignature.getOrDefault(signature, null);
         if (match == null)
         {
-            match = new Match(pattern, mapping);
+            match = new Match(pattern, mapping,signature);
             matchesBySignature.put(signature, match);
         }
 
