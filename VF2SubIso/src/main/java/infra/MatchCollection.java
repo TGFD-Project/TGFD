@@ -66,6 +66,7 @@ public class MatchCollection
         }
 
         match.addTimepoint(timepoint, granularity);
+        match.addSignatureY(timepoint,granularity,Match.signatureFromY(pattern,mapping,dependency.getY()));
     }
     //endregion
 

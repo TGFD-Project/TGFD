@@ -49,6 +49,18 @@ public class Interval {
     }
 
     /**
+     * Returns true if the other interval intersects with the interval (inclusive).
+     */
+    public boolean intersects(Interval other) {
+        if(other.getStart().isAfter(end) || other.getStart().equals(end)
+                || other.end.isBefore(start) || other.end.equals(start))
+            return false;
+        else
+            return true;
+    }
+
+
+    /**
      * Returns true if interval within delta, otherwise, returns false.
      * @param min Minimum timespan of delta.
      * @param max Maximum timespan of delta.

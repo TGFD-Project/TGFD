@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -25,6 +26,9 @@ public final class Match {
 
     /** Signature of the match computed from X. */
     private String signatureX;
+
+    /** Signature of the match computed from Y with different intervals. */
+    private HashMap<String,List<Interval>> signatureYWithInterval;
     //endregion
 
     //region --[Constructors]------------------------------------------
@@ -103,6 +107,55 @@ public final class Match {
             // Time since end is greater than the granularity so add a new interval.
             // This represents that the match did not exist between the latestInterval.end and newInterval.start.
             intervals.add(new Interval(timepoint, timepoint));
+        }
+        else if (comparison == 0)
+        {
+            // Time since end is the granularity so extend the last interval.
+            // This represents that the match continued existing for this interval.
+            latestInterval.setEnd(timepoint);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Timepoint is less than the granularity away from the latest interval end");
+        }
+    }
+
+    /**
+     * Adds a timepoint to the match.
+     *
+     * Will either extend the latest interval to include the new timepoint, or
+     * add a new interval (break in intervals represents that no match occurred).
+     *
+     * @param timepoint Timepoint of match.
+     * @param granularity Minimum timespan between matches.
+     * @param signatureY Signature of the match derived form Y.
+     * @exception IllegalArgumentException if timepoint is before the latest interval's end.
+     * @exception IllegalArgumentException if timepoint is less than the granularity away from the latest interval end.
+     */
+    public void addSignatureY(LocalDate timepoint, Duration granularity, String signatureY)
+    {
+        if (!signatureYWithInterval.containsKey(signatureY))
+        {
+            signatureYWithInterval.put(signatureY,new ArrayList<>());
+            signatureYWithInterval.get(signatureY).add(new Interval(timepoint, timepoint));
+            return;
+        }
+
+        var latestInterval = signatureYWithInterval.get(signatureY).stream()
+                .max(Comparator.comparing(Interval::getEnd))
+                .orElseThrow();
+
+        var latestEnd = latestInterval.getEnd();
+        if (timepoint.isBefore(latestEnd) || timepoint.isEqual(latestEnd))
+            throw new IllegalArgumentException("Timepoint is <= the latest interval's end");
+
+        var sinceEnd = Duration.between(latestEnd, timepoint);
+        var comparison = sinceEnd.compareTo(granularity);
+        if (comparison > 0)
+        {
+            // Time since end is greater than the granularity so add a new interval.
+            // This represents that the match did not exist between the latestInterval.end and newInterval.start.
+            signatureYWithInterval.get(signatureY).add(new Interval(timepoint, timepoint));
         }
         else if (comparison == 0)
         {
@@ -237,5 +290,11 @@ public final class Match {
 
     /** Gets the signature of the match computed from X. */
     public String getSignatureX() { return signatureX; }
+
+    /** Gets the signature Y of the match along with different time intervals. */
+    public HashMap<String, List<Interval>> getSignatureYWithInterval() {
+        return signatureYWithInterval;
+    }
+
     //endregion
 }
