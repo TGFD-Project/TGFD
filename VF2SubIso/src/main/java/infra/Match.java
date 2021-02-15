@@ -144,7 +144,7 @@ public final class Match {
     }
 
     /**
-     * Gets the signature of a match for comparison across time w.r.t. the x of the dependency.
+     * Gets the signature of a match for comparison across time w.r.t. the X of the dependency.
      * @param pattern Pattern of the match.
      * @param mapping Mapping of the match.
      * @param xLiterals Literals of the X dependency.
@@ -154,8 +154,10 @@ public final class Match {
         GraphMapping<Vertex, RelationshipEdge> mapping,
         ArrayList<Literal> xLiterals)
     {
-        // TODO: can we assume that all x variable literals are also defined in the pattern? [2021-02-13]
+        // We assume that all x variable literals are also defined in the pattern? [2021-02-13]
         var builder = new StringBuilder();
+
+        // TODO: consider collecting (type, name, attr) and sorting at the end [2021-02-14]
 
         // NOTE: Ensure stable sorting of vertices [2021-02-13]
         var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
@@ -171,22 +173,17 @@ public final class Match {
             {
                 for (Literal literal : xLiterals)
                 {
-                    if (literal instanceof ConstantLiteral)
+                    // We can ignore constant literals because a Match is for a single TGFD which has constant defined in the pattern
+                    if (literal instanceof VariableLiteral)
                     {
-                        var constantLiteral = (ConstantLiteral)literal;
-                        if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
-                            continue;
-                        if (!attribute.getAttrName().equals(constantLiteral.attrName))
-                            continue;
-                        if (!attribute.getAttrValue().equals(constantLiteral.attrValue))
-                            continue;
-
-                        builder.append(attribute.getAttrValue());
-                        builder.append(",");
-                    }
-                    else if (literal instanceof VariableLiteral)
-                    {
-                        // TODO: if variable literal then exclude from signature? [2021-02-13]
+                        var varLiteral = (VariableLiteral)literal;
+                        var matchVertexTypes = matchVertex.getTypes();
+                        if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && attribute.getAttrName().equals(varLiteral.getAttrName_1())) ||
+                            (matchVertexTypes.contains(varLiteral.getVertexType_2()) && attribute.getAttrName().equals(varLiteral.getAttrName_2())))
+                        {
+                            builder.append(attribute.getAttrValue());
+                            builder.append(",");
+                        }
                     }
                 }
             });
