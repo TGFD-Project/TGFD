@@ -15,12 +15,12 @@ import java.util.List;
 public final class Match {
     //region --[Fields: Private]---------------------------------------
     /** Intervals where the match exists. */
-    private List<Interval> intervals = new ArrayList<Interval>();
+    private List<Interval> intervals;
 
     /** Graph mapping from pattern graph to match graph. */
     private GraphMapping<Vertex, RelationshipEdge> mapping;
 
-    /** Pattern graph. */
+    /** Pattern graph of the match. */
     private VF2PatternGraph pattern;
 
     /** Signature of the match computed from X. */
@@ -31,10 +31,12 @@ public final class Match {
     private Match(
         VF2PatternGraph pattern,
         GraphMapping<Vertex, RelationshipEdge> mapping,
+        String signatureX,
         List<Interval> intervals)
     {
         this.pattern = pattern;
         this.mapping = mapping;
+        this.signatureX = signatureX;
         this.intervals = intervals;
     }
 
@@ -44,15 +46,16 @@ public final class Match {
      * @param mapping Mapping of the match.
      * @param signatureX Signature of the match computed from X.
      */
-    public Match(VF2PatternGraph pattern, GraphMapping<Vertex, RelationshipEdge> mapping, String signatureX)
+    public Match(
+        VF2PatternGraph pattern,
+        GraphMapping<Vertex, RelationshipEdge> mapping,
+        String signatureX)
     {
-        this.pattern = pattern;
-        this.mapping = mapping;
-        this.signatureX=signatureX;
+        this(pattern, mapping, signatureX, new ArrayList<Interval>());
     }
 
     /**
-     * Creates a new Match.
+     * Creates a new Match with the given intervals.
      * @param intervals Intervals of the match.
      */
     public Match WithIntervals(List<Interval> intervals)
@@ -60,6 +63,7 @@ public final class Match {
         return new Match(
             this.pattern,
             this.mapping,
+            this.signatureX,
             intervals);
     }
     //endregion
@@ -187,7 +191,7 @@ public final class Match {
             var sortedAttributes = matchVertex.getAllAttributesList().stream().sorted();
             sortedAttributes.forEach(attribute ->
             {
-                for (Literal literal : xLiterals)
+                for (Literal literal : yLiterals)
                 {
                     if (literal instanceof ConstantLiteral)
                     {
@@ -222,27 +226,16 @@ public final class Match {
     //endregion
 
     //region --[Properties: Public]------------------------------------
-    /**
-     * Gets the intervals of the match.
-     */
+    /** Gets the intervals of the match. */
     public List<Interval> getIntervals() { return this.intervals; }
 
-    /**
-     * Gets the vertices of the match.
-     */
+    /** Gets the vertices of the match. */
     public GraphMapping<Vertex, RelationshipEdge> getMapping() { return this.mapping; }
 
-    /**
-     * Gets the pattern graph.
-     */
+    /** Gets the pattern graph. */
     public VF2PatternGraph getPattern() { return pattern; }
 
-    /**
-     * Gets the signature of the match computed from X.
-     */
-    public String getSignatureX() {
-        return signatureX;
-    }
-
+    /** Gets the signature of the match computed from X. */
+    public String getSignatureX() { return signatureX; }
     //endregion
 }

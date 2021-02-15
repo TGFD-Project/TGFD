@@ -11,28 +11,38 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Class that stores matches across timepoints.
+ * Class that stores matches across timepoints for a single TGFD.
  */
 public class MatchCollection
 {
     //region --[Fields: Private]---------------------------------------
-    /** The minimum timespan between matches. */
-    private Duration granularity;
-
     /** Dependency of MatchCollection */
     private Dependency dependency;
 
+    /** The minimum timespan between matches. */
+    private Duration granularity;
+
     /** Mapping of match signatures to matches. */
     private AbstractMap<String, Match> matchesBySignature = new HashMap<String, Match>();
+
+    /** Pattern graph of the match. */
+    private VF2PatternGraph pattern;
     //endregion
 
     //region --[Constructors]------------------------------------------
     /**
      * Creates a MatchCollection.
+     * @param pattern Pattern of all matches in this collection.
+     * @param pattern Dependency of all matches in this collection.
      * @param granularity Minimum timespan between matches.
      */
-    public MatchCollection(Duration granularity)
+    public MatchCollection(
+        VF2PatternGraph pattern,
+        Dependency dependency,
+        Duration granularity)
     {
+        this.pattern = pattern;
+        this.dependency = dependency;
         this.granularity = granularity;
     }
     //endregion
@@ -41,19 +51,17 @@ public class MatchCollection
     /**
      * Add a match for a timepoint.
      * @param timepoint Timepoint of the match.
-     * @param pattern Pattern of the match.
      * @param mapping The mapping of the match.
      */
     private void addMatch(
         LocalDate timepoint,
-        VF2PatternGraph pattern,
         GraphMapping<Vertex, RelationshipEdge> mapping)
     {
         var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
         var match = matchesBySignature.getOrDefault(signature, null);
         if (match == null)
         {
-            match = new Match(pattern, mapping,signature);
+            match = new Match(pattern, mapping, signature);
             matchesBySignature.put(signature, match);
         }
 
@@ -65,18 +73,16 @@ public class MatchCollection
     /**
      * Adds matches for a timepoint.
      * @param timepoint Timepoint of the matches.
-     * @param pattern Pattern of the matches.
      * @param mappingIterator An iterator over all isomorphic mappings from the pattern.
      */
     public void addMatches(
         LocalDate timepoint,
-        VF2PatternGraph pattern,
         Iterator<GraphMapping<Vertex, RelationshipEdge>> mappingIterator)
     {
         while (mappingIterator.hasNext())
         {
             var mapping = mappingIterator.next();
-            addMatch(timepoint, pattern, mapping);
+            addMatch(timepoint, mapping);
         }
     }
     //endregion
