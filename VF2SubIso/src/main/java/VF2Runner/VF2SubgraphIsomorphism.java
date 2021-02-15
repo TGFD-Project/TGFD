@@ -36,41 +36,6 @@ public class VF2SubgraphIsomorphism {
         };
     }
 
-    public void executeAndPrintResults(VF2DataGraph dataGraph, VF2PatternGraph pattern)
-    {
- 
-        System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
-
-        long startTime = System.currentTimeMillis();
-        inspector = new VF2SubgraphIsomorphismInspector<>(dataGraph.getGraph(), pattern.getGraph(),
-                myVertexComparator, myEdgeComparator, false);
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("Search Cost Time:" + (endTime - startTime) + "ms");
-
-        if (inspector.isomorphismExists()) {
-
-            Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
-
-            while (iterator.hasNext()) {
-
-                System.out.println("---------- Match found ---------- ");
-                GraphMapping<Vertex, RelationshipEdge> mappings = iterator.next();
-
-                for (Vertex v : pattern.getGraph().vertexSet()) {
-                    Vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
-                    if (currentMatchedVertex != null) {
-                        System.out.println(v + " --> " + currentMatchedVertex);
-                    }
-                }
-            }
-        }
-        else
-        {
-            System.out.println("No Matches for the query!");
-        }
-    }
-
     public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean print)
     {
         System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
@@ -85,10 +50,9 @@ public class VF2SubgraphIsomorphism {
         int size=0;
         if (inspector.isomorphismExists()) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
-
-            while (iterator.hasNext()) {
-                if(print)
-                {
+            if(print)
+            {
+                while (iterator.hasNext()) {
                     System.out.println("---------- Match found ---------- ");
                     GraphMapping<Vertex, RelationshipEdge> mappings = iterator.next();
 
@@ -98,13 +62,10 @@ public class VF2SubgraphIsomorphism {
                             System.out.println(v + " --> " + currentMatchedVertex);
                         }
                     }
+                    size++;
                 }
-                else
-                    iterator.next();
-                size++;
+                System.out.println("Number of matches: " + size);
             }
-
-            System.out.println("Number of matches: " + size);
             return iterator;
         }
         else

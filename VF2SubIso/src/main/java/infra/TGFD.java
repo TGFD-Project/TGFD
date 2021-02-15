@@ -13,6 +13,23 @@ public class TGFD {
         this.dependency=dependency;
     }
 
+    public TGFD ()
+    {
+        this.dependency=new Dependency();
+    }
+
+    public void setDelta(Delta delta) {
+        this.delta = delta;
+    }
+
+    public void setDependency(Dependency dependency) {
+        this.dependency = dependency;
+    }
+
+    public void setPattern(VF2PatternGraph pattern) {
+        this.pattern = pattern;
+    }
+
     public VF2PatternGraph getPattern() {
         return pattern;
     }

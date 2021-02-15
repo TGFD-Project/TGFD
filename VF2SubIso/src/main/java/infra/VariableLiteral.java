@@ -28,7 +28,7 @@ public class VariableLiteral extends Literal
     /**
      * Creates a VariableLiteral.
      */
-    public VariableLiteral(String vertexType_1, String vertexType_2, String attrName_1, String attrName_2)
+    public VariableLiteral(String vertexType_1, String attrName_1, String vertexType_2, String attrName_2)
     {
         super(LiteralType.Variable);
 

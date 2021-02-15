@@ -1,10 +1,13 @@
+import BatchViolation.NaiveBatchTED;
+import BatchViolation.OptBatchTED;
+import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import graphLoader.dbPediaLoader;
-import infra.VF2PatternGraph;
-import patternLoader.PatternGenerator;
+import infra.*;
+import org.jgrapht.GraphMapping;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.time.LocalDate;
+import java.util.*;
 
 public class TestDBPedia
 {
@@ -53,6 +56,7 @@ public class TestDBPedia
         HashMap<Integer, ArrayList<String>> typePathsById = new HashMap<>();
         HashMap<Integer, ArrayList<String>> dataPathsById = new HashMap<>();
         String patternPath = "";
+        HashMap<Integer,LocalDate> timestamps=new HashMap<>();
 
         System.out.println("Test DBPedia subgraph isomorphism");
 
@@ -76,25 +80,74 @@ public class TestDBPedia
             {
                 patternPath = args[++i];
             }
+            else if (args[i].startsWith("-s"))
+            {
+                var snapshotId = Integer.parseInt(args[i].substring(2));
+                timestamps.put(snapshotId,LocalDate.parse(args[++i]));
+            }
         }
 
         // TODO: check that typesPaths.keySet == dataPaths.keySet [2021-02-14]
+
+        //Load the TGFDs.
+        TGFDGenerator generator = new TGFDGenerator(patternPath);
+        List<TGFD> allTGFDs=generator.getTGFDs();
+        TGFD firstTGFD=allTGFDs.get(0);
+
+        //Create the match collection for the only TGFD in the list
+        MatchCollection matchCollection=new MatchCollection(firstTGFD.getPattern(),firstTGFD.getDependency(),firstTGFD.getDelta().getGranularity());
+
+        //Load all the graph snapshots...
         for (var snapshotId : dataPathsById.keySet())
         {
-            dbPediaLoader dbpedia = new dbPediaLoader(
-                typePathsById.get(snapshotId),
-                dataPathsById.get(snapshotId));
+            LocalDate currentSnapshotDate=timestamps.get(snapshotId);
 
-            PatternGenerator generator = new PatternGenerator(patternPath);
+            dbPediaLoader dbpedia = new dbPediaLoader(
+                    typePathsById.get(snapshotId),
+                    dataPathsById.get(snapshotId));
+
+            // Now, we need to find the matches for each snapshot.
+            // Finding the matches...
 
             VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
+            System.out.println("\n########## Graph pattern ##########");
+            System.out.println(firstTGFD.getPattern().toString());
+            Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(dbpedia.getGraph(), firstTGFD.getPattern(),false);
 
-            for (VF2PatternGraph pattern : generator.getPattern())
-            {
-                System.out.println("\n########## Graph pattern ##########");
-                System.out.println(pattern.toString());
-                VF2.execute(dbpedia.getGraph(), pattern,false);
-            }
+
+            //Retrieving and storing the matches of each timestamp.
+            System.out.println("Retrieving the matches");
+            long startTime=System.currentTimeMillis();
+
+            matchCollection.addMatches(currentSnapshotDate,results);
+
+            long endTime=System.currentTimeMillis();
+            System.out.println("Match retrieval time: " + (endTime - startTime) + "ms");
         }
+
+        // Now, we need to find all the violations
+        //First, we run the Naive Batch TED
+        System.out.println("Running the naive TED");
+        long startTime=System.currentTimeMillis();
+
+        NaiveBatchTED naive=new NaiveBatchTED(matchCollection,firstTGFD);
+        Set<Violation> allViolationsNaiveBatchTED=naive.findViolations();
+        System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
+
+        long endTime=System.currentTimeMillis();
+        System.out.println("Naive Batch TED time: " + (endTime - startTime) + "ms");
+
+
+        // Next, we need to find all the violations using the optimize method
+        System.out.println("Running the optimized TED");
+        startTime=System.currentTimeMillis();
+
+        OptBatchTED optimize=new OptBatchTED(matchCollection,firstTGFD);
+        Set<Violation> allViolationsOptBatchTED=naive.findViolations();
+        System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
+
+        endTime=System.currentTimeMillis();
+        System.out.println("Optimized Batch TED time: " + (endTime - startTime) + "ms");
+
     }
 }
