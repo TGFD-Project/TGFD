@@ -4,6 +4,8 @@ import infra.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.time.Duration;
+import java.time.Period;
 import java.util.*;
 
 public class TGFDGenerator {
@@ -44,7 +46,7 @@ public class TGFDGenerator {
                 currentPattern=new VF2PatternGraph();
                 allVertices=new HashMap<>();
             }
-            else if(line.startsWith("v"))
+            else if(line.startsWith("vertex"))
             {
                 String []args = line.split("#");
                 PatternVertex v=new PatternVertex(args[2]);
@@ -63,12 +65,12 @@ public class TGFDGenerator {
                 currentPattern.addVertex(v);
                 allVertices.put(args[1],v);
             }
-            else if(line.startsWith("e"))
+            else if(line.startsWith("edge"))
             {
                 String []args = line.split("#");
                 currentPattern.addEdge(allVertices.get(args[1]),allVertices.get(args[2]),new RelationshipEdge(args[3]));
             }
-            else if(line.startsWith("l"))
+            else if(line.startsWith("literal"))
             {
                 String[] args = line.split("#");
 
@@ -88,6 +90,14 @@ public class TGFDGenerator {
                     currentTGFD.getDependency().addLiteralToX(currentLiteral);
                 else if(args[1].equals("y"))
                     currentTGFD.getDependency().addLiteralToY(currentLiteral);
+            }
+            else if(line.startsWith("delta"))
+            {
+                String[] args = line.split("#");
+                Period pMin=Period.ofDays(Integer.parseInt(args[1]));
+                Period pMax=Period.ofDays(Integer.parseInt(args[2]));
+                Duration granularity=Duration.ofDays(Integer.parseInt(args[3]));
+                currentTGFD.setDelta(new Delta(pMin,pMax,granularity));
             }
         }
         if(currentPattern!=null)

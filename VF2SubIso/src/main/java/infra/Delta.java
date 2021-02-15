@@ -13,6 +13,7 @@ public class Delta {
     {
         this.min=min;
         this.max=max;
+        this.granularity=granularity;
     }
 
     public Period getMax() {

@@ -1,0 +1,18 @@
+-p ./pattern1.txt
+-t1 ./2014/2014types1.ttl
+-t1 ./2014/2014types2.nt
+-d1 ./2014/2014data.ttl
+-t2 ./2015/2015types.ttl
+-d2 ./2015/2015literals.ttl
+-d2 ./2015/2015objects.ttl
+-t3 ./2016/2016types.ttl
+-d3 ./2016/2016literals.ttl
+-d3 ./2016/2016objects.ttl
+-t4 ./2017/2017types.ttl
+-d4 ./2017/2017literals.ttl
+-d4 ./2017/2017objects.ttl
+-s1 2015-04-01
+-s2 2015-10-01
+-s3 2016-04-01
+-s4 2016-10-01
+

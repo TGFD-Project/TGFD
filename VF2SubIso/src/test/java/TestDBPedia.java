@@ -6,6 +6,8 @@ import graphLoader.dbPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -44,8 +46,7 @@ public class TestDBPedia
      *     -d2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\mappingbased_objects_en.ttl" \
      *     -d2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\mappingbased_objects_en2.ttl"
      */
-    public static void main(String []args)
-    {
+    public static void main(String []args) throws FileNotFoundException {
         //Expected arguments:
         // arges[0]: Type file,             sample ->  "F:\\MorteZa\\Datasets\\Statistical\\2016\\types.ttl"
         // arges[1]: Object mapping file,   sample ->  "F:\\MorteZa\\Datasets\\Statistical\\2016\\mappingbased_objects_en.ttl"
@@ -60,33 +61,36 @@ public class TestDBPedia
 
         System.out.println("Test DBPedia subgraph isomorphism");
 
-        for (int i = 0; i < args.length; i++)
-        {
-            if (args[i].startsWith("-t"))
+        Scanner scanner = new Scanner(new File(args[0]));
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String []conf=line.split(" ");
+            if(conf.length!=2)
+                continue;
+            if (conf[0].startsWith("-t"))
             {
-                var snapshotId = Integer.parseInt(args[i].substring(2));
+                var snapshotId = Integer.parseInt(conf[0].substring(2));
                 if (!typePathsById.containsKey(snapshotId))
                     typePathsById.put(snapshotId, new ArrayList<String>());
-                typePathsById.get(snapshotId).add(args[++i]);
+                typePathsById.get(snapshotId).add(conf[1]);
             }
-            else if (args[i].equals("-d"))
+            else if (conf[0].startsWith("-d"))
             {
-                var snapshotId = Integer.parseInt(args[i].substring(2));
+                var snapshotId = Integer.parseInt(conf[0].substring(2));
                 if (!dataPathsById.containsKey(snapshotId))
                     dataPathsById.put(snapshotId, new ArrayList<String>());
-                dataPathsById.get(snapshotId).add(args[++i]);
+                dataPathsById.get(snapshotId).add(conf[1]);
             }
-            else if (args[i].equals("-p"))
+            else if (conf[0].startsWith("-p"))
             {
-                patternPath = args[++i];
+                patternPath = conf[1];
             }
-            else if (args[i].startsWith("-s"))
+            else if (conf[0].startsWith("-s"))
             {
-                var snapshotId = Integer.parseInt(args[i].substring(2));
-                timestamps.put(snapshotId,LocalDate.parse(args[++i]));
+                var snapshotId = Integer.parseInt(conf[0].substring(2));
+                timestamps.put(snapshotId,LocalDate.parse(conf[1]));
             }
         }
-
         // TODO: check that typesPaths.keySet == dataPaths.keySet [2021-02-14]
 
         //Load the TGFDs.
