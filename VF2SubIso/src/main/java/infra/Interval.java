@@ -1,5 +1,6 @@
 package infra;
 
+import java.time.Duration;
 import java.time.LocalDate;
 
 /**
@@ -34,6 +35,19 @@ public class Interval {
         return
             (timepoint.isEqual(start) || timepoint.isAfter(start)) &&
             (timepoint.isEqual(end)   || timepoint.isBefore(end));
+    }
+
+    /**
+     * Returns true if interval within delta, otherwise, teruns false.
+     * @param min Minimum time span of delta.
+     * @param max Maximum time span of delta.
+     * @return min <= (end - start) <= max
+     */
+    public boolean inDelta(Duration min, Duration max)
+    {
+        var difference = Duration.between(start, end);
+        return difference.compareTo(min) >= 0 &&
+               difference.compareTo(max) <= 0;
     }
     //endregion
 
