@@ -45,9 +45,11 @@ public class Interval {
      */
     public boolean inDelta(Duration min, Duration max)
     {
-        var difference = Duration.between(start, end);
-        return difference.compareTo(min) >= 0 &&
-               difference.compareTo(max) <= 0;
+        var between = Duration.between(
+            start.atStartOfDay(),
+            end.atStartOfDay());
+        return between.compareTo(min) >= 0 && // min <= between
+               between.compareTo(max) <= 0;   // between <= max
     }
     //endregion
 
