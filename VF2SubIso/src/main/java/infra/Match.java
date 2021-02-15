@@ -113,37 +113,6 @@ public final class Match {
     }
 
     /**
-     * Gets the signature of a match for comparison across time w.r.t. the pattern.
-     * @param pattern Pattern of the match.
-     * @param mapping Mapping of the match.
-     */
-    public static String signatureFromPattern(
-        VF2PatternGraph pattern,
-        GraphMapping<Vertex, RelationshipEdge> mapping)
-    {
-        var builder = new StringBuilder();
-
-        // NOTE: Ensure stable sorting of vertices [2021-02-13]
-        var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
-        sortedPatternVertices.forEach(patternVertex ->
-        {
-            var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
-            if (matchVertex == null)
-                return;
-
-            // NOTE: Ensure stable sorting of attributes [2021-02-13]
-            var sortedAttributes = matchVertex.getAllAttributesList().stream().sorted();
-            sortedAttributes.forEach(attribute ->
-            {
-                builder.append(attribute.getAttrValue());
-                builder.append(",");
-            });
-        });
-        // TODO: consider returning a hash [2021-02-13]
-        return builder.toString();
-    }
-
-    /**
      * Gets the signature of a match for comparison across time w.r.t. the X of the dependency.
      * @param pattern Pattern of the match.
      * @param mapping Mapping of the match.
