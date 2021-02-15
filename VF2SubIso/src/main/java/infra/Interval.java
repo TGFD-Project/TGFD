@@ -30,7 +30,7 @@ public class Interval {
 
     //region --[Methods: Private]--------------------------------------
     /** Returns approximate number of days in a period */
-    private double approxDaysFromPeriod(Period period) {
+    private static double approxDaysFromPeriod(Period period) {
         if (period == null) {
             return 0d;
         }
@@ -82,8 +82,13 @@ public class Interval {
         }
         else
         {
-            var totalMonths = between.toTotalMonths();
-            return min.toTotalMonths() <= totalMonths && totalMonths <= max.toTotalMonths();
+            var monthsBetween = between.toTotalMonths();
+            return
+                min.toTotalMonths() <= monthsBetween &&
+                (
+                    monthsBetween < max.toTotalMonths() ||
+                    (monthsBetween == max.toTotalMonths() && between.getDays() == 0)
+                );
         }
     }
     //endregion
