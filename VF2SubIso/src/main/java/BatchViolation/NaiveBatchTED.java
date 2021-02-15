@@ -2,65 +2,54 @@ package BatchViolation;
 
 import infra.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 public class NaiveBatchTED {
 
     private MatchCollection matches;
     private TGFD tgfd;
 
-    private HashMap<Integer, HashMap<String,Match>> detailedMatches;
 
     public NaiveBatchTED(MatchCollection allMatches, TGFD tgfd)
     {
         this.tgfd=tgfd;
         this.matches=allMatches;
-        detailedMatches=new HashMap<>();
     }
 
-    public void findViolations()
+    public Set<Violation> findViolations()
     {
-        Interval delta=tgfd.getDelta();
-        // TODO: FIXME to use Interval with LocalDate and without getGranularity [2021-02-13]
-        //for (int i = delta.getStart(); i <= delta.getEnd(); i += delta.getGranularity())
-        //{
-        //    List<Match> currentMatches= matches.getMatches(i);
-        //}
-    }
-
-    private void analyzeMatches(List<Match> currentMaches, int timePoint)
-    {
-
-    }
-
-    private String matchSigniture(Match match)
-    {
-        String signiture="";
-        ArrayList<String> res=new ArrayList<>();
-
-        for (Vertex v : tgfd.getPattern().getGraph().vertexSet()) {
-            Vertex currentMatchedVertex = match.getMapping().getVertexCorrespondence(v, false);
-            if (currentMatchedVertex != null) {
-                for (Literal l:tgfd.getDependency().getX()) {
-                    if(l instanceof ConstantLiteral)
-                    {
-                        if(currentMatchedVertex.getTypes().contains(((ConstantLiteral) l).getVertexType()))
-                        {
-                            //if(currentMatchedVertex.attContains())
+        Set<Violation> violations=new HashSet<>();
+        Delta delta=tgfd.getDelta();
+        LocalDate []allSnapshots= (LocalDate[]) matches.getTimeStamps().toArray();
+        for(int i=0;i<allSnapshots.length;i++)
+        {
+            List<Match> firstMatches=matches.getMatches(allSnapshots[i]);
+            for (int j=i+1;j<allSnapshots.length;j++)
+            {
+                Interval intv=new Interval(allSnapshots[i],allSnapshots[j]);
+                if(intv.inDelta(delta.getMin(),delta.getMax()))
+                {
+                    List<Match> secondMatches=matches.getMatches(allSnapshots[i]);
+                    for (Match first:firstMatches) {
+                        String firstSignatureX=first.getSignatureX();
+                        String firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMapping(),tgfd.getDependency().getY());
+                        for (Match second:secondMatches) {
+                            if(firstSignatureX.equals(second.getSignatureX()))
+                            {
+                                //Here, they both should have the same signature Y
+                                String secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMapping(),tgfd.getDependency().getY());
+                                if(!firstSignatureY.equals(secondSignatureY))
+                                {
+                                    //Violation happened.
+                                    violations.add(new Violation(first,second,intv));
+                                }
+                            }
                         }
-                    }
-                    else if(l instanceof VariableLiteral)
-                    {
                     }
                 }
             }
         }
-
-
-
-        return signiture;
+        return violations;
     }
-
 }

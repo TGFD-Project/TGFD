@@ -2,11 +2,11 @@ package infra;
 
 public class TGFD {
 
-    private Interval delta;
+    private Delta delta;
     private Dependency dependency;
     private VF2PatternGraph pattern;
 
-    public TGFD (VF2PatternGraph pattern, Interval delta, Dependency dependency)
+    public TGFD (VF2PatternGraph pattern, Delta delta, Dependency dependency)
     {
         this.delta=delta;
         this.pattern=pattern;
@@ -21,7 +21,7 @@ public class TGFD {
         return dependency;
     }
 
-    public Interval getDelta() {
+    public Delta getDelta() {
         return delta;
     }
 }

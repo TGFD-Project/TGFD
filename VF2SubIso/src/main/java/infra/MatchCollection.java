@@ -4,10 +4,7 @@ import org.jgrapht.GraphMapping;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +24,9 @@ public class MatchCollection
 
     /** Pattern graph of the match. */
     private VF2PatternGraph pattern;
+
+    /** Stores the timestamps of the input data*/
+    private ArrayList<LocalDate> timeStamps=new ArrayList<>();
     //endregion
 
     //region --[Constructors]------------------------------------------
@@ -79,6 +79,7 @@ public class MatchCollection
         LocalDate timepoint,
         Iterator<GraphMapping<Vertex, RelationshipEdge>> mappingIterator)
     {
+        timeStamps.add(timepoint);
         while (mappingIterator.hasNext())
         {
             var mapping = mappingIterator.next();
@@ -90,6 +91,11 @@ public class MatchCollection
     //region --[Properties: Public]------------------------------------
     /** Gets the minimum timespan between matches. */
     public Duration getGranularity() { return this.granularity; }
+
+    /** Gets all the timestamps from the input data (snapshots of the data). */
+    public ArrayList<LocalDate> getTimeStamps() {
+        return timeStamps;
+    }
 
     /** Returns matches across all time. */
     public List<Match> getMatches() {
