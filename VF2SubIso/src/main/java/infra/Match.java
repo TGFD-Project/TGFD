@@ -194,20 +194,6 @@ public final class Match {
         // TODO: consider returning a hash [2021-02-13]
         return builder.toString();
     }
-
-    /**
-     * Gets the signature of a match for comparison across time w.r.t. the dependency.
-     * @param pattern Pattern of the match.
-     * @param mapping Mapping of the match.
-     * @param dependency TGFD dependency.
-     */
-    public static String signatureFromDependency(
-        VF2PatternGraph pattern,
-        GraphMapping<Vertex, RelationshipEdge> mapping,
-        Dependency dependency)
-    {
-        throw new UnsupportedOperationException("not implemented");
-    }
     //endregion
 
     //region --[Properties: Public]------------------------------------
