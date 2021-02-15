@@ -2,6 +2,7 @@ package infra;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.Period;
 
 /**
  * Represents an interval.
@@ -27,6 +28,16 @@ public class Interval {
     }
     //endregion
 
+    //region --[Methods: Private]--------------------------------------
+    /** Returns approximate number of days in a period */
+    private double approxDaysFromPeriod(Period period) {
+        if (period == null) {
+            return 0d;
+        }
+        return 30.4167 * (12 * period.getYears() + period.getMonths()) + period.getDays();
+    }
+    //endregion
+
     //region --[Methods: Public]---------------------------------------
     /**
      * Returns true if timepoint within the interval (start and end inclusive).
@@ -38,9 +49,9 @@ public class Interval {
     }
 
     /**
-     * Returns true if interval within delta, otherwise, teruns false.
-     * @param min Minimum time span of delta.
-     * @param max Maximum time span of delta.
+     * Returns true if interval within delta, otherwise, returns false.
+     * @param min Minimum timespan of delta.
+     * @param max Maximum timespan of delta.
      * @return min <= (end - start) <= max
      */
     public boolean inDelta(Duration min, Duration max)
@@ -50,6 +61,30 @@ public class Interval {
             end.atStartOfDay());
         return between.compareTo(min) >= 0 && // min <= between
                between.compareTo(max) <= 0;   // between <= max
+    }
+
+    /**
+     * Returns true if interval within delta, otherwise, returns false.
+     * @param min Minimum timespan of delta.
+     * @param max Maximum timespan of delta.
+     * @return min <= (end - start) <= max
+     */
+    public boolean inDelta(Period min, Period max)
+    {
+        var between = Period.between(start, end);
+        if (min.getDays() > 0 || max.getDays() > 0)
+        {
+            // Period does not have a compareTo method because Period cannot be accurately compared
+            // if it contains months and days since month has an undefined standard of length.
+            // Best we can do is compare the approximate number of days.
+            var daysBetween = approxDaysFromPeriod(between);
+            return approxDaysFromPeriod(min) <= daysBetween && daysBetween <= approxDaysFromPeriod(max);
+        }
+        else
+        {
+            var totalMonths = between.toTotalMonths();
+            return min.toTotalMonths() <= totalMonths && totalMonths <= max.toTotalMonths();
+        }
     }
     //endregion
 
