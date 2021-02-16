@@ -102,7 +102,7 @@ public final class Match {
                 "Timepoint `%s` is < the latest interval's end `%s`",
                 timepoint.toString(), latestEnd.toString()));
 
-        var sinceEnd = Duration.between(latestEnd, timepoint);
+        var sinceEnd = Duration.between(latestEnd.atStartOfDay(), timepoint.atStartOfDay());
         var comparison = sinceEnd.compareTo(granularity);
         if (comparison > 0)
         {
