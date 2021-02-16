@@ -97,9 +97,9 @@ public final class Match {
             .orElseThrow();
 
         var latestEnd = latestInterval.getEnd();
-        if (timepoint.isBefore(latestEnd))
+        if (timepoint.isBefore(latestEnd) || timepoint.isEqual(latestEnd))
             throw new IllegalArgumentException(String.format(
-                "Timepoint `%s` is < the latest interval's end `%s`",
+                "Timepoint `%s` is <= the latest interval's end `%s`",
                 timepoint.toString(), latestEnd.toString()));
 
         var sinceEnd = Duration.between(latestEnd.atStartOfDay(), timepoint.atStartOfDay());
