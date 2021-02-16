@@ -34,7 +34,7 @@ public class TGFDGenerator {
 
         Scanner scanner = new Scanner(new File(path));
         while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
+            String line = scanner.nextLine().toLowerCase();
             if(line.startsWith("#pattern"))
             {
                 if(currentPattern!=null)

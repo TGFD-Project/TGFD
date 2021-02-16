@@ -20,10 +20,12 @@ public class dbPediaLoader {
     {
         graph=new VF2DataGraph();
 
+        System.out.println("Type files: " + typesPath);
         for (String typePath:typesPath) {
             loadNodeMap(typePath);
         }
 
+        System.out.println("Data files: " + dataPath);
         for (String dataP:dataPath) {
             loadDataGraph(dataP);
         }
@@ -115,7 +117,7 @@ public class dbPediaLoader {
                         objectNodeURI = object.toString().substring(object.toString().lastIndexOf("/")+1).toLowerCase();
                     }
                 } catch (DatatypeFormatException e) {
-                    System.out.println("Invalid DataType Skipped!");
+                    //System.out.println("Invalid DataType Skipped!");
                     e.printStackTrace();
                     continue;
                 }
@@ -129,7 +131,7 @@ public class dbPediaLoader {
 
                 if (subjVertex==null) {
 
-                    System.out.println("Subject node not found: " + subjectNodeURI);
+                    //System.out.println("Subject node not found: " + subjectNodeURI);
                     numberOfSubjectsNotFound++;
                     continue;
                 }

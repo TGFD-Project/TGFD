@@ -1,6 +1,6 @@
 package infra;
 
-public class Attribute {
+public class Attribute implements Comparable<Attribute>{
 
     private String attrName;
     private String attrValue;
@@ -51,5 +51,10 @@ public class Attribute {
 
     public void setAttrValue(String attrValue) {
         this.attrValue = attrValue.toLowerCase();
+    }
+
+    @Override
+    public int compareTo(Attribute o) {
+        return this.attrName.compareTo(o.attrName);
     }
 }

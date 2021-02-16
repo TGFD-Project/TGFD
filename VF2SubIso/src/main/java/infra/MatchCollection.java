@@ -80,6 +80,8 @@ public class MatchCollection
         LocalDate timepoint,
         Iterator<GraphMapping<Vertex, RelationshipEdge>> mappingIterator)
     {
+        if(mappingIterator==null)
+            return;
         timeStamps.add(timepoint);
         while (mappingIterator.hasNext())
         {

@@ -2,7 +2,7 @@ package infra;
 
 import java.util.*;
 
-public abstract class Vertex {
+public abstract class Vertex implements Comparable<Vertex>{
 
     private Set<String> types;
 

@@ -1,8 +1,8 @@
 #pattern p1
-vertex#v1#player#name#age$36
-vertex#v2#team#league#
+vertex#v1#soccerplayer#name#uri
+vertex#v2#Soccerclub#name
 edge#v1#v2#*
-literal#x#player$name$player$name
-literal#y#player$number$player$number
-literal#x#team$name$real madrid
+literal#x#soccerplayer$name$soccerplayer$name
+literal#x#soccerplayer$uri$soccerplayer$uri
+literal#y#soccerclub$name$soccerclub$name
 delta#0#210#1

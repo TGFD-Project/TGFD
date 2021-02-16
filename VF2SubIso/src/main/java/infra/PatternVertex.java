@@ -1,6 +1,6 @@
 package infra;
 
-public class PatternVertex extends Vertex {
+public class PatternVertex extends Vertex{
 
     public PatternVertex(String type) {
         super(type.toLowerCase());
@@ -26,5 +26,16 @@ public class PatternVertex extends Vertex {
             if(!attr.isNull() && !v.getAttributeByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 return false;
         return true;
+    }
+
+    @Override
+    public int compareTo(Vertex o) {
+        if(o instanceof PatternVertex)
+        {
+            PatternVertex v=(PatternVertex) o;
+            return this.getTypes().toArray()[0].toString().compareTo(v.getTypes().toArray()[0].toString());
+        }
+        else
+            return 0;
     }
 }

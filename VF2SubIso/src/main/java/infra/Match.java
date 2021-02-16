@@ -28,7 +28,7 @@ public final class Match {
     private String signatureX;
 
     /** Signature of the match computed from Y with different intervals. */
-    private HashMap<String,List<Interval>> signatureYWithInterval;
+    private HashMap<String,List<Interval>> signatureYWithInterval=new HashMap<>();
     //endregion
 
     //region --[Constructors]------------------------------------------

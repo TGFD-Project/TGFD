@@ -93,6 +93,10 @@ public class TestDBPedia
         }
         // TODO: check that typesPaths.keySet == dataPaths.keySet [2021-02-14]
 
+        System.out.println(dataPathsById.keySet() + " *** " + dataPathsById.values());
+
+        System.out.println(typePathsById.keySet() + " *** " + typePathsById.values());
+
         //Load the TGFDs.
         TGFDGenerator generator = new TGFDGenerator(patternPath);
         List<TGFD> allTGFDs=generator.getTGFDs();
@@ -102,13 +106,16 @@ public class TestDBPedia
         MatchCollection matchCollection=new MatchCollection(firstTGFD.getPattern(),firstTGFD.getDependency(),firstTGFD.getDelta().getGranularity());
 
         //Load all the graph snapshots...
-        for (var snapshotId : dataPathsById.keySet())
+
+        Object[] ids=dataPathsById.keySet().toArray();
+        Arrays.sort(ids);
+        for (int i=0;i<ids.length;i++)
         {
-            LocalDate currentSnapshotDate=timestamps.get(snapshotId);
+            LocalDate currentSnapshotDate=timestamps.get(ids[i]);
 
             dbPediaLoader dbpedia = new dbPediaLoader(
-                    typePathsById.get(snapshotId),
-                    dataPathsById.get(snapshotId));
+                    typePathsById.get(ids[i]),
+                    dataPathsById.get(ids[i]));
 
             // Now, we need to find the matches for each snapshot.
             // Finding the matches...

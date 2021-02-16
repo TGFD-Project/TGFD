@@ -10,6 +10,7 @@ public class DataVertex extends Vertex {
     public DataVertex(String uri, String type) {
         super(type.toLowerCase());
         this.vertexURI=uri.toLowerCase();
+        this.addAttribute("uri",vertexURI);
         // ???: Is Integer large enough for our use case of possible 10+ million vertices? [2021-02-07]
 //        this.hashValue=vertexURI.hashCode();
     }
@@ -40,5 +41,17 @@ public class DataVertex extends Vertex {
             if(!attr.isNull() && !super.getAttributeByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 return false;
         return true;
+    }
+
+    @Override
+    public int compareTo(Vertex o) {
+        if(o instanceof DataVertex)
+        {
+            DataVertex v=(DataVertex) o;
+            return this.vertexURI.compareTo(v.vertexURI);
+        }
+        else
+            return 0;
+
     }
 }
