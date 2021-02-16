@@ -118,7 +118,9 @@ public final class Match {
         }
         else
         {
-            throw new IllegalArgumentException("Timepoint is less than the granularity away from the latest interval end");
+            throw new IllegalArgumentException(String.format(
+                "Timepoint `%s` is less than the granularity `%s` away from the latest interval end `%s`",
+                timepoint.toString(), granularity.toString(), latestEnd.toString()));
         }
     }
 
