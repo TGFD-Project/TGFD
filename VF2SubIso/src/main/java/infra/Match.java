@@ -97,8 +97,10 @@ public final class Match {
             .orElseThrow();
 
         var latestEnd = latestInterval.getEnd();
-        if (timepoint.isBefore(latestEnd) || timepoint.isEqual(latestEnd))
-            throw new IllegalArgumentException("Timepoint is <= the latest interval's end");
+        if (timepoint.isBefore(latestEnd))
+            throw new IllegalArgumentException(String.format(
+                "Timepoint `%s` is < the latest interval's end `%s`",
+                timepoint.toString(), latestEnd.toString()));
 
         var sinceEnd = Duration.between(latestEnd, timepoint);
         var comparison = sinceEnd.compareTo(granularity);
