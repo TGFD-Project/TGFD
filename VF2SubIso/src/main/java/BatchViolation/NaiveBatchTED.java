@@ -37,12 +37,12 @@ public class NaiveBatchTED {
                     List<Match> secondMatches=matches.getMatches(allSnapshots[i]);
                     for (Match first:firstMatches) {
                         String firstSignatureX=first.getSignatureX();
-                        String firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMapping(),tgfd.getDependency().getY());
+                        String firstSignatureY=Match.signatureFromY2(tgfd.getPattern(),first.getMapping(),tgfd.getDependency().getY());
                         for (Match second:secondMatches) {
                             if(firstSignatureX.equals(second.getSignatureX()))
                             {
                                 //Here, they both should have the same signature Y
-                                String secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMapping(),tgfd.getDependency().getY());
+                                String secondSignatureY=Match.signatureFromY2(tgfd.getPattern(),second.getMapping(),tgfd.getDependency().getY());
                                 if(!firstSignatureY.equals(secondSignatureY))
                                 {
                                     //Violation happened.

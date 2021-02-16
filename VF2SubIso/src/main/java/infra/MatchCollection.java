@@ -53,11 +53,10 @@ public class MatchCollection
      * @param timepoint Timepoint of the match.
      * @param mapping The mapping of the match.
      */
-    private void addMatch(
-        LocalDate timepoint,
+    private void addMatch(LocalDate timepoint,
         GraphMapping<Vertex, RelationshipEdge> mapping)
     {
-        var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var signature = Match.signatureFromX2(pattern, mapping, dependency.getX());
         var match = matchesBySignature.getOrDefault(signature, null);
         if (match == null)
         {
@@ -66,7 +65,7 @@ public class MatchCollection
         }
 
         match.addTimepoint(timepoint, granularity);
-        match.addSignatureY(timepoint,granularity,Match.signatureFromY(pattern,mapping,dependency.getY()));
+        match.addSignatureY(timepoint,granularity,Match.signatureFromY2(pattern,mapping,dependency.getY()));
     }
     //endregion
 
@@ -83,10 +82,16 @@ public class MatchCollection
         if(mappingIterator==null)
             return;
         timeStamps.add(timepoint);
+        int matchCount=0;
         while (mappingIterator.hasNext())
         {
             var mapping = mappingIterator.next();
             addMatch(timepoint, mapping);
+            matchCount++;
+            if(matchCount%1000==0)
+            {
+                System.out.println("Match counts: " + matchCount);
+            }
         }
     }
     //endregion

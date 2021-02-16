@@ -175,6 +175,8 @@ public final class Match {
      * @param mapping Mapping of the match.
      * @param xLiterals Literals of the X dependency.
      */
+
+    /*
     public static String signatureFromX(
         VF2PatternGraph pattern,
         GraphMapping<Vertex, RelationshipEdge> mapping,
@@ -217,6 +219,56 @@ public final class Match {
         // TODO: consider returning a hash [2021-02-13]
         return builder.toString();
     }
+     */
+
+    /**
+     * Gets the signature of a match for comparison across time w.r.t. the X of the dependency.
+     * @param pattern Pattern of the match.
+     * @param mapping Mapping of the match.
+     * @param xLiterals Literals of the X dependency.
+     */
+    public static String signatureFromX2(
+            VF2PatternGraph pattern,
+            GraphMapping<Vertex, RelationshipEdge> mapping,
+            ArrayList<Literal> xLiterals)
+    {
+        // We assume that all x variable literals are also defined in the pattern? [2021-02-13]
+        var builder = new StringBuilder();
+
+        // TODO: consider collecting (type, name, attr) and sorting at the end [2021-02-14]
+
+        // NOTE: Ensure stable sorting of vertices [2021-02-13]
+        var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
+        sortedPatternVertices.forEach(patternVertex ->
+        {
+            var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
+            if (matchVertex == null)
+                return;
+
+            // NOTE: Ensure stable sorting of attributes [2021-02-13]
+            for (Literal literal : xLiterals)
+            {
+                // We can ignore constant literals because a Match is for a single TGFD which has constant defined in the pattern
+                if (literal instanceof VariableLiteral)
+                {
+                    var varLiteral = (VariableLiteral)literal;
+                    var matchVertexTypes = matchVertex.getTypes();
+                    if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && matchVertex.attContains(varLiteral.getAttrName_1())))
+                    {
+                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_1()));
+                        builder.append(",");
+                    }
+                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.attContains((varLiteral.getAttrName_2())))
+                    {
+                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
+                        builder.append(",");
+                    }
+                }
+            }
+        });
+        // TODO: consider returning a hash [2021-02-13]
+        return builder.toString();
+    }
 
     /**
      * Gets the signature of a match for comparison across time w.r.t. the Y of the dependency.
@@ -224,6 +276,7 @@ public final class Match {
      * @param mapping Mapping of the match.
      * @param yLiterals TGFD dependency.
      */
+    /*
     public static String signatureFromY(
         VF2PatternGraph pattern,
         GraphMapping<Vertex, RelationshipEdge> mapping,
@@ -272,6 +325,66 @@ public final class Match {
                     }
                 }
             });
+        });
+        // TODO: consider returning a hash [2021-02-13]
+        return builder.toString();
+    }
+    */
+
+    /**
+     * Gets the signature of a match for comparison across time w.r.t. the Y of the dependency.
+     * @param pattern Pattern of the match.
+     * @param mapping Mapping of the match.
+     * @param yLiterals TGFD dependency.
+     */
+    public static String signatureFromY2(
+            VF2PatternGraph pattern,
+            GraphMapping<Vertex, RelationshipEdge> mapping,
+            ArrayList<Literal> yLiterals)
+    {
+        // We assume that all x variable literals are also defined in the pattern? [2021-02-13]
+        var builder = new StringBuilder();
+
+        // NOTE: Ensure stable sorting of vertices [2021-02-13]
+        var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
+        sortedPatternVertices.forEach(patternVertex ->
+        {
+            var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
+            if (matchVertex == null)
+                return;
+
+            // NOTE: Ensure stable sorting of attributes [2021-02-13]
+            for (Literal literal : yLiterals)
+            {
+                if (literal instanceof ConstantLiteral)
+                {
+                    var constantLiteral = (ConstantLiteral)literal;
+                    if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
+                        continue;
+                    if (!matchVertex.attContains(constantLiteral.attrName))
+                        continue;
+                    if (!matchVertex.getAttributeValueByName(constantLiteral.attrName).equals(constantLiteral.attrValue))
+                        continue;
+
+                    builder.append(matchVertex.getAttributeValueByName(constantLiteral.attrName));
+                    builder.append(",");
+                }
+                else if (literal instanceof VariableLiteral)
+                {
+                    var varLiteral = (VariableLiteral)literal;
+                    var matchVertexTypes = matchVertex.getTypes();
+                    if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && matchVertex.attContains(varLiteral.getAttrName_1())))
+                    {
+                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_1()));
+                        builder.append(",");
+                    }
+                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.attContains((varLiteral.getAttrName_2())))
+                    {
+                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
+                        builder.append(",");
+                    }
+                }
+            }
         });
         // TODO: consider returning a hash [2021-02-13]
         return builder.toString();

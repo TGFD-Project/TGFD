@@ -23,7 +23,7 @@ public class PatternVertex extends Vertex{
         if(!v.getAllAttributesNames().containsAll(super.getAllAttributesNames()))
             return false;
         for (Attribute attr:super.getAllAttributesList())
-            if(!attr.isNull() && !v.getAttributeByName(attr.getAttrName()).equals(attr.getAttrValue()))
+            if(!attr.isNull() && !v.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 return false;
         return true;
     }

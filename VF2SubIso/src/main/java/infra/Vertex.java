@@ -58,7 +58,7 @@ public abstract class Vertex implements Comparable<Vertex>{
         return attributes.containsKey(name.toLowerCase());
     }
 
-    public String getAttributeByName(String name)
+    public String getAttributeValueByName(String name)
     {
         return attributes.get(name.toLowerCase()).getAttrValue();
     }
