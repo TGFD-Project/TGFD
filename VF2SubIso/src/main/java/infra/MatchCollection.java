@@ -88,11 +88,8 @@ public class MatchCollection
             var mapping = mappingIterator.next();
             addMatch(timepoint, mapping);
             matchCount++;
-            if(matchCount%1000==0)
-            {
-                System.out.println("Match counts: " + matchCount);
-            }
         }
+        System.out.println("Number of matches: " + matchCount);
     }
     //endregion
 
@@ -107,10 +104,8 @@ public class MatchCollection
 
     /** Returns matches across all time. */
     public List<Match> getMatches() {
-        return matchesBySignature
-            .values()
-            .stream()
-            .collect(Collectors.toList());
+        return new ArrayList<>(matchesBySignature
+                .values());
     }
 
     /** Returns matches applicable for only the given timepoint. */
