@@ -29,7 +29,7 @@ public class NaiveBatchTED {
         for(int i=0;i<allSnapshots.length;i++)
         {
             List<Match> firstMatches=matches.getMatches(allSnapshots[i]);
-            for (int j=i+1;j<allSnapshots.length;j++)
+            for (int j=i;j<allSnapshots.length;j++)
             {
                 Interval intv=new Interval(allSnapshots[i],allSnapshots[j]);
                 if(intv.inDelta(delta.getMin(),delta.getMax()))

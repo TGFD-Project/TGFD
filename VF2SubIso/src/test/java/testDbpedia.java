@@ -5,13 +5,14 @@ import VF2Runner.VF2SubgraphIsomorphism;
 import graphLoader.dbPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
+import util.properties;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.*;
 
-public class TestDBPedia
+public class testDbpedia
 {
     // TODO: input a JSON file for arguments [2021-02-14]
     // {
@@ -58,6 +59,10 @@ public class TestDBPedia
         HashMap<Integer, ArrayList<String>> dataPathsById = new HashMap<>();
         String patternPath = "";
         HashMap<Integer,LocalDate> timestamps=new HashMap<>();
+
+        // This will force the dbpediaLoader to only load entities of certain types in the TGFD
+        // Set to be false if want to load the whole graph
+        properties.dbpediaProperties.optimizedLoadingBasedOnTGFD=true;
 
         System.out.println("Test DBPedia subgraph isomorphism");
 
@@ -115,7 +120,7 @@ public class TestDBPedia
 
             dbPediaLoader dbpedia = new dbPediaLoader(
                     typePathsById.get(ids[i]),
-                    dataPathsById.get(ids[i]));
+                    dataPathsById.get(ids[i]),firstTGFD);
 
             // Now, we need to find the matches for each snapshot.
             // Finding the matches...

@@ -1,24 +1,28 @@
 package graphLoader;
 
-import infra.VF2DataGraph;
-import infra.Attribute;
-import infra.DataVertex;
-import infra.RelationshipEdge;
+import infra.Literal;
+import infra.*;
 import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.*;
+import util.properties;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class dbPediaLoader {
 
 
     private VF2DataGraph graph;
 
-    public dbPediaLoader(ArrayList<String> typesPath, ArrayList<String> dataPath)
+    private Set<String> validTypes=new HashSet<>();
+
+    public dbPediaLoader(ArrayList<String> typesPath, ArrayList<String> dataPath, TGFD tgfd)
     {
         graph=new VF2DataGraph();
+        extractValidTypesFromTGFD(tgfd);
 
         System.out.println("Type files: " + typesPath);
         for (String typePath:typesPath) {
@@ -33,6 +37,34 @@ public class dbPediaLoader {
 
     public VF2DataGraph getGraph() {
         return graph;
+    }
+
+    private void extractValidTypesFromTGFD(TGFD tgfd)
+    {
+        for (Literal x:tgfd.getDependency().getX()) {
+            if(x instanceof ConstantLiteral)
+                validTypes.add(((ConstantLiteral) x).getVertexType());
+            else if(x instanceof VariableLiteral)
+            {
+                validTypes.add(((VariableLiteral) x).getVertexType_1());
+                validTypes.add(((VariableLiteral) x).getVertexType_2());
+            }
+
+        }
+        for (Literal x:tgfd.getDependency().getY()) {
+            if(x instanceof ConstantLiteral)
+                validTypes.add(((ConstantLiteral) x).getVertexType());
+            else if(x instanceof VariableLiteral)
+            {
+                validTypes.add(((VariableLiteral) x).getVertexType_1());
+                validTypes.add(((VariableLiteral) x).getVertexType_2());
+            }
+
+        }
+        for (Vertex v:tgfd.getPattern().getGraph().vertexSet()) {
+            if(v instanceof PatternVertex)
+                validTypes.addAll(v.getTypes());
+        }
     }
 
     private void loadNodeMap(String nodeTypesPath) {
@@ -60,6 +92,10 @@ public class dbPediaLoader {
                 }
                 String nodeType = stmt.getObject().asResource().getLocalName().toLowerCase();
 
+                // ignore the node if the type is not in the validTypes and
+                // optimizedLoadingBasedOnTGFD is true
+                if(properties.dbpediaProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(nodeType))
+                    continue;
                 //int nodeId = subject.hashCode();
                 DataVertex v= (DataVertex) graph.getNode(nodeURI);
 

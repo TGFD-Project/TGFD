@@ -118,9 +118,11 @@ public final class Match {
         }
         else
         {
-            throw new IllegalArgumentException(String.format(
-                "Timepoint `%s` is less than the granularity `%s` away from the latest interval end `%s`",
-                timepoint.toString(), granularity.toString(), latestEnd.toString()));
+            //System.out.println("Match already exists at the same timestamp, signatureX: " + signatureX);
+            //For now, I ignore throwing this error to figure out how to anchor matches together
+//            throw new IllegalArgumentException(String.format(
+//                "Timepoint `%s` is less than the granularity `%s` away from the latest interval end `%s`",
+//                timepoint.toString(), granularity.toString(), latestEnd.toString()));
         }
     }
 
@@ -150,10 +152,12 @@ public final class Match {
                 .orElseThrow();
 
         var latestEnd = latestInterval.getEnd();
-        if (timepoint.isBefore(latestEnd) || timepoint.isEqual(latestEnd))
-            throw new IllegalArgumentException("Timepoint is <= the latest interval's end");
+        if (timepoint.isBefore(latestEnd))
+            throw new IllegalArgumentException(String.format(
+                    "Timepoint `%s` is < the latest interval's end `%s`",
+                    timepoint.toString(), latestEnd.toString()));
 
-        var sinceEnd = Duration.between(latestEnd, timepoint);
+        var sinceEnd = Duration.between(latestEnd.atStartOfDay(), timepoint.atStartOfDay());
         var comparison = sinceEnd.compareTo(granularity);
         if (comparison > 0)
         {
@@ -169,7 +173,7 @@ public final class Match {
         }
         else
         {
-            throw new IllegalArgumentException("Timepoint is less than the granularity away from the latest interval end");
+            //throw new IllegalArgumentException("Timepoint is less than the granularity away from the latest interval end");
         }
     }
 
