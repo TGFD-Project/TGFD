@@ -98,9 +98,10 @@ public final class Match {
 
         var latestEnd = latestInterval.getEnd();
         if (timepoint.isBefore(latestEnd) || timepoint.isEqual(latestEnd))
-            throw new IllegalArgumentException(String.format(
-                "Timepoint `%s` is <= the latest interval's end `%s`",
-                timepoint.toString(), latestEnd.toString()));
+            return;
+//            throw new IllegalArgumentException(String.format(
+//                "Timepoint `%s` is <= the latest interval's end `%s`",
+//                timepoint.toString(), latestEnd.toString()));
 
         var sinceEnd = Duration.between(latestEnd.atStartOfDay(), timepoint.atStartOfDay());
         var comparison = sinceEnd.compareTo(granularity);
@@ -153,9 +154,10 @@ public final class Match {
 
         var latestEnd = latestInterval.getEnd();
         if (timepoint.isBefore(latestEnd))
-            throw new IllegalArgumentException(String.format(
-                    "Timepoint `%s` is < the latest interval's end `%s`",
-                    timepoint.toString(), latestEnd.toString()));
+            return;
+//            throw new IllegalArgumentException(String.format(
+//                    "Timepoint `%s` is < the latest interval's end `%s`",
+//                    timepoint.toString(), latestEnd.toString()));
 
         var sinceEnd = Duration.between(latestEnd.atStartOfDay(), timepoint.atStartOfDay());
         var comparison = sinceEnd.compareTo(granularity);

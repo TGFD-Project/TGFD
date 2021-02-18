@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class testDbpedia
 {
@@ -55,6 +56,9 @@ public class testDbpedia
         // arges[3]: Graph pattern file,    sample ->  "D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt"
 
         // TODO: input literals [2021-02-14]
+
+        long wallClockStart=System.currentTimeMillis();
+
         HashMap<Integer, ArrayList<String>> typePathsById = new HashMap<>();
         HashMap<Integer, ArrayList<String>> dataPathsById = new HashMap<>();
         String patternPath = "";
@@ -62,7 +66,7 @@ public class testDbpedia
 
         // This will force the dbpediaLoader to only load entities of certain types in the TGFD
         // Set to be false if want to load the whole graph
-        properties.dbpediaProperties.optimizedLoadingBasedOnTGFD=true;
+
 
         System.out.println("Test DBPedia subgraph isomorphism");
 
@@ -72,31 +76,37 @@ public class testDbpedia
             String []conf=line.split(" ");
             if(conf.length!=2)
                 continue;
-            if (conf[0].startsWith("-t"))
+            if (conf[0].toLowerCase().startsWith("-t"))
             {
                 var snapshotId = Integer.parseInt(conf[0].substring(2));
                 if (!typePathsById.containsKey(snapshotId))
                     typePathsById.put(snapshotId, new ArrayList<String>());
                 typePathsById.get(snapshotId).add(conf[1]);
             }
-            else if (conf[0].startsWith("-d"))
+            else if (conf[0].toLowerCase().startsWith("-d"))
             {
                 var snapshotId = Integer.parseInt(conf[0].substring(2));
                 if (!dataPathsById.containsKey(snapshotId))
                     dataPathsById.put(snapshotId, new ArrayList<String>());
                 dataPathsById.get(snapshotId).add(conf[1]);
             }
-            else if (conf[0].startsWith("-p"))
+            else if (conf[0].toLowerCase().startsWith("-p"))
             {
                 patternPath = conf[1];
             }
-            else if (conf[0].startsWith("-s"))
+            else if (conf[0].toLowerCase().startsWith("-s"))
             {
                 var snapshotId = Integer.parseInt(conf[0].substring(2));
                 timestamps.put(snapshotId,LocalDate.parse(conf[1]));
             }
+            else if(conf[0].toLowerCase().startsWith("-optgraphload"))
+            {
+                properties.dbpediaProperties.optimizedLoadingBasedOnTGFD=Boolean.parseBoolean(conf[1]);
+            }
         }
         // TODO: check that typesPaths.keySet == dataPaths.keySet [2021-02-14]
+
+        // Test whether we loaded all the paths correctly
 
         System.out.println(dataPathsById.keySet() + " *** " + dataPathsById.values());
 
@@ -105,10 +115,13 @@ public class testDbpedia
         //Load the TGFDs.
         TGFDGenerator generator = new TGFDGenerator(patternPath);
         List<TGFD> allTGFDs=generator.getTGFDs();
-        TGFD firstTGFD=allTGFDs.get(0);
+        //TGFD firstTGFD=allTGFDs.get(0);
 
-        //Create the match collection for the only TGFD in the list
-        MatchCollection matchCollection=new MatchCollection(firstTGFD.getPattern(),firstTGFD.getDependency(),firstTGFD.getDelta().getGranularity());
+        //Create the match collection for all the TGFDs in the list
+        HashMap<TGFD, MatchCollection> allMatchCollections=new HashMap<>();
+        for (TGFD tgfd:allTGFDs) {
+            allMatchCollections.put(tgfd,new MatchCollection(tgfd.getPattern(),tgfd.getDependency(),tgfd.getDelta().getGranularity()));
+        }
 
         //Load all the graph snapshots...
 
@@ -120,50 +133,61 @@ public class testDbpedia
 
             dbPediaLoader dbpedia = new dbPediaLoader(
                     typePathsById.get(ids[i]),
-                    dataPathsById.get(ids[i]),firstTGFD);
+                    dataPathsById.get(ids[i]),allTGFDs);
 
             // Now, we need to find the matches for each snapshot.
             // Finding the matches...
 
-            VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
-            System.out.println("\n########## Graph pattern ##########");
-            System.out.println(firstTGFD.getPattern().toString());
-            Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(dbpedia.getGraph(), firstTGFD.getPattern(),false);
+            for (TGFD tgfd:allTGFDs) {
+
+                VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
+                System.out.println("\n########## Graph pattern ##########");
+                System.out.println(tgfd.getPattern().toString());
+                Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(dbpedia.getGraph(), tgfd.getPattern(),false);
 
 
-            //Retrieving and storing the matches of each timestamp.
-            System.out.println("Retrieving the matches");
-            long startTime=System.currentTimeMillis();
+                //Retrieving and storing the matches of each timestamp.
+                System.out.println("Retrieving the matches");
 
-            matchCollection.addMatches(currentSnapshotDate,results);
+                long startTime=System.currentTimeMillis();
 
-            long endTime=System.currentTimeMillis();
-            System.out.println("Match retrieval time: " + (endTime - startTime) + "ms");
+                allMatchCollections.get(tgfd).addMatches(currentSnapshotDate,results);
+
+                printTime("Match retrieval", System.currentTimeMillis()-startTime);
+            }
         }
 
-        // Now, we need to find all the violations
-        //First, we run the Naive Batch TED
-        System.out.println("Running the naive TED");
-        long startTime=System.currentTimeMillis();
+        for (TGFD tgfd:allTGFDs) {
+            // Now, we need to find all the violations
+            //First, we run the Naive Batch TED
+            System.out.println("Running the naive TED");
+            long startTime=System.currentTimeMillis();
 
-        NaiveBatchTED naive=new NaiveBatchTED(matchCollection,firstTGFD);
-        Set<Violation> allViolationsNaiveBatchTED=naive.findViolations();
-        System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
+            NaiveBatchTED naive=new NaiveBatchTED(allMatchCollections.get(tgfd),tgfd);
+            Set<Violation> allViolationsNaiveBatchTED=naive.findViolations();
+            System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
 
-        long endTime=System.currentTimeMillis();
-        System.out.println("Naive Batch TED time: " + (endTime - startTime) + "ms");
+            printTime("Naive Batch TED", System.currentTimeMillis()-startTime);
 
 
-        // Next, we need to find all the violations using the optimize method
-        System.out.println("Running the optimized TED");
-        startTime=System.currentTimeMillis();
+            // Next, we need to find all the violations using the optimize method
+            System.out.println("Running the optimized TED");
+            startTime=System.currentTimeMillis();
 
-        OptBatchTED optimize=new OptBatchTED(matchCollection,firstTGFD);
-        Set<Violation> allViolationsOptBatchTED=naive.findViolations();
-        System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
+            OptBatchTED optimize=new OptBatchTED(allMatchCollections.get(tgfd),tgfd);
+            Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
+            System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
 
-        endTime=System.currentTimeMillis();
-        System.out.println("Optimized Batch TED time: " + (endTime - startTime) + "ms");
+            printTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
+        }
 
+        printTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
+    }
+
+    private static void printTime(String message, long miliseconds)
+    {
+        System.out.println(message + " time: " + miliseconds + "(ms) ** " +
+                TimeUnit.MILLISECONDS.toSeconds(miliseconds) + "(sec) ** " +
+                TimeUnit.MILLISECONDS.toMinutes(miliseconds) +  "(min)");
     }
 }

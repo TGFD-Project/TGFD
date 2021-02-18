@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class dbPediaLoader {
@@ -19,17 +20,19 @@ public class dbPediaLoader {
 
     private Set<String> validTypes=new HashSet<>();
 
-    public dbPediaLoader(ArrayList<String> typesPath, ArrayList<String> dataPath, TGFD tgfd)
+    public dbPediaLoader(ArrayList<String> typesPath, ArrayList<String> dataPath, List<TGFD> alltgfd)
     {
         graph=new VF2DataGraph();
-        extractValidTypesFromTGFD(tgfd);
 
-        System.out.println("Type files: " + typesPath);
+
+        if(properties.dbpediaProperties.optimizedLoadingBasedOnTGFD)
+            for (TGFD tgfd:alltgfd)
+                extractValidTypesFromTGFD(tgfd);
+
         for (String typePath:typesPath) {
             loadNodeMap(typePath);
         }
 
-        System.out.println("Data files: " + dataPath);
         for (String dataP:dataPath) {
             loadDataGraph(dataP);
         }
@@ -107,7 +110,7 @@ public class dbPediaLoader {
                     v.addTypes(nodeType);
                 }
             }
-            System.out.println("Done. DBPedia types Size: " + graph.getSize());
+            System.out.println("Done. Number of Types: " + graph.getSize());
         }
         catch (Exception e)
         {
@@ -193,12 +196,12 @@ public class dbPediaLoader {
                     subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
                 }
             }
-            System.out.println("Done Loading DBPedia Graph.");
-            System.out.println("Number of Nodes: " + graph.getGraph().vertexSet().size());
-            System.out.println("Number of Edges: " + graph.getGraph().edgeSet().size());
-            System.out.println("Number of objects not found: " + numberOfObjectsNotFound);
-            System.out.println("Number of subjects not found: " + numberOfSubjectsNotFound);
-            System.out.println("Number of loops found: " + numberOfLoops);
+            //System.out.println("Done Loading DBPedia Graph.");
+            System.out.println("Done. Nodes and Edges: " + graph.getGraph().vertexSet().size() + " ** " +graph.getGraph().edgeSet().size());
+            //System.out.println("Number of Edges: " + graph.getGraph().edgeSet().size() );
+            System.out.println("Subjects and Objects not found: " + numberOfSubjectsNotFound + " ** " + numberOfObjectsNotFound);
+            //System.out.println("Number of subjects not found: " + numberOfSubjectsNotFound);
+            //System.out.println("Number of loops found: " + numberOfLoops);
         }
         catch (Exception e)
         {
