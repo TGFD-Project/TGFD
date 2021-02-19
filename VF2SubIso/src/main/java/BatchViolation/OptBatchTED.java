@@ -72,7 +72,6 @@ public class OptBatchTED {
                     }
                 }
             }
-
         }
         return violations;
     }

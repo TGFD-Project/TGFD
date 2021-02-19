@@ -38,7 +38,7 @@ public class VF2SubgraphIsomorphism {
 
     public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean print)
     {
-        System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
+        //System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
 
         long startTime = System.currentTimeMillis();
         inspector = new VF2SubgraphIsomorphismInspector<>(

@@ -35,7 +35,7 @@ public class TGFDGenerator {
         Scanner scanner = new Scanner(new File(path));
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine().toLowerCase();
-            if(line.startsWith("#pattern"))
+            if(line.startsWith("tgfd"))
             {
                 if(currentPattern!=null)
                 {
@@ -45,6 +45,9 @@ public class TGFDGenerator {
                 currentTGFD=new TGFD();
                 currentPattern=new VF2PatternGraph();
                 allVertices=new HashMap<>();
+                String []args = line.split("#");
+                if(args.length==2)
+                    currentTGFD.setName(args[1]);
             }
             else if(line.startsWith("vertex"))
             {

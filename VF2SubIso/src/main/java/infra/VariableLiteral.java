@@ -52,4 +52,15 @@ public class VariableLiteral extends Literal
     /** Gets the vertex type of 2. */
     public String getVertexType_2() { return vertexType_2; }
     //endregion
+
+
+    @Override
+    public String toString() {
+        return "VariableLiteral{" +
+                "vertexType_1='" + vertexType_1 + '\'' +
+                ", vertexType_2='" + vertexType_2 + '\'' +
+                ", attrName_1='" + attrName_1 + '\'' +
+                ", attrName_2='" + attrName_2 + '\'' +
+                '}';
+    }
 }

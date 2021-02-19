@@ -22,6 +22,7 @@ public class MatchCollection
     /** Mapping of match signatures to matches. */
     private AbstractMap<String, Match> matchesBySignature = new HashMap<String, Match>();
 
+    //private AbstractMap<String, List<Match>> matchesBySignature = new HashMap<String, Match>();
     /** Pattern graph of the match. */
     private VF2PatternGraph pattern;
 

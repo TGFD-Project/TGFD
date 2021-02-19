@@ -9,6 +9,8 @@ import util.properties;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -129,11 +131,17 @@ public class testDbpedia
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++)
         {
-            LocalDate currentSnapshotDate=timestamps.get(ids[i]);
+            System.out.println("===========Snapshot (" + ids[i] +")===========");
+
+            long startTime=System.currentTimeMillis();
+
+            LocalDate currentSnapshotDate=timestamps.get((int)ids[i]);
 
             dbPediaLoader dbpedia = new dbPediaLoader(
-                    typePathsById.get(ids[i]),
-                    dataPathsById.get(ids[i]),allTGFDs);
+                    typePathsById.get((int)ids[i]),
+                    dataPathsById.get((int)ids[i]),allTGFDs);
+
+            printTime("Load graph ("+ids[i] + ")", System.currentTimeMillis()-startTime);
 
             // Now, we need to find the matches for each snapshot.
             // Finding the matches...
@@ -149,7 +157,7 @@ public class testDbpedia
                 //Retrieving and storing the matches of each timestamp.
                 System.out.println("Retrieving the matches");
 
-                long startTime=System.currentTimeMillis();
+                startTime=System.currentTimeMillis();
 
                 allMatchCollections.get(tgfd).addMatches(currentSnapshotDate,results);
 
@@ -160,6 +168,7 @@ public class testDbpedia
         for (TGFD tgfd:allTGFDs) {
             // Now, we need to find all the violations
             //First, we run the Naive Batch TED
+            System.out.println("======================================================");
             System.out.println("Running the naive TED");
             long startTime=System.currentTimeMillis();
 
@@ -168,6 +177,8 @@ public class testDbpedia
             System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
 
             printTime("Naive Batch TED", System.currentTimeMillis()-startTime);
+
+            saveOutput("naive",allViolationsNaiveBatchTED,tgfd);
 
 
             // Next, we need to find all the violations using the optimize method
@@ -179,9 +190,30 @@ public class testDbpedia
             System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
 
             printTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
+
+            saveOutput("optimized",allViolationsOptBatchTED,tgfd);
         }
 
         printTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
+    }
+
+    private static void saveOutput(String path, Set<Violation> violations, TGFD tgfd)
+    {
+        try {
+            FileWriter file = new FileWriter(path +"_" + tgfd.getName() + ".txt");
+            file.write("***************TGFD***************\n");
+            file.write(tgfd.toString());
+            file.write("\n===============Violations===============\n");
+            for (Violation vio:violations) {
+                file.write(vio.toString() +
+                        "\n---------------------------------------------------\n");
+            }
+            file.close();
+            System.out.println("Successfully wrote to the file: " + path);
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
     }
 
     private static void printTime(String message, long miliseconds)

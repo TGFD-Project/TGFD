@@ -420,4 +420,13 @@ public final class Match {
     }
 
     //endregion
+
+
+    @Override
+    public String toString() {
+        return "Match{" +
+                "signatureX='" + signatureX + '\'' +
+                ", signatureYWithInterval=" + signatureYWithInterval +
+                '}';
+    }
 }

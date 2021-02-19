@@ -36,4 +36,13 @@ public class Dependency {
     public ArrayList<Literal> getY() {
         return Y;
     }
+
+
+    @Override
+    public String toString() {
+        return "Dependency{" +
+                "X=" + X +
+                ", Y=" + Y +
+                '}';
+    }
 }

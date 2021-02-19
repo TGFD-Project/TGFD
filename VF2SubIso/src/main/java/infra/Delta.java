@@ -27,4 +27,14 @@ public class Delta {
     public Duration getGranularity() {
         return granularity;
     }
+
+
+    @Override
+    public String toString() {
+        return "Delta{" +
+                "min=" + min +
+                ", max=" + max +
+                ", granularity=" + granularity +
+                '}';
+    }
 }

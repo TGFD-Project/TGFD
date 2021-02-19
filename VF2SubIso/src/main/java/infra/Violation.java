@@ -22,4 +22,13 @@ public class Violation {
     public Match getMatch2() {
         return match2;
     }
+
+    @Override
+    public String toString() {
+        return "Violation{" +
+                "match1=" + match1 +
+                ", match2=" + match2 +
+                ", interval=" + interval +
+                '}';
+    }
 }

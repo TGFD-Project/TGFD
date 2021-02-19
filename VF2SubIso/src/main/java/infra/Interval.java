@@ -134,4 +134,13 @@ public class Interval {
         this.end = end;
     }
     //endregion
+
+
+    @Override
+    public String toString() {
+        return "Interval{" +
+                "start=" + start +
+                ", end=" + end +
+                '}';
+    }
 }

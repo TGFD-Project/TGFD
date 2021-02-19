@@ -21,4 +21,13 @@ public class ConstantLiteral extends Literal {
     public String getVertexType() {
         return vertexType;
     }
+
+    @Override
+    public String toString() {
+        return "ConstantLiteral{" +
+                "vertexType='" + vertexType + '\'' +
+                ", attrName='" + attrName + '\'' +
+                ", attrValue='" + attrValue + '\'' +
+                '}';
+    }
 }
