@@ -5,6 +5,7 @@ import VF2Runner.VF2SubgraphIsomorphism;
 import graphLoader.dbPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
+import util.myConsole;
 import util.properties;
 
 import java.io.File;
@@ -12,8 +13,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class testDbpedia
 {
@@ -103,7 +104,7 @@ public class testDbpedia
             }
             else if(conf[0].toLowerCase().startsWith("-optgraphload"))
             {
-                properties.dbpediaProperties.optimizedLoadingBasedOnTGFD=Boolean.parseBoolean(conf[1]);
+                properties.myProperties.optimizedLoadingBasedOnTGFD=Boolean.parseBoolean(conf[1]);
             }
         }
         // TODO: check that typesPaths.keySet == dataPaths.keySet [2021-02-14]
@@ -141,7 +142,7 @@ public class testDbpedia
                     typePathsById.get((int)ids[i]),
                     dataPathsById.get((int)ids[i]),allTGFDs);
 
-            printTime("Load graph ("+ids[i] + ")", System.currentTimeMillis()-startTime);
+            myConsole.print("Load graph ("+ids[i] + ")", System.currentTimeMillis()-startTime);
 
             // Now, we need to find the matches for each snapshot.
             // Finding the matches...
@@ -161,7 +162,7 @@ public class testDbpedia
 
                 allMatchCollections.get(tgfd).addMatches(currentSnapshotDate,results);
 
-                printTime("Match retrieval", System.currentTimeMillis()-startTime);
+                myConsole.print("Match retrieval", System.currentTimeMillis()-startTime);
             }
         }
 
@@ -176,9 +177,9 @@ public class testDbpedia
             Set<Violation> allViolationsNaiveBatchTED=naive.findViolations();
             System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
 
-            printTime("Naive Batch TED", System.currentTimeMillis()-startTime);
+            myConsole.print("Naive Batch TED", System.currentTimeMillis()-startTime);
 
-            saveOutput("naive",allViolationsNaiveBatchTED,tgfd);
+            saveViolations("naive",allViolationsNaiveBatchTED,tgfd);
 
 
             // Next, we need to find all the violations using the optimize method
@@ -189,15 +190,18 @@ public class testDbpedia
             Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
             System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
 
-            printTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
+            myConsole.print("Optimized Batch TED", System.currentTimeMillis()-startTime);
 
-            saveOutput("optimized",allViolationsOptBatchTED,tgfd);
+            if(properties.myProperties.saveViolations)
+                saveViolations("optimized",allViolationsOptBatchTED,tgfd);
         }
 
-        printTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
+        myConsole.print("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
+
+        myConsole.saveLogs("run_"+ LocalDateTime.now().toString() + ".txt");
     }
 
-    private static void saveOutput(String path, Set<Violation> violations, TGFD tgfd)
+    private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd)
     {
         try {
             FileWriter file = new FileWriter(path +"_" + tgfd.getName() + ".txt");
@@ -214,12 +218,5 @@ public class testDbpedia
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
-    }
-
-    private static void printTime(String message, long miliseconds)
-    {
-        System.out.println(message + " time: " + miliseconds + "(ms) ** " +
-                TimeUnit.MILLISECONDS.toSeconds(miliseconds) + "(sec) ** " +
-                TimeUnit.MILLISECONDS.toMinutes(miliseconds) +  "(min)");
     }
 }

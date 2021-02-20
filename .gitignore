@@ -5,6 +5,7 @@
 **/*.swp
 **/.DS_Store
 **/.idea/
+**/out/
 **/refs
 **/target
 

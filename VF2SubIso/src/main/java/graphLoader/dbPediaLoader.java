@@ -4,6 +4,7 @@ import infra.Literal;
 import infra.*;
 import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.*;
+import util.myConsole;
 import util.properties;
 
 import java.nio.file.Path;
@@ -25,7 +26,7 @@ public class dbPediaLoader {
         graph=new VF2DataGraph();
 
 
-        if(properties.dbpediaProperties.optimizedLoadingBasedOnTGFD)
+        if(properties.myProperties.optimizedLoadingBasedOnTGFD)
             for (TGFD tgfd:alltgfd)
                 extractValidTypesFromTGFD(tgfd);
 
@@ -73,13 +74,13 @@ public class dbPediaLoader {
     private void loadNodeMap(String nodeTypesPath) {
 
         if (nodeTypesPath == null || nodeTypesPath.length() == 0) {
-            System.out.println("No Input Node Types File Path!");
+            myConsole.print("No Input Node Types File Path!");
             return;
         }
         try
         {
             Model model = ModelFactory.createDefaultModel();
-            System.out.println("Loading Node Types: " + nodeTypesPath);
+            myConsole.print("Loading Node Types: " + nodeTypesPath);
 
             Path input= Paths.get(nodeTypesPath);
             model.read(input.toUri().toString());
@@ -97,7 +98,7 @@ public class dbPediaLoader {
 
                 // ignore the node if the type is not in the validTypes and
                 // optimizedLoadingBasedOnTGFD is true
-                if(properties.dbpediaProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(nodeType))
+                if(properties.myProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(nodeType))
                     continue;
                 //int nodeId = subject.hashCode();
                 DataVertex v= (DataVertex) graph.getNode(nodeURI);
@@ -110,21 +111,21 @@ public class dbPediaLoader {
                     v.addTypes(nodeType);
                 }
             }
-            System.out.println("Done. Number of Types: " + graph.getSize());
+            myConsole.print("Done. Number of Types: " + graph.getSize());
         }
         catch (Exception e)
         {
-            System.out.println(e.getMessage());
+            myConsole.print(e.getMessage());
         }
     }
 
     private void loadDataGraph(String dataGraphFilePath) {
 
         if (dataGraphFilePath == null || dataGraphFilePath.length() == 0) {
-            System.out.println("No Input Graph Data File Path!");
+            myConsole.print("No Input Graph Data File Path!");
             return;
         }
-        System.out.println("Loading DBPedia Graph: "+dataGraphFilePath);
+        myConsole.print("Loading DBPedia Graph: "+dataGraphFilePath);
         int numberOfObjectsNotFound=0,numberOfSubjectsNotFound=0, numberOfLoops=0;
 
         try
@@ -196,16 +197,15 @@ public class dbPediaLoader {
                     subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
                 }
             }
+            myConsole.print("Subjects and Objects not found: " + numberOfSubjectsNotFound + " ** " + numberOfObjectsNotFound);
+            myConsole.print("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());
             //System.out.println("Done Loading DBPedia Graph.");
-            System.out.println("Done. Nodes and Edges: " + graph.getGraph().vertexSet().size() + " ** " +graph.getGraph().edgeSet().size());
-            //System.out.println("Number of Edges: " + graph.getGraph().edgeSet().size() );
-            System.out.println("Subjects and Objects not found: " + numberOfSubjectsNotFound + " ** " + numberOfObjectsNotFound);
             //System.out.println("Number of subjects not found: " + numberOfSubjectsNotFound);
             //System.out.println("Number of loops found: " + numberOfLoops);
         }
         catch (Exception e)
         {
-            System.out.println(e.getMessage());
+            myConsole.print(e.getMessage());
         }
     }
 }
