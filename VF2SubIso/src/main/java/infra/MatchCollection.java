@@ -20,7 +20,7 @@ public class MatchCollection
     private Duration granularity;
 
     /** Mapping of match signatures to matches. */
-    private AbstractMap<String, Match> matchesBySignature = new HashMap<String, Match>();
+    private AbstractMap<String, Match> matchesBySignature = new HashMap<>();
 
     //private AbstractMap<String, List<Match>> matchesBySignature = new HashMap<String, Match>();
     /** Pattern graph of the match. */
