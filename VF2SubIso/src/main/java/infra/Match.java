@@ -39,7 +39,7 @@ public final class Match {
         List<Interval> intervals)
     {
         this.pattern = pattern;
-        this.mapping = mapping;
+        this.mapping = new BackwardVertexGraphMapping<>(mapping);
         this.signatureX = signatureX;
         this.intervals = intervals;
     }
