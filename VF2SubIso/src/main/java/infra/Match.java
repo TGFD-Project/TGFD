@@ -21,41 +21,34 @@ public final class Match {
     /** Graph mapping from pattern graph to match graph. */
     private GraphMapping<Vertex, RelationshipEdge> mapping;
 
-    /** Pattern graph of the match. */
-    private VF2PatternGraph pattern;
-
     /** Signature of the match computed from X. */
     private String signatureX;
 
     /** Signature of the match computed from Y with different intervals. */
-    private HashMap<String,List<Interval>> signatureYWithInterval=new HashMap<>();
+    private HashMap<String, List<Interval>> signatureYWithInterval = new HashMap<>();
     //endregion
 
     //region --[Constructors]------------------------------------------
     private Match(
-        VF2PatternGraph pattern,
         GraphMapping<Vertex, RelationshipEdge> mapping,
         String signatureX,
         List<Interval> intervals)
     {
-        this.pattern = pattern;
         this.mapping = new BackwardVertexGraphMapping<>(mapping);
         this.signatureX = signatureX;
         this.intervals = intervals;
-    }
+     }
 
     /**
      * Create a new Match.
-     * @param pattern Pattern of the match.
      * @param mapping Mapping of the match.
      * @param signatureX Signature of the match computed from X.
      */
     public Match(
-        VF2PatternGraph pattern,
         GraphMapping<Vertex, RelationshipEdge> mapping,
         String signatureX)
     {
-        this(pattern, mapping, signatureX, new ArrayList<Interval>());
+        this(mapping, signatureX, new ArrayList<Interval>());
     }
 
     /**
@@ -65,7 +58,6 @@ public final class Match {
     public Match WithIntervals(List<Interval> intervals)
     {
         return new Match(
-            this.pattern,
             this.mapping,
             this.signatureX,
             intervals);
@@ -408,9 +400,6 @@ public final class Match {
     /** Gets the vertices of the match. */
     public GraphMapping<Vertex, RelationshipEdge> getMapping() { return this.mapping; }
 
-    /** Gets the pattern graph. */
-    public VF2PatternGraph getPattern() { return pattern; }
-
     /** Gets the signature of the match computed from X. */
     public String getSignatureX() { return signatureX; }
 
@@ -418,9 +407,7 @@ public final class Match {
     public HashMap<String, List<Interval>> getSignatureYWithInterval() {
         return signatureYWithInterval;
     }
-
     //endregion
-
 
     @Override
     public String toString() {

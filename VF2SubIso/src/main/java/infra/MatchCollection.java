@@ -19,15 +19,19 @@ public class MatchCollection
     /** The minimum timespan between matches. */
     private Duration granularity;
 
+    // TODO: replace map value type with List<Match> [2021-02-23]
     /** Mapping of match signatures to matches. */
     private AbstractMap<String, Match> matchesBySignature = new HashMap<>();
 
-    //private AbstractMap<String, List<Match>> matchesBySignature = new HashMap<String, Match>();
+    // TODO: deduplicate vertices in Match [2021-02-23]
+    // This may not be so easy because we need to deduplicate by vertex and time.
+    // We need some sort of shared temporal representation of the vertices that we can retrieve given id and timestamp.
+
     /** Pattern graph of the match. */
     private VF2PatternGraph pattern;
 
     /** Stores the timestamps of the input data*/
-    private ArrayList<LocalDate> timeStamps=new ArrayList<>();
+    private ArrayList<LocalDate> timeStamps = new ArrayList<>();
     //endregion
 
     //region --[Constructors]------------------------------------------
@@ -61,7 +65,7 @@ public class MatchCollection
         var match = matchesBySignature.getOrDefault(signature, null);
         if (match == null)
         {
-            match = new Match(pattern, mapping, signature);
+            match = new Match(mapping, signature);
             matchesBySignature.put(signature, match);
         }
 
