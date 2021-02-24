@@ -26,29 +26,38 @@ public final class Match {
 
     /** Signature of the match computed from Y with different intervals. */
     private HashMap<String, List<Interval>> signatureYWithInterval = new HashMap<>();
+
+    private TemporalGraph<Vertex> temporalGraph;
     //endregion
 
     //region --[Constructors]------------------------------------------
     private Match(
+        TemporalGraph<Vertex> temporalGraph,
         GraphMapping<Vertex, RelationshipEdge> mapping,
         String signatureX,
-        List<Interval> intervals)
+        List<Interval> intervals,
+        LocalDate initialTimepoint)
     {
-        this.mapping = new BackwardVertexGraphMapping<>(mapping);
+        this.temporalGraph = temporalGraph;
+        this.mapping = new BackwardVertexGraphMapping<>(mapping, initialTimepoint, temporalGraph);
         this.signatureX = signatureX;
         this.intervals = intervals;
      }
 
     /**
      * Create a new Match.
+     * @param temporalGraph Temporal graph containing the vertices.
      * @param mapping Mapping of the match.
      * @param signatureX Signature of the match computed from X.
      */
     public Match(
+        TemporalGraph temporalGraph,
         GraphMapping<Vertex, RelationshipEdge> mapping,
-        String signatureX)
+        String signatureX,
+        LocalDate initialTimepoint)
     {
-        this(mapping, signatureX, new ArrayList<Interval>());
+        // TODO: FIXME: can we get away with using initalTimepoint for the TemporalGraph? [2021-02-24]
+        this(temporalGraph, mapping, signatureX, new ArrayList<Interval>(), initialTimepoint);
     }
 
     /**
@@ -58,9 +67,11 @@ public final class Match {
     public Match WithIntervals(List<Interval> intervals)
     {
         return new Match(
+            this.temporalGraph,
             this.mapping,
             this.signatureX,
-            intervals);
+            intervals,
+            intervals.get(0).getEnd());
     }
     //endregion
 

@@ -13,6 +13,10 @@ import java.util.stream.Collectors;
 public class MatchCollection
 {
     //region --[Fields: Private]---------------------------------------
+    // TODO: handle concurrent use of TemporalGraph [2021-02-24]
+    /** Temporal graph containing the vertices to reduce memory consumption by the matches. */
+    private TemporalGraph<Vertex> temporalGraph;
+
     /** Dependency of MatchCollection */
     private Dependency dependency;
 
@@ -49,6 +53,7 @@ public class MatchCollection
         this.pattern = pattern;
         this.dependency = dependency;
         this.granularity = granularity;
+        this.temporalGraph = new TemporalGraph<>(granularity);
     }
     //endregion
 
@@ -58,19 +63,39 @@ public class MatchCollection
      * @param timepoint Timepoint of the match.
      * @param mapping The mapping of the match.
      */
-    private void addMatch(LocalDate timepoint,
+    private void addMatch(
+        LocalDate timepoint,
         GraphMapping<Vertex, RelationshipEdge> mapping)
     {
         var signature = Match.signatureFromX2(pattern, mapping, dependency.getX());
         var match = matchesBySignature.getOrDefault(signature, null);
         if (match == null)
         {
-            match = new Match(mapping, signature);
+            match = new Match(temporalGraph, mapping, signature, timepoint);
             matchesBySignature.put(signature, match);
         }
 
         match.addTimepoint(timepoint, granularity);
         match.addSignatureY(timepoint,granularity,Match.signatureFromY2(pattern,mapping,dependency.getY()));
+    }
+
+    /**
+     * Adds vertices of the match to the TemporalGraph shared by matches in this collection.
+     * @param timepoint Timepoint of the match.
+     * @param mapping Mapping of the match.
+     */
+    private void addVertices(LocalDate timepoint, GraphMapping<Vertex, RelationshipEdge> mapping)
+    {
+        for (var pattenVertex : pattern.getGraph().vertexSet())
+        {
+            var matchVertex = mapping.getVertexCorrespondence(pattenVertex, false);
+
+            // TODO: change Vertex type to DataVertex or add vertex id to Vertex [2021-02-24]
+            temporalGraph.addVertex(
+                matchVertex,
+                ((DataVertex)matchVertex).getVertexURI(),
+                timepoint);
+        }
     }
     //endregion
 
@@ -86,7 +111,9 @@ public class MatchCollection
     {
         if(mappingIterator==null)
             return;
+
         timeStamps.add(timepoint);
+
         int matchCount=0;
         while (mappingIterator.hasNext())
         {
