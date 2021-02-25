@@ -4,25 +4,32 @@ public class Attribute implements Comparable<Attribute>{
 
     private String attrName;
     private String attrValue;
-    private boolean isNull;
+
+    //If this class is being used for DataVertex, then this is false
+    //If this class is being used as a constant attribute for PatternVertex, then this is false
+    //If this class is being used as variable attribute for PatternVertex, then set to true.
+    //This is being used in both DataVertex and PatternVertex.
+    //If it is isNULL = true, then in the mapping, we only check if the DataVertex has this attribute,
+    //otherwise, the DataVertex has to have it and also has to have the same value
+    private boolean isNULL;
 
     public Attribute(String attrName, String attrValue)
     {
         this.attrName=attrName.toLowerCase();
         this.attrValue=attrValue.toLowerCase();
-        isNull=false;
+        isNULL =false;
     }
 
     public Attribute(String attrName)
     {
         this.attrName=attrName.toLowerCase();
         this.attrValue=null;
-        isNull=true;
+        isNULL =true;
     }
 
     @Override
     public String toString() {
-        if(!isNull)
+        if(!isNULL)
             return "(" +
                     "'" + attrName + '\'' +
                     ", '" + attrValue + '\'' +
@@ -42,8 +49,8 @@ public class Attribute implements Comparable<Attribute>{
         return attrValue;
     }
 
-    public boolean isNull() {
-        return isNull;
+    public boolean isNULL() {
+        return isNULL;
     }
 
     public void setAttrName(String attrName) { this.attrName = attrName.toLowerCase();}

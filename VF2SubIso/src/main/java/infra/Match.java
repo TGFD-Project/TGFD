@@ -266,12 +266,12 @@ public final class Match {
                 {
                     var varLiteral = (VariableLiteral)literal;
                     var matchVertexTypes = matchVertex.getTypes();
-                    if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && matchVertex.attContains(varLiteral.getAttrName_1())))
+                    if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && matchVertex.hasAttribute(varLiteral.getAttrName_1())))
                     {
                         builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_1()));
                         builder.append(",");
                     }
-                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.attContains((varLiteral.getAttrName_2())))
+                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.hasAttribute((varLiteral.getAttrName_2())))
                     {
                         builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
                         builder.append(",");
@@ -374,7 +374,7 @@ public final class Match {
                     var constantLiteral = (ConstantLiteral)literal;
                     if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
                         continue;
-                    if (!matchVertex.attContains(constantLiteral.attrName))
+                    if (!matchVertex.hasAttribute(constantLiteral.attrName))
                         continue;
                     if (!matchVertex.getAttributeValueByName(constantLiteral.attrName).equals(constantLiteral.attrValue))
                         continue;
@@ -386,12 +386,12 @@ public final class Match {
                 {
                     var varLiteral = (VariableLiteral)literal;
                     var matchVertexTypes = matchVertex.getTypes();
-                    if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && matchVertex.attContains(varLiteral.getAttrName_1())))
+                    if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && matchVertex.hasAttribute(varLiteral.getAttrName_1())))
                     {
                         builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_1()));
                         builder.append(",");
                     }
-                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.attContains((varLiteral.getAttrName_2())))
+                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.hasAttribute((varLiteral.getAttrName_2())))
                     {
                         builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
                         builder.append(",");

@@ -6,7 +6,9 @@ public abstract class Vertex implements Comparable<Vertex>{
 
     private Set<String> types;
 
-    private Map<String, Attribute> attributes;
+    // Map of attributes using attribute name as a key
+    //TODO: Check the efficiency if we just store the attributes in a set (the attribute retrieval cannot be done in O(1) and takes O(n))
+        private Map<String, Attribute> attributes;
 
     // TODO: consider adding an id field (e.g. vertexURI from dataVertex) [2021-02-07]
 
@@ -17,6 +19,8 @@ public abstract class Vertex implements Comparable<Vertex>{
     }
 
 
+    // Getter functions
+
     public Map<String, Attribute> getAllAttributesHashMap() {
         return attributes;
     }
@@ -25,17 +29,24 @@ public abstract class Vertex implements Comparable<Vertex>{
         return attributes.values();
     }
 
+    public Set<String> getTypes() {
+        return types;
+    }
+
+    public String getAttributeValueByName(String name)
+    {
+        return attributes.get(name.toLowerCase()).getAttrValue();
+    }
+
     public Collection<String> getAllAttributesNames() {
         return attributes.keySet();
     }
 
+    // Setter Functions
+
     public void setAllAttributes(List<Attribute> attributes) {
         for (Attribute attr:attributes)
             this.attributes.put(attr.getAttrName(),attr);
-    }
-
-    public Set<String> getTypes() {
-        return types;
     }
 
     public void addTypes(String type)
@@ -53,19 +64,16 @@ public abstract class Vertex implements Comparable<Vertex>{
         attributes.put(attr.getAttrName(),attr);
     }
 
-    public boolean attContains(String name)
+    public boolean hasAttribute(String name)
     {
         return attributes.containsKey(name.toLowerCase());
     }
 
-    public String getAttributeValueByName(String name)
+    // The function to check if two vertices can be mapped to each other in subgraph isomorphism
+    // This needs to be overridden in DataVertex and PatternVertex
+    public boolean isMapped(Vertex v)
     {
-        return attributes.get(name.toLowerCase()).getAttrValue();
-    }
-
-    public boolean isEqual(Vertex v)
-    {
-        return true;
+        return false;
     }
 
     // TODO: implement hashCode because Match uses vertex's hashcode as the signature [2021-02-07]

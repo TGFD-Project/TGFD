@@ -1,6 +1,7 @@
 package infra;
 
 import org.jgrapht.GraphMapping;
+import util.myConsole;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -120,8 +121,11 @@ public class MatchCollection
             var mapping = mappingIterator.next();
             addMatch(timepoint, mapping);
             matchCount++;
+            if(matchCount%100==0)
+                System.out.println("Number of matches: " + matchCount);
         }
-        System.out.println("Number of matches: " + matchCount);
+        myConsole.print("Number of matches: " + matchCount);
+
     }
     //endregion
 

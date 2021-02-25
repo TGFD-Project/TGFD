@@ -7,6 +7,7 @@ import infra.Vertex;
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
 import org.jgrapht.alg.isomorphism.VF2SubgraphIsomorphismInspector;
+import util.myConsole;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -29,7 +30,7 @@ public class VF2SubgraphIsomorphism {
         };
 
         myVertexComparator = (v1, v2) -> {
-            if (v1.isEqual(v2))
+            if (v1.isMapped(v2))
                 return 0;
             else
                 return 1;
@@ -44,33 +45,32 @@ public class VF2SubgraphIsomorphism {
         inspector = new VF2SubgraphIsomorphismInspector<>(
                 dataGraph.getGraph(), pattern.getGraph(),
                 myVertexComparator, myEdgeComparator, false);
-        long endTime = System.currentTimeMillis();
 
-        System.out.println("Search Cost Time:" + (endTime - startTime) + "ms");
+        myConsole.print("Search Cost ", (System.currentTimeMillis() - startTime));
         int size=0;
         if (inspector.isomorphismExists()) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
             if(print)
             {
                 while (iterator.hasNext()) {
-                    System.out.println("---------- Match found ---------- ");
+                    myConsole.print("---------- Match found ---------- ");
                     GraphMapping<Vertex, RelationshipEdge> mappings = iterator.next();
 
                     for (Vertex v : pattern.getGraph().vertexSet()) {
                         Vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
                         if (currentMatchedVertex != null) {
-                            System.out.println(v + " --> " + currentMatchedVertex);
+                            myConsole.print(v + " --> " + currentMatchedVertex);
                         }
                     }
                     size++;
                 }
-                System.out.println("Number of matches: " + size);
+                myConsole.print("Number of matches: " + size);
             }
             return iterator;
         }
         else
         {
-            System.out.println("No Matches for the query!");
+            myConsole.print("No Matches for the query!");
             return null;
         }
     }

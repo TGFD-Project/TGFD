@@ -1,5 +1,7 @@
 package infra;
 
+import org.jetbrains.annotations.NotNull;
+
 public class DataVertex extends Vertex {
 
 
@@ -32,19 +34,19 @@ public class DataVertex extends Vertex {
     }
 
     @Override
-    public boolean isEqual(Vertex v) {
+    public boolean isMapped(Vertex v) {
         if (!super.getTypes().containsAll(v.getTypes()))
             return false;
         if(!super.getAllAttributesNames().containsAll(v.getAllAttributesNames()))
             return false;
         for (Attribute attr:v.getAllAttributesList())
-            if(!attr.isNull() && !super.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
+            if(!attr.isNULL() && !super.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 return false;
         return true;
     }
 
     @Override
-    public int compareTo(Vertex o) {
+    public int compareTo(@NotNull Vertex o) {
         if(o instanceof DataVertex)
         {
             DataVertex v=(DataVertex) o;
@@ -52,6 +54,5 @@ public class DataVertex extends Vertex {
         }
         else
             return 0;
-
     }
 }

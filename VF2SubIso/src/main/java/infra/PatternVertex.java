@@ -1,5 +1,7 @@
 package infra;
 
+import org.jetbrains.annotations.NotNull;
+
 public class PatternVertex extends Vertex{
 
     public PatternVertex(String type) {
@@ -15,25 +17,35 @@ public class PatternVertex extends Vertex{
                 '}';
     }
 
+    // This is being used to check if a PatternVertex can be mapped to a DataVertex
     @Override
-    public boolean isEqual(Vertex v)
+    public boolean isMapped(Vertex v)
     {
+        if(v instanceof PatternVertex)
+            return false;
         if (!v.getTypes().containsAll(super.getTypes()))
             return false;
         if(!v.getAllAttributesNames().containsAll(super.getAllAttributesNames()))
             return false;
         for (Attribute attr:super.getAllAttributesList())
-            if(!attr.isNull() && !v.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
+            if(!attr.isNULL() && !v.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 return false;
         return true;
     }
 
     @Override
-    public int compareTo(Vertex o) {
+    public int compareTo(@NotNull Vertex o) {
         if(o instanceof PatternVertex)
         {
             PatternVertex v=(PatternVertex) o;
-            return this.getTypes().toArray()[0].toString().compareTo(v.getTypes().toArray()[0].toString());
+            //TODO: How can we say two PatternVertex are the same? Have the same type?
+
+            if(this.getTypes().containsAll(v.getTypes()))
+                return 1;
+            else
+                return 0;
+            //Old code to just check if the first type is the same. Assuming we set only one type for each PatternVertex
+            //return this.getTypes().toArray()[0].toString().compareTo(v.getTypes().toArray()[0].toString());
         }
         else
             return 0;

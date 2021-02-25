@@ -22,7 +22,7 @@ public class VF2DataGraph {
 
     public void addVertex(DataVertex v)
     {
-        if(!nodeMap.containsKey(v.getVertexURI().hashCode()))
+        if(!nodeMap.containsKey(v.getVertexURI()))
         {
             graph.addVertex(v);
             nodeMap.put(v.getVertexURI(),v);
