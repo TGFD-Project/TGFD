@@ -5,7 +5,6 @@ import org.jgrapht.GraphMapping;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -95,9 +94,8 @@ public final class Match {
             return;
         }
 
-        var latestInterval = intervals.stream()
-            .max(Comparator.comparing(Interval::getEnd))
-            .orElseThrow();
+        var latestInterval = intervals.get(intervals.size()-1);
+        //var latestInterval = intervals.stream().max(Comparator.comparing(Interval::getEnd)).orElseThrow();
 
         var latestEnd = latestInterval.getEnd();
         if (timepoint.isBefore(latestEnd) || timepoint.isEqual(latestEnd))
@@ -151,9 +149,12 @@ public final class Match {
             return;
         }
 
-        var latestInterval = signatureYWithInterval.get(signatureY).stream()
-                .max(Comparator.comparing(Interval::getEnd))
-                .orElseThrow();
+        var latestInterval = signatureYWithInterval.get(signatureY)
+                .get(signatureYWithInterval.get(signatureY).size()-1);
+
+        //var latestInterval = signatureYWithInterval.get(signatureY).stream()
+        //                .max(Comparator.comparing(Interval::getEnd))
+        //                .orElseThrow();
 
         var latestEnd = latestInterval.getEnd();
         if (timepoint.isBefore(latestEnd))

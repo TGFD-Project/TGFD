@@ -6,6 +6,7 @@ import util.myConsole;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -116,13 +117,17 @@ public class MatchCollection
         timeStamps.add(timepoint);
 
         int matchCount=0;
+        long startTime=System.currentTimeMillis();
         while (mappingIterator.hasNext())
         {
             var mapping = mappingIterator.next();
             addMatch(timepoint, mapping);
             matchCount++;
-            if(matchCount%100==0)
-                System.out.println("Number of matches: " + matchCount);
+            if(matchCount%300==0) {
+                System.out.println("Number of matches: " + matchCount + " -> " +
+                        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-startTime) + "(sec)");
+                startTime=System.currentTimeMillis();
+            }
         }
         myConsole.print("Number of matches: " + matchCount);
 
