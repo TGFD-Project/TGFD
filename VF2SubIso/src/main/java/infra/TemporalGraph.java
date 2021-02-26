@@ -35,7 +35,7 @@ public class TemporalGraph<V>
     private Duration granularity;
 
     /** Map from vertex id to a list of temporal vertices. */
-    private HashMap<String, List<TemporalVertex<V>>> temporalVerticesById;
+    private HashMap<String, List<TemporalVertex<V>>> temporalVerticesById = new HashMap<>();
     //endregion
 
     //region --[Constructors]------------------------------------------

@@ -113,18 +113,18 @@ public class MatchCollection
         LocalDate timepoint,
         Iterator<GraphMapping<Vertex, RelationshipEdge>> mappingIterator)
     {
-        if(mappingIterator==null)
+        if (mappingIterator==null)
             return 0;
 
-        if(!timeStamps.contains(timepoint))
+        if (!timeStamps.contains(timepoint))
             timeStamps.add(timepoint);
 
-        int matchCount=0;
-        long startTime=System.currentTimeMillis();
+        int matchCount = 0;
         while (mappingIterator.hasNext())
         {
             var mapping = mappingIterator.next();
             addMatch(timepoint, mapping);
+            addVertices(timepoint, mapping);
             matchCount++;
         }
         return matchCount;
