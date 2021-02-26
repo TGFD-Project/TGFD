@@ -85,7 +85,8 @@ public class VF2SubgraphIsomorphism {
                 dataGraph, pattern.getGraph(),
                 myVertexComparator, myEdgeComparator, false);
 
-        myConsole.print("Search Cost ", (System.currentTimeMillis() - startTime));
+        if(print)
+            myConsole.print("Search Cost ", (System.currentTimeMillis() - startTime));
         int size=0;
         if (inspector.isomorphismExists()) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
@@ -109,7 +110,8 @@ public class VF2SubgraphIsomorphism {
         }
         else
         {
-            myConsole.print("No Matches for the query!");
+            if(print)
+                myConsole.print("No Matches for the query!");
             return null;
         }
     }

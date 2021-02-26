@@ -15,6 +15,7 @@ public class myConsole {
         System.out.println(message);
     }
 
+
     public static void print(String message, long runTimeInMS)
     {
         String msg=message + " time: " + runTimeInMS + "(ms) ** " +

@@ -32,7 +32,6 @@ public class dbPediaLoader {
     {
         graph=new VF2DataGraph();
 
-
         if(properties.myProperties.optimizedLoadingBasedOnTGFD)
             for (TGFD tgfd:alltgfd) {
                 extractValidTypesFromTGFD(tgfd);

@@ -1,12 +1,10 @@
 package infra;
 
 import org.jgrapht.GraphMapping;
-import util.myConsole;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -38,8 +36,6 @@ public class MatchCollection
 
     /** Stores the timestamps of the input data*/
     private ArrayList<LocalDate> timeStamps = new ArrayList<>();
-
-    private long hasNext=0;
 
     //endregion
 
@@ -113,37 +109,25 @@ public class MatchCollection
      * @param timepoint Timepoint of the matches.
      * @param mappingIterator An iterator over all isomorphic mappings from the pattern.
      */
-    public void addMatches(
+    public int addMatches(
         LocalDate timepoint,
         Iterator<GraphMapping<Vertex, RelationshipEdge>> mappingIterator)
     {
         if(mappingIterator==null)
-            return;
+            return 0;
 
-        timeStamps.add(timepoint);
+        if(!timeStamps.contains(timepoint))
+            timeStamps.add(timepoint);
 
         int matchCount=0;
         long startTime=System.currentTimeMillis();
-        long temp=System.currentTimeMillis();
         while (mappingIterator.hasNext())
         {
-            hasNext+=(System.currentTimeMillis()-temp);
-
             var mapping = mappingIterator.next();
-
             addMatch(timepoint, mapping);
             matchCount++;
-            if(matchCount%300==0) {
-                System.out.println("Number of matches: " + matchCount + " -> " +
-                        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-startTime) + "(sec) * Next = "+
-                        TimeUnit.MILLISECONDS.toSeconds(hasNext) + "(sec)("+hasNext+")");
-                startTime=System.currentTimeMillis();
-                hasNext=0;
-            }
-            temp=System.currentTimeMillis();
         }
-        myConsole.print("Number of matches: " + matchCount);
-
+        return matchCount;
     }
     //endregion
 

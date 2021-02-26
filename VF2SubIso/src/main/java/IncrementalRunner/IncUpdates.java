@@ -17,9 +17,10 @@ public class IncUpdates {
 
     private VF2PatternGraph patternGraph;
 
-    public IncUpdates(VF2DataGraph graph, VF2SubgraphIsomorphism VF2, VF2PatternGraph patternGraph)
+
+    public IncUpdates(VF2DataGraph baseGraph, VF2SubgraphIsomorphism VF2, VF2PatternGraph patternGraph)
     {
-        this.baseGraph=graph;
+        this.baseGraph=baseGraph;
         this.VF2= VF2;
         this.patternGraph=patternGraph;
     }
@@ -42,7 +43,7 @@ public class IncUpdates {
         {
             AttributeChange attributeChange=(AttributeChange) change;
             DataVertex v1=(DataVertex) baseGraph.getNode(attributeChange.getUri());
-            if(attributeChange.getTypeOfChange()==ChangeType.changeAttr)
+            if(attributeChange.getTypeOfChange()==ChangeType.changeAttr || attributeChange.getTypeOfChange()==ChangeType.insertAttr)
             {
                 return updateGraphByUpdatingAnAttribute(v1,attributeChange.getAttribute());
             }
@@ -74,6 +75,8 @@ public class IncUpdates {
 
         //perform the change...
 
+        if(!subgraph.containsVertex(v1) || !subgraph.containsVertex(v2))
+            return null;
         subgraph.addEdge(v1,v2,edge);
         baseGraph.addEdge(v1, v2,edge);
 
