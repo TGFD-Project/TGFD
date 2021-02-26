@@ -38,6 +38,9 @@ public class MatchCollection
 
     /** Stores the timestamps of the input data*/
     private ArrayList<LocalDate> timeStamps = new ArrayList<>();
+
+    private long hasNext=0;
+
     //endregion
 
     //region --[Constructors]------------------------------------------
@@ -70,6 +73,7 @@ public class MatchCollection
         GraphMapping<Vertex, RelationshipEdge> mapping)
     {
         var signature = Match.signatureFromX2(pattern, mapping, dependency.getX());
+
         var match = matchesBySignature.getOrDefault(signature, null);
         if (match == null)
         {
@@ -77,8 +81,10 @@ public class MatchCollection
             matchesBySignature.put(signature, match);
         }
 
+        var signatureY=Match.signatureFromY2(pattern,mapping,dependency.getY());
+
         match.addTimepoint(timepoint, granularity);
-        match.addSignatureY(timepoint,granularity,Match.signatureFromY2(pattern,mapping,dependency.getY()));
+        match.addSignatureY(timepoint,granularity,signatureY);
     }
 
     /**
@@ -118,16 +124,23 @@ public class MatchCollection
 
         int matchCount=0;
         long startTime=System.currentTimeMillis();
+        long temp=System.currentTimeMillis();
         while (mappingIterator.hasNext())
         {
+            hasNext+=(System.currentTimeMillis()-temp);
+
             var mapping = mappingIterator.next();
+
             addMatch(timepoint, mapping);
             matchCount++;
             if(matchCount%300==0) {
                 System.out.println("Number of matches: " + matchCount + " -> " +
-                        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-startTime) + "(sec)");
+                        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-startTime) + "(sec) * Next = "+
+                        TimeUnit.MILLISECONDS.toSeconds(hasNext) + "(sec)("+hasNext+")");
                 startTime=System.currentTimeMillis();
+                hasNext=0;
             }
+            temp=System.currentTimeMillis();
         }
         myConsole.print("Number of matches: " + matchCount);
 

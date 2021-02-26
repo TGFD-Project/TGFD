@@ -44,4 +44,13 @@ public class RelationshipEdge extends DefaultEdge {
         this.label = label;
     }
 
+    @Override
+    public Vertex getTarget() {
+        return (Vertex) super.getTarget();
+    }
+
+    @Override
+    public Vertex getSource() {
+        return (Vertex) super.getSource();
+    }
 }
