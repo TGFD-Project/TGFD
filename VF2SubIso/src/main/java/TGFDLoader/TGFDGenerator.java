@@ -73,6 +73,11 @@ public class TGFDGenerator {
                 String []args = line.split("#");
                 currentPattern.addEdge(allVertices.get(args[1]),allVertices.get(args[2]),new RelationshipEdge(args[3]));
             }
+            else if(line.startsWith("diameter"))
+            {
+                String []args = line.split("#");
+                currentPattern.setDiameter(Integer.parseInt(args[1]));
+            }
             else if(line.startsWith("literal"))
             {
                 String[] args = line.split("#");

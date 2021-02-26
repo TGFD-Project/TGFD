@@ -2,6 +2,7 @@ tgfd#p1
 vertex#v1#album#name#uri
 vertex#v2#musicalartist#name
 edge#v1#v2#producer
+diameter#1
 literal#x#album$name$album$name
 literal#x#album$uri$album$uri
 literal#y#musicalartist$name$musicalartist$name
@@ -10,6 +11,7 @@ tgfd#p2
 vertex#v1#primeminister#name#uri
 vertex#v2#politicalparty#name
 edge#v1#v2#party
+diameter#1
 literal#x#primeminister$name$primeminister$name
 literal#x#primeminister$uri$primeminister$uri
 literal#y#politicalparty$name$politicalparty$name
@@ -18,6 +20,7 @@ tgfd#p3
 vertex#v1#band#name#uri
 vertex#v2#city#name
 edge#v1#v2#hometown
+diameter#1
 literal#x#band$name$band$name
 literal#x#band$uri$band$uri
 literal#y#city$name$city$name
@@ -28,6 +31,7 @@ vertex#v2#basketballteam#name#uri
 vertex#v3#basketballleague#name
 edge#v1#v2#team
 edge#v1#v3#league
+diameter#2
 literal#x#basketballplayer$name$basketballplayer$name
 literal#x#basketballplayer$uri$basketballplayer$uri
 literal#x#basketballteam$name$basketballteam$name
@@ -40,6 +44,7 @@ vertex#v2#publisher#name#uri
 vertex#v3#country#name
 edge#v1#v2#publisher
 edge#v1#v3#country
+diameter#2
 literal#x#book$name$book$name
 literal#x#book$uri$book$uri
 literal#x#country$name$country$name

@@ -7,6 +7,14 @@ public class VF2PatternGraph {
 
     private Graph<Vertex, RelationshipEdge> graph;
 
+    private int diameter;
+
+    public VF2PatternGraph(int diameter)
+    {
+        graph= new DefaultDirectedGraph<>(RelationshipEdge.class);
+        this.diameter=diameter;
+    }
+
     public VF2PatternGraph()
     {
         graph= new DefaultDirectedGraph<>(RelationshipEdge.class);
@@ -14,6 +22,14 @@ public class VF2PatternGraph {
 
     public Graph<Vertex, RelationshipEdge> getGraph() {
         return graph;
+    }
+
+    public void setDiameter(int diameter) {
+        this.diameter = diameter;
+    }
+
+    public int getDiameter() {
+        return diameter;
     }
 
     public void addVertex(PatternVertex v)

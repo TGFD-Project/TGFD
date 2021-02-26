@@ -6,26 +6,26 @@ import infra.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class changeFinder {
+public class ChangeFinder {
 
     VF2DataGraph g1,g2;
-    private List<change> allChanges=new ArrayList<>();
+    private List<Change> allChanges=new ArrayList<>();
 
-    public changeFinder(dbPediaLoader db1, dbPediaLoader db2)
+    public ChangeFinder(dbPediaLoader db1, dbPediaLoader db2)
     {
         g1=db1.getGraph();
         g2=db2.getGraph();
     }
 
-    public List<change> findAllChanged()
+    public List<Change> findAllChanged()
     {
-        findChanges(g1,g2,changeType.deleteEdge,changeType.deleteVertex,changeType.deleteAttr,changeType.changeAttr);
-        findChanges(g2,g1,changeType.insertEdge, changeType.insertVertex, changeType.insertAttr,null);
+        findChanges(g1,g2, ChangeType.deleteEdge, ChangeType.deleteVertex, ChangeType.deleteAttr, ChangeType.changeAttr);
+        findChanges(g2,g1, ChangeType.insertEdge, ChangeType.insertVertex, ChangeType.insertAttr,null);
         return allChanges;
     }
 
-    private void findChanges(VF2DataGraph first, VF2DataGraph second, changeType edgeType,
-                             changeType vertexType, changeType attrType,changeType attrChange)
+    private void findChanges(VF2DataGraph first, VF2DataGraph second, ChangeType edgeType,
+                             ChangeType vertexType, ChangeType attrType, ChangeType attrChange)
     {
         for (Vertex v:first.getGraph().vertexSet()) {
             DataVertex v1=(DataVertex) v;
@@ -33,12 +33,12 @@ public class changeFinder {
                 DataVertex dst=(DataVertex)e.getTarget();
                 if(second.getNode(v1.getVertexURI())==null)
                 {
-                    change eChange=new edgeChange(edgeType,v1,dst,e.getLabel());
+                    Change eChange=new EdgeChange(edgeType,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
                     allChanges.add(eChange);
                 }
                 else if(second.getNode(dst.getVertexURI())==null)
                 {
-                    change eChange=new edgeChange(edgeType,v1,dst,e.getLabel());
+                    Change eChange=new EdgeChange(edgeType,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
                     allChanges.add(eChange);
                 }
                 else
@@ -55,7 +55,7 @@ public class changeFinder {
                     }
                     if(!exist)
                     {
-                        change eChange=new edgeChange(edgeType,v1,dst,e.getLabel());
+                        Change eChange=new EdgeChange(edgeType,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
                         allChanges.add(eChange);
                     }
                 }
@@ -67,19 +67,19 @@ public class changeFinder {
             DataVertex v2= (DataVertex) second.getNode(v1.getVertexURI());
             if(v2==null)
             {
-                change vChange=new vertexChange(vertexType,v1);
+                Change vChange=new VertexChange(vertexType,v1);
                 allChanges.add(vChange);
                 continue;
             }
             for (Attribute attr:v.getAllAttributesList()) {
                 if(!v2.hasAttribute(attr.getAttrName()))
                 {
-                    change changeOfAttr=new attributeChange(attrType,v1,attr);
+                    Change changeOfAttr=new AttributeChange(attrType,v1.getVertexURI(),attr);
                     allChanges.add(changeOfAttr);
                 }
                 else if(attrChange!=null && !v2.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 {
-                    change changeOfAttr=new attributeChange(changeType.changeAttr,v1,attr);
+                    Change changeOfAttr=new AttributeChange(ChangeType.changeAttr,v1.getVertexURI(),attr);
                     allChanges.add(changeOfAttr);
                 }
             }

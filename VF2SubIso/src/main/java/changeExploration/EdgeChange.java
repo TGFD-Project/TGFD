@@ -1,16 +1,14 @@
 package changeExploration;
 
-import infra.DataVertex;
-
-public class edgeChange extends change {
+public class EdgeChange extends Change {
 
     String src,dst;
     String label;
 
-    public edgeChange(changeType cType, DataVertex source, DataVertex destination, String label) {
+    public EdgeChange(ChangeType cType, String srcURI, String dstURI, String label) {
         super(cType);
-        src=source.getVertexURI();
-        dst=destination.getVertexURI();
+        src=srcURI;
+        dst=dstURI;
         this.label=label;
     }
 

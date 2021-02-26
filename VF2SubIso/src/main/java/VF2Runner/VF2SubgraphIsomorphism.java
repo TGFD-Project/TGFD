@@ -4,6 +4,7 @@ import infra.VF2DataGraph;
 import infra.VF2PatternGraph;
 import infra.RelationshipEdge;
 import infra.Vertex;
+import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
 import org.jgrapht.alg.isomorphism.VF2SubgraphIsomorphismInspector;
@@ -44,6 +45,44 @@ public class VF2SubgraphIsomorphism {
         long startTime = System.currentTimeMillis();
         inspector = new VF2SubgraphIsomorphismInspector<>(
                 dataGraph.getGraph(), pattern.getGraph(),
+                myVertexComparator, myEdgeComparator, false);
+
+        myConsole.print("Search Cost ", (System.currentTimeMillis() - startTime));
+        int size=0;
+        if (inspector.isomorphismExists()) {
+            Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
+            if(print)
+            {
+                while (iterator.hasNext()) {
+                    myConsole.print("---------- Match found ---------- ");
+                    GraphMapping<Vertex, RelationshipEdge> mappings = iterator.next();
+
+                    for (Vertex v : pattern.getGraph().vertexSet()) {
+                        Vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
+                        if (currentMatchedVertex != null) {
+                            myConsole.print(v + " --> " + currentMatchedVertex);
+                        }
+                    }
+                    size++;
+                }
+                myConsole.print("Number of matches: " + size);
+            }
+            return iterator;
+        }
+        else
+        {
+            myConsole.print("No Matches for the query!");
+            return null;
+        }
+    }
+
+    public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(Graph<Vertex, RelationshipEdge> dataGraph, VF2PatternGraph pattern, boolean print)
+    {
+        //System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
+
+        long startTime = System.currentTimeMillis();
+        inspector = new VF2SubgraphIsomorphismInspector<>(
+                dataGraph, pattern.getGraph(),
                 myVertexComparator, myEdgeComparator, false);
 
         myConsole.print("Search Cost ", (System.currentTimeMillis() - startTime));

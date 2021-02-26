@@ -1,18 +1,17 @@
 package changeExploration;
 
 import infra.Attribute;
-import infra.DataVertex;
 
-public class attributeChange extends change {
+public class AttributeChange extends Change {
 
 
     Attribute attribute;
     String uri;
 
-    public attributeChange(changeType cType, DataVertex vertex, Attribute attr) {
+    public AttributeChange(ChangeType cType, String vertexURI, Attribute attr) {
         super(cType);
-        attribute=attr;
-        uri=vertex.getVertexURI();
+        this.attribute=attr;
+        uri=vertexURI;
     }
 
     @Override

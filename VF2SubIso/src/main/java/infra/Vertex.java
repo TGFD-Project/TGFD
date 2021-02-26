@@ -59,6 +59,20 @@ public abstract class Vertex implements Comparable<Vertex>{
         attributes.put(name.toLowerCase(),new Attribute(name.toLowerCase(),value.toLowerCase()));
     }
 
+    public void setOrAddAttribute(Attribute attr)
+    {
+        if(attributes.containsKey(attr.getAttrName()))
+            attributes.get(attr.getAttrName()).setAttrValue(attr.getAttrValue());
+        else
+            addAttribute(attr);
+    }
+
+    public void deleteAttribute(Attribute attr)
+    {
+        if(attributes.containsKey(attr.getAttrName()))
+            attributes.remove(attr.getAttrName());
+    }
+
     public void addAttribute(Attribute attr)
     {
         attributes.put(attr.getAttrName(),attr);

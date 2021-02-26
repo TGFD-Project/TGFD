@@ -1,5 +1,5 @@
 package changeExploration;
 
-public enum changeType {
+public enum ChangeType {
     insertEdge, deleteEdge,insertVertex, deleteVertex,insertAttr, deleteAttr, changeAttr
 }
