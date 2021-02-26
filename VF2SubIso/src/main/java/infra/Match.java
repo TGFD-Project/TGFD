@@ -1,6 +1,7 @@
 package infra;
 
 import org.jgrapht.GraphMapping;
+import org.jgrapht.alg.isomorphism.IsomorphicGraphMapping;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -38,9 +39,12 @@ public final class Match {
         LocalDate initialTimepoint)
     {
         this.temporalGraph = temporalGraph;
-        this.mapping = new BackwardVertexGraphMapping<>(mapping, initialTimepoint, temporalGraph);
         this.signatureX = signatureX;
         this.intervals = intervals;
+
+        this.mapping = (mapping instanceof BackwardVertexGraphMapping)
+            ? mapping
+            : new BackwardVertexGraphMapping<>(mapping, initialTimepoint, temporalGraph);
      }
 
     /**
