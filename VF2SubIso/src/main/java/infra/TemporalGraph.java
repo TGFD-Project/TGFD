@@ -62,9 +62,9 @@ public class TemporalGraph<V>
         var temporalVertices = temporalVerticesById.get(vertexId);
         if (temporalVertices == null)
         {
-            temporalVerticesById.put(
-                vertexId,
-                List.of(new TemporalVertex<>(new Interval(timestamp, timestamp), vertex)));
+            temporalVertices = new ArrayList<>();
+            temporalVertices.add(new TemporalVertex<>(new Interval(timestamp, timestamp), vertex));
+            temporalVerticesById.put(vertexId, temporalVertices);
             return;
         }
 
