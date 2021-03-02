@@ -200,20 +200,21 @@ public class testDbpediaInc
 
             incUpdatesOnDBpedia.AddNewVertices(allChanges);
 
-            int numberOfNewMatches=0,numberOfRemovedMatches=0;
+            Set<String> newMatchesSignatures=new HashSet <>();
+            Set<String> removedMatchesSignatures=new HashSet <>();
             for (Change change:allChanges) {
 
                 IncrementalChange incChangesInMatches=incUpdatesOnDBpedia.updateGraph(change);
 
                 if(incChangesInMatches==null)
                     continue;
-                numberOfNewMatches += incChangesInMatches.getNewMatches().keySet().size();
-                numberOfRemovedMatches+=incChangesInMatches.getRemovedMatches().keySet().size();
+                newMatchesSignatures.addAll(incChangesInMatches.getNewMatches().keySet());
+                removedMatchesSignatures.addAll(incChangesInMatches.getRemovedMatchesSignatures());
                 matchCollection.addMatches(currentSnapshotDate,incChangesInMatches.getNewMatches());
-
             }
+            matchCollection.addTimestamp(currentSnapshotDate,newMatchesSignatures,removedMatchesSignatures);
             myConsole.print("Update and retrieve matches ", System.currentTimeMillis()-startTime);
-            myConsole.print("#new matches: " + numberOfNewMatches  + " - #removed matches: " + numberOfRemovedMatches);
+            myConsole.print("#new matches: " + newMatchesSignatures.size()  + " - #removed matches: " + removedMatchesSignatures.size());
         }
 
         // Now, we need to find all the violations

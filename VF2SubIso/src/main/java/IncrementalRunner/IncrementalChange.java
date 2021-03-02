@@ -7,7 +7,9 @@ import infra.Vertex;
 import org.jgrapht.GraphMapping;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 public class IncrementalChange {
 
@@ -15,7 +17,8 @@ public class IncrementalChange {
     private Iterator <GraphMapping <Vertex, RelationshipEdge>> beforeMatchIterator;
     private Iterator <GraphMapping <Vertex, RelationshipEdge>> afterMatchIterator;
     private VF2PatternGraph pattern;
-    private HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches, removedMatches;
+    private HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches;
+    private Set<String> removedMatchesSignatures;
     private HashMap<String, GraphMapping<Vertex, RelationshipEdge>> beforeMatches, afterMatches;
     //endregion
 
@@ -24,7 +27,7 @@ public class IncrementalChange {
     {
         this.beforeMatchIterator=beforeMatchIterator;
         newMatches=new HashMap<>();
-        removedMatches=new HashMap<>();
+        removedMatchesSignatures=new HashSet <>();
         this.pattern=pattern;
         computeBeforeMatches();
     }
@@ -73,7 +76,7 @@ public class IncrementalChange {
         }
         for (String key:beforeMatches.keySet()) {
             if(!afterMatches.containsKey(key))
-                removedMatches.put(key,beforeMatches.get(key));
+                removedMatchesSignatures.add(key);
         }
     }
     //endregion
@@ -83,8 +86,8 @@ public class IncrementalChange {
         return newMatches;
     }
 
-    public HashMap <String, GraphMapping <Vertex, RelationshipEdge>> getRemovedMatches() {
-        return removedMatches;
+    public Set<String> getRemovedMatchesSignatures() {
+        return removedMatchesSignatures;
     }
 
     //endregion

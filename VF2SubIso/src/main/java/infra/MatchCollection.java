@@ -161,8 +161,8 @@ public class MatchCollection
     {
         timestamps.add(timestamp);
 
-        var newSignatures = newMatchesSignatures.stream().distinct().collect(Collectors.toSet());
-        var removedSignatures = removedMatchesSignatures.stream().distinct().collect(Collectors.toSet());
+        var newSignatures = newMatchesSignatures.stream().collect(Collectors.toSet());
+        var removedSignatures = removedMatchesSignatures.stream().collect(Collectors.toSet());
 
         var signaturesToUpdate = matchesBySignature.keySet().stream()
             .filter(k -> !newSignatures.contains(k))
