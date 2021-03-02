@@ -23,10 +23,10 @@ public class IncUpdates {
 
 
 
-    public IncUpdates(VF2DataGraph baseGraph, VF2SubgraphIsomorphism VF2, VF2PatternGraph patternGraph)
+    public IncUpdates(VF2DataGraph baseGraph, VF2PatternGraph patternGraph)
     {
         this.baseGraph=baseGraph;
-        this.VF2= VF2;
+        this.VF2= new VF2SubgraphIsomorphism();
         this.patternGraph=patternGraph;
     }
 
@@ -99,6 +99,8 @@ public class IncUpdates {
         // run VF2
         Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,patternGraph,false);
 
+        IncrementalChange incrementalChange=new IncrementalChange(beforeChange,patternGraph);
+
         //perform the change...
         if(!subgraph.containsVertex(v2))
         {
@@ -110,7 +112,9 @@ public class IncUpdates {
         // Run VF2 again...
         Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,patternGraph,false);
 
-        return new IncrementalChange(beforeChange,afterChange,patternGraph);
+        incrementalChange.addAfterMatches(afterChange);
+
+        return incrementalChange;
     }
 
     private IncrementalChange updateGraphByDeletingAnEdge(
@@ -121,8 +125,9 @@ public class IncUpdates {
         // run VF2
         Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,patternGraph,false);
 
-        //Now, perform the change
-        // Remove from the subgraph
+        IncrementalChange incrementalChange=new IncrementalChange(beforeChange,patternGraph);
+
+        // Now, perform the change and remove the edge from the subgraph
         for (RelationshipEdge e:subgraph.outgoingEdgesOf(v1)) {
             DataVertex target=(DataVertex) e.getTarget();
             if(target.getVertexURI().equals(v2.getVertexURI()) && edge.getLabel().equals(e.getLabel()))
@@ -134,13 +139,12 @@ public class IncUpdates {
         //remove from the base graph.
         baseGraph.removeEdge(v1,v2,edge);
 
-        // Perform VF2
-        //myConsole.print("========================AFTER CHANGE========================");
-        //myConsole.print("-----REMOVE EDGE: "+((DataVertex) edge.getSource()).getVertexURI() + " --> (" +edge.getLabel()
-        //        +") --> " + ((DataVertex) edge.getTarget()).getVertexURI()+" -----");
+        // run VF2
         Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,patternGraph,false);
 
-        return new IncrementalChange(beforeChange,afterChange,patternGraph);
+        incrementalChange.addAfterMatches(afterChange);
+
+        return incrementalChange;
     }
 
     private IncrementalChange updateGraphByUpdatingAnAttribute(
@@ -151,13 +155,16 @@ public class IncUpdates {
         // run VF2
         Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,patternGraph,false);
 
+        IncrementalChange incrementalChange=new IncrementalChange(beforeChange,patternGraph);
+
         //Now, perform the change...
         v1.setOrAddAttribute(attribute);
 
         // run VF2
         Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,patternGraph,false);
 
-        return new IncrementalChange(beforeChange,afterChange,patternGraph);
+        incrementalChange.addAfterMatches(afterChange);
+        return incrementalChange;
     }
 
     private IncrementalChange updateGraphByDeletingAnAttribute(
@@ -168,13 +175,16 @@ public class IncUpdates {
         // run VF2
         Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,patternGraph,false);
 
+        IncrementalChange incrementalChange=new IncrementalChange(beforeChange,patternGraph);
+
         //Now, perform the change...
         v1.deleteAttribute(attribute);
 
         // run VF2
         Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,patternGraph,false);
 
-        return new IncrementalChange(beforeChange,afterChange,patternGraph);
+        incrementalChange.addAfterMatches(afterChange);
+        return incrementalChange;
     }
 
 }

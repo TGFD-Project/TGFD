@@ -1,6 +1,7 @@
 import BatchViolation.NaiveBatchTED;
 import BatchViolation.OptBatchTED;
 import IncrementalRunner.IncUpdates;
+import IncrementalRunner.IncrementalChange;
 import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
@@ -195,23 +196,29 @@ public class testDbpediaInc
 
             System.out.println("Updating the graph");
 
-            IncUpdates incUpdatesOnDBpedia=new IncUpdates(dbpedia.getGraph(),VF2,firstTGFD.getPattern());
+            IncUpdates incUpdatesOnDBpedia=new IncUpdates(dbpedia.getGraph(),firstTGFD.getPattern());
 
             incUpdatesOnDBpedia.AddNewVertices(allChanges);
 
-            int numberOfMatches=0;
+            int numberOfNewMatches=0,numberOfRemovedMatches=0,error1=0,error2=0;
+            HashSet<String> uniqueMatches=new HashSet <>();
             for (Change change:allChanges) {
 
-                IncrementalChange IncChangesInMatches=incUpdatesOnDBpedia.updateGraph(change);
+                IncrementalChange incChangesInMatches=incUpdatesOnDBpedia.updateGraph(change);
 
-                if(IncChangesInMatches==null)
+                if(incChangesInMatches==null)
                     continue;
-                numberOfMatches += IncChangesInMatches.getNewMatches().keySet().size();
-                matchCollection.addMatches(currentSnapshotDate,IncChangesInMatches.getNewMatches());
+                numberOfNewMatches += incChangesInMatches.getNewMatches().keySet().size();
+                uniqueMatches.addAll(incChangesInMatches.getNewMatches().keySet());
+                numberOfRemovedMatches+=incChangesInMatches.getRemovedMatches().keySet().size();
+                matchCollection.addMatches(currentSnapshotDate,incChangesInMatches.getNewMatches());
+                error1+=incChangesInMatches.getError1();
+                error2+=incChangesInMatches.getError2();
 
             }
             myConsole.print("Update and retrieve matches ", System.currentTimeMillis()-startTime);
-            myConsole.print("Number of matches: " + numberOfMatches );
+            myConsole.print("#new matches: " + numberOfNewMatches  + " - #removed matches: " + numberOfRemovedMatches + " - #Unique Matches: " + uniqueMatches.size());
+            System.out.println("Error1: " + error1 + " - Error2: " + error2);
         }
 
         // Now, we need to find all the violations
