@@ -182,6 +182,7 @@ public class testDbpediaInc
             List<Change> allChanges=changeLoader.getAllChanges();
 
             myConsole.print("Load changes ("+ids[i] + ")", System.currentTimeMillis()-startTime);
+            myConsole.print("Total number of changes: " + allChanges.size());
 
             // Now, we need to find the matches for each snapshot.
             // Finding the matches...
@@ -201,9 +202,12 @@ public class testDbpediaInc
             int numberOfMatches=0;
             for (Change change:allChanges) {
 
-                Iterator<GraphMapping<Vertex, RelationshipEdge>> updatedMatches=incUpdatesOnDBpedia.updateGraph(change);
+                IncrementalChange IncChangesInMatches=incUpdatesOnDBpedia.updateGraph(change);
 
-                numberOfMatches += matchCollection.addMatches(currentSnapshotDate,updatedMatches);
+                if(IncChangesInMatches==null)
+                    continue;
+                numberOfMatches += IncChangesInMatches.getNewMatches().keySet().size();
+                matchCollection.addMatches(currentSnapshotDate,IncChangesInMatches.getNewMatches());
 
             }
             myConsole.print("Update and retrieve matches ", System.currentTimeMillis()-startTime);

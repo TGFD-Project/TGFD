@@ -157,7 +157,6 @@ public class testChanges {
                 else
                     changeAttributeValue++;
             }
-
         }
 
         final StringWriter sw =new StringWriter();
@@ -165,17 +164,14 @@ public class testChanges {
         try
         {
             mapper.writeValue(sw, allChanges);
-
             FileWriter file = new FileWriter("./changes_t"+t1+"_t"+t2+".json");
             file.write(sw.toString());
             file.close();
             System.out.println("Successfully wrote to the file.");
             sw.close();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         System.out.println("Total number of changes: " + allChanges.size());
         System.out.println("insertChangeEdge: " + insertChangeEdge);
         System.out.println("insertChangeVertex: " + insertChangeVertex);
@@ -185,5 +181,4 @@ public class testChanges {
         System.out.println("deleteChangeAttribute: " + deleteChangeAttribute);
         System.out.println("changeAttributeValue: " + changeAttributeValue);
     }
-
 }

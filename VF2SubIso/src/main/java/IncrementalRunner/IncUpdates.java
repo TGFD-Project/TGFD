@@ -17,6 +17,11 @@ public class IncUpdates {
 
     private VF2PatternGraph patternGraph;
 
+    private int numberOfIgnoredEdgeChanges=0;
+    private int numberOfIgnoredَAttributeChange=0;
+
+
+
 
     public IncUpdates(VF2DataGraph baseGraph, VF2SubgraphIsomorphism VF2, VF2PatternGraph patternGraph)
     {
@@ -25,13 +30,20 @@ public class IncUpdates {
         this.patternGraph=patternGraph;
     }
 
-    public Iterator<GraphMapping<Vertex, RelationshipEdge>> updateGraph(Change change)
+    public IncrementalChange updateGraph(Change change)
     {
         if(change instanceof EdgeChange)
         {
             EdgeChange edgeChange=(EdgeChange) change;
             DataVertex v1= (DataVertex) baseGraph.getNode(edgeChange.getSrc());
             DataVertex v2= (DataVertex) baseGraph.getNode(edgeChange.getDst());
+            if(v1==null || v2==null)
+            {
+                // Node doesn't exist in the base graph, we need to igonre the change
+                // We keep the number of these ignored edges in a variable
+                numberOfIgnoredEdgeChanges++;
+                return null;
+            }
             if(edgeChange.getTypeOfChange()== ChangeType.insertEdge)
                 return updateGraphByAddingNewEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()));
             else if(edgeChange.getTypeOfChange()== ChangeType.deleteEdge)
@@ -43,6 +55,13 @@ public class IncUpdates {
         {
             AttributeChange attributeChange=(AttributeChange) change;
             DataVertex v1=(DataVertex) baseGraph.getNode(attributeChange.getUri());
+            if(v1==null)
+            {
+                // Node doesn't exist in the base graph, we need to igonre the change
+                // We store the number of these ignored changes
+                numberOfIgnoredَAttributeChange++;
+                return null;
+            }
             if(attributeChange.getTypeOfChange()==ChangeType.changeAttr || attributeChange.getTypeOfChange()==ChangeType.insertAttr)
             {
                 return updateGraphByUpdatingAnAttribute(v1,attributeChange.getAttribute());
@@ -68,35 +87,41 @@ public class IncUpdates {
         }
     }
 
-    private Iterator<GraphMapping<Vertex, RelationshipEdge>> updateGraphByAddingNewEdge(
+    public int getNumberOfIgnoredEdgeChanges() {
+        return numberOfIgnoredEdgeChanges;
+    }
+
+    private IncrementalChange updateGraphByAddingNewEdge(
             DataVertex v1, DataVertex v2, RelationshipEdge edge)
     {
         Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,patternGraph.getDiameter());
 
-        //perform the change...
+        // run VF2
+        Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,patternGraph,false);
 
-        if(!subgraph.containsVertex(v1) || !subgraph.containsVertex(v2))
-            return null;
+        //perform the change...
+        if(!subgraph.containsVertex(v2))
+        {
+            subgraph.addVertex(v2);
+        }
         subgraph.addEdge(v1,v2,edge);
         baseGraph.addEdge(v1, v2,edge);
 
-        // Perform VF2 again...
-        //myConsole.print("========================AFTER CHANGE========================");
-        //myConsole.print("+++++NEW EDGE: "+ v1.getVertexURI() + " --> (" +edge.getLabel()
-        //        +") --> " + v2.getVertexURI()+" +++++");
-        Iterator<GraphMapping<Vertex, RelationshipEdge>> newMatches = VF2.execute(subgraph,patternGraph,false);
+        // Run VF2 again...
+        Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,patternGraph,false);
 
-        return newMatches;
+        return new IncrementalChange(beforeChange,afterChange,patternGraph);
     }
 
-    private Iterator<GraphMapping<Vertex, RelationshipEdge>> updateGraphByDeletingAnEdge(
+    private IncrementalChange updateGraphByDeletingAnEdge(
             DataVertex v1, DataVertex v2, RelationshipEdge edge)
     {
         Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,patternGraph.getDiameter());
 
+        // run VF2
+        Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,patternGraph,false);
 
         //Now, perform the change
-
         // Remove from the subgraph
         for (RelationshipEdge e:subgraph.outgoingEdgesOf(v1)) {
             DataVertex target=(DataVertex) e.getTarget();
@@ -113,45 +138,43 @@ public class IncUpdates {
         //myConsole.print("========================AFTER CHANGE========================");
         //myConsole.print("-----REMOVE EDGE: "+((DataVertex) edge.getSource()).getVertexURI() + " --> (" +edge.getLabel()
         //        +") --> " + ((DataVertex) edge.getTarget()).getVertexURI()+" -----");
-        Iterator<GraphMapping<Vertex, RelationshipEdge>> afterResults = VF2.execute(subgraph,patternGraph,false);
+        Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,patternGraph,false);
 
-        return afterResults;
+        return new IncrementalChange(beforeChange,afterChange,patternGraph);
     }
 
-    private Iterator<GraphMapping<Vertex, RelationshipEdge>> updateGraphByUpdatingAnAttribute(
+    private IncrementalChange updateGraphByUpdatingAnAttribute(
             DataVertex v1, Attribute attribute)
     {
         Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,patternGraph.getDiameter());
 
-        //Now, perform the change...
+        // run VF2
+        Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,patternGraph,false);
 
+        //Now, perform the change...
         v1.setOrAddAttribute(attribute);
 
-        // Perform VF2
-        //myConsole.print("========================AFTER CHANGE========================");
-        //myConsole.print("+++++ATTRIBUTE: "+ v1.getVertexURI() + " --> "+attribute.toString()+" +++++");
+        // run VF2
+        Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,patternGraph,false);
 
-        Iterator<GraphMapping<Vertex, RelationshipEdge>> afterResults = VF2.execute(subgraph,patternGraph,false);
-
-        return afterResults;
+        return new IncrementalChange(beforeChange,afterChange,patternGraph);
     }
 
-    private Iterator<GraphMapping<Vertex, RelationshipEdge>> updateGraphByDeletingAnAttribute(
+    private IncrementalChange updateGraphByDeletingAnAttribute(
             DataVertex v1, Attribute attribute)
     {
         Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,patternGraph.getDiameter());
 
-        //Now, perform the change...
+        // run VF2
+        Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,patternGraph,false);
 
+        //Now, perform the change...
         v1.deleteAttribute(attribute);
 
-        // Perform VF2
+        // run VF2
+        Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,patternGraph,false);
 
-        //myConsole.print("========================AFTER CHANGE========================");
-        //myConsole.print("+++++ATTRIBUTE: "+ v1.getVertexURI() + " --> "+attribute.toString()+" +++++");
-
-        Iterator<GraphMapping<Vertex, RelationshipEdge>> afterResults = VF2.execute(subgraph,patternGraph,false);
-        return afterResults;
+        return new IncrementalChange(beforeChange,afterChange,patternGraph);
     }
 
 }

@@ -58,5 +58,4 @@ public class testVF2 {
 
         return pattern;
     }
-
 }

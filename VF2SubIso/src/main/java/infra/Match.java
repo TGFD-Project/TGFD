@@ -1,7 +1,6 @@
 package infra;
 
 import org.jgrapht.GraphMapping;
-import org.jgrapht.alg.isomorphism.IsomorphicGraphMapping;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -407,6 +406,31 @@ public final class Match {
         // TODO: consider returning a hash [2021-02-13]
         return builder.toString();
     }
+
+    /**
+     * Gets the signature of a match w.r.t the input pattern.
+     * @param pattern Pattern of the match.
+     * @param mapping Mapping of the match.
+     */
+    public static String signatureFromPattern(
+            VF2PatternGraph pattern,
+            GraphMapping<Vertex, RelationshipEdge> mapping)
+    {
+        var builder = new StringBuilder();
+
+        // NOTE: Ensure stable sorting of vertices [2021-02-13]
+        var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
+        sortedPatternVertices.forEach(patternVertex ->
+        {
+            var matchVertex = (DataVertex)mapping.getVertexCorrespondence(patternVertex, false);
+            if (matchVertex == null)
+                return;
+            builder.append(matchVertex.getVertexURI());
+            builder.append(",");
+        });
+        // TODO: consider returning a hash [2021-02-13]
+        return builder.toString();
+    }
     //endregion
 
     //region --[Properties: Public]------------------------------------
@@ -425,6 +449,7 @@ public final class Match {
     }
     //endregion
 
+    //region --[Methods: Override]---------------------------------------
     @Override
     public String toString() {
         return "Match{" +
@@ -432,4 +457,5 @@ public final class Match {
                 ", signatureYWithInterval=" + signatureYWithInterval +
                 '}';
     }
+    //endregion
 }

@@ -58,7 +58,6 @@ public class VF2DataGraph {
         }
     }
 
-
     public int getSize()
     {
         return nodeMap.size();

@@ -129,6 +129,23 @@ public class MatchCollection
         }
         return matchCount;
     }
+
+
+    /**
+     * @param timepoint Timepoint of the matches.
+     * @param newMatches A HashMap of <SignatureFromPattern,mapping> of all the new matches.
+     */
+    public void addMatches(LocalDate timepoint,
+            HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches)
+    {
+        if (!timeStamps.contains(timepoint))
+            timeStamps.add(timepoint);
+
+        for (GraphMapping <Vertex, RelationshipEdge> mapping:newMatches.values()) {
+            addMatch(timepoint, mapping);
+            addVertices(timepoint, mapping);
+        }
+    }
     //endregion
 
     //region --[Properties: Public]------------------------------------
