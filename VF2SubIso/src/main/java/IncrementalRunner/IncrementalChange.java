@@ -17,7 +17,6 @@ public class IncrementalChange {
     private VF2PatternGraph pattern;
     private HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches, removedMatches;
     private HashMap<String, GraphMapping<Vertex, RelationshipEdge>> beforeMatches, afterMatches;
-    private int error1=0,error2=0;
     //endregion
 
     //region Constructors
@@ -27,17 +26,18 @@ public class IncrementalChange {
         newMatches=new HashMap<>();
         removedMatches=new HashMap<>();
         this.pattern=pattern;
-
         computeBeforeMatches();
-
     }
     //endregion
+
+    //region Public Functions
 
     public void addAfterMatches(Iterator<GraphMapping<Vertex, RelationshipEdge>> afterMatchIterator)
     {
         this.afterMatchIterator=afterMatchIterator;
         computeAfterMatches();
     }
+    //endregion
 
     //region Private Functions
     private void computeBeforeMatches()
@@ -85,14 +85,6 @@ public class IncrementalChange {
 
     public HashMap <String, GraphMapping <Vertex, RelationshipEdge>> getRemovedMatches() {
         return removedMatches;
-    }
-
-    public int getError1() {
-        return error1;
-    }
-
-    public int getError2() {
-        return error2;
     }
 
     //endregion
