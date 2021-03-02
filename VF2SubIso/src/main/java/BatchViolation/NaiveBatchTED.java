@@ -21,15 +21,12 @@ public class NaiveBatchTED {
     {
         Set<Violation> violations=new HashSet<>();
         Delta delta=tgfd.getDelta();
-        LocalDate[] allSnapshots = new LocalDate[matches.getTimeStamps().size()];
 
-        // ArrayList to Array Conversion
-        for (int i = 0; i < matches.getTimeStamps().size(); i++)
-            allSnapshots[i] = matches.getTimeStamps().get(i);
-        for(int i=0;i<allSnapshots.length;i++)
+        LocalDate[] allSnapshots = matches.getTimestamps();
+        for(int i = 0; i < allSnapshots.length; i++)
         {
             List<Match> firstMatches=matches.getMatches(allSnapshots[i]);
-            for (int j=i;j<allSnapshots.length;j++)
+            for (int j = i; j < allSnapshots.length; j++)
             {
                 Interval intv=new Interval(allSnapshots[i],allSnapshots[j]);
                 if(intv.inDelta(delta.getMin(),delta.getMax()))
