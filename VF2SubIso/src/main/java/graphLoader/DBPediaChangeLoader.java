@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class dbPediaChangeLoader {
+public class DBPediaChangeLoader {
 
     private List<Change> allChanges;
 
-    public dbPediaChangeLoader(String path)
+    public DBPediaChangeLoader(String path)
     {
         this.allChanges=new ArrayList<>();
         loadChanges(path);

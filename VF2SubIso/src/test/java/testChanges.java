@@ -1,8 +1,7 @@
 import TGFDLoader.TGFDGenerator;
 import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import graphLoader.dbPediaLoader;
-import infra.MatchCollection;
+import graphLoader.DBPediaLoader;
 import infra.TGFD;
 import util.myConsole;
 import util.properties;
@@ -61,68 +60,61 @@ public class testChanges {
         }
 
         System.out.println(dataPathsById.keySet() + " *** " + dataPathsById.values());
-
         System.out.println(typePathsById.keySet() + " *** " + typePathsById.values());
 
         //Load the TGFDs.
         TGFDGenerator generator = new TGFDGenerator(patternPath);
         List<TGFD> allTGFDs=generator.getTGFDs();
-        //TGFD firstTGFD=allTGFDs.get(0);
 
-        //Create the match collection for all the TGFDs in the list
-        HashMap<TGFD, MatchCollection> allMatchCollections=new HashMap<>();
         for (TGFD tgfd:allTGFDs) {
-            allMatchCollections.put(tgfd,new MatchCollection(tgfd.getPattern(),tgfd.getDependency(),tgfd.getDelta().getGranularity()));
-        }
 
-        Object[] ids=dataPathsById.keySet().toArray();
-        Arrays.sort(ids);
-        dbPediaLoader first=null, second=null;
-        List<Change> allChanges;
-        int t1=0,t2=0;
-        for (int i=0;i<ids.length;i+=2) {
+            System.out.println("Generating the change files for the TGFD: " + tgfd.getName());
+            Object[] ids=dataPathsById.keySet().toArray();
+            Arrays.sort(ids);
+            DBPediaLoader first=null, second=null;
+            List<Change> allChanges;
+            int t1=0,t2=0;
+            for (int i=0;i<ids.length;i+=2) {
 
-            System.out.println("===========Snapshot (" + ids[i] + ")===========");
-            long startTime = System.currentTimeMillis();
+                System.out.println("===========Snapshot (" + ids[i] + ")===========");
+                long startTime = System.currentTimeMillis();
 
-            t1=(int)ids[i];
-            first = new dbPediaLoader(
-                    typePathsById.get((int) ids[i]),
-                    dataPathsById.get((int) ids[i]), allTGFDs);
+                t1=(int)ids[i];
+                first = new DBPediaLoader(Collections.singletonList(tgfd),typePathsById.get((int) ids[i]),
+                        dataPathsById.get((int) ids[i]));
 
-            myConsole.print("Load graph (" + ids[i] + ")", System.currentTimeMillis() - startTime);
+                myConsole.print("Load graph (" + ids[i] + ")", System.currentTimeMillis() - startTime);
 
-            //
-            if(second!=null)
-            {
-                ChangeFinder cFinder=new ChangeFinder(second,first);
+                //
+                if(second!=null)
+                {
+                    ChangeFinder cFinder=new ChangeFinder(second,first);
+                    allChanges= cFinder.findAllChanged();
+                    saveChanges(allChanges,t2,t1,tgfd.getName());
+                }
+
+                if(i+1>=ids.length)
+                    break;
+
+                System.out.println("===========Snapshot (" + ids[i+1] + ")===========");
+                startTime = System.currentTimeMillis();
+
+                t2=(int)ids[i+1];
+                second = new DBPediaLoader(Collections.singletonList(tgfd),typePathsById.get((int) ids[i+1]),
+                        dataPathsById.get((int) ids[i+1]));
+
+                myConsole.print("Load graph (" + ids[i+1] + ")", System.currentTimeMillis() - startTime);
+
+                //
+                ChangeFinder cFinder=new ChangeFinder(first,second);
                 allChanges= cFinder.findAllChanged();
-                saveChanges(allChanges,t2,t1);
+                saveChanges(allChanges,t1,t2,tgfd.getName());
+
             }
-
-            if(i+1>=ids.length)
-                break;
-
-            System.out.println("===========Snapshot (" + ids[i+1] + ")===========");
-            startTime = System.currentTimeMillis();
-
-            t2=(int)ids[i+1];
-            second = new dbPediaLoader(
-                    typePathsById.get((int) ids[i+1]),
-                    dataPathsById.get((int) ids[i+1]), allTGFDs);
-
-            myConsole.print("Load graph (" + ids[i+1] + ")", System.currentTimeMillis() - startTime);
-
-            //
-            ChangeFinder cFinder=new ChangeFinder(first,second);
-            allChanges= cFinder.findAllChanged();
-            saveChanges(allChanges,t1,t2);
-
         }
-
     }
 
-    private static void saveChanges(List<Change> allChanges, int t1, int t2)
+    private static void saveChanges(List<Change> allChanges, int t1, int t2, String tgfdName)
     {
         System.out.println("Printing the changes: " + t1 +" -> " + t2);
         int insertChangeEdge=0;
@@ -164,7 +156,7 @@ public class testChanges {
         try
         {
             mapper.writeValue(sw, allChanges);
-            FileWriter file = new FileWriter("./changes_t"+t1+"_t"+t2+".json");
+            FileWriter file = new FileWriter("./changes_t"+t1+"_t"+t2+"_"+tgfdName+".json");
             file.write(sw.toString());
             file.close();
             System.out.println("Successfully wrote to the file.");

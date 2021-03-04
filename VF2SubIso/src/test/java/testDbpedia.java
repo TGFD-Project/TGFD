@@ -2,7 +2,7 @@ import BatchViolation.NaiveBatchTED;
 import BatchViolation.OptBatchTED;
 import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
-import graphLoader.dbPediaLoader;
+import graphLoader.DBPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
 import util.myConsole;
@@ -138,9 +138,8 @@ public class testDbpedia
 
             LocalDate currentSnapshotDate=timestamps.get((int)ids[i]);
 
-            dbPediaLoader dbpedia = new dbPediaLoader(
-                    typePathsById.get((int)ids[i]),
-                    dataPathsById.get((int)ids[i]),allTGFDs);
+            DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,typePathsById.get((int)ids[i]),
+                    dataPathsById.get((int)ids[i]));
 
             myConsole.print("Load graph ("+ids[i] + ")", System.currentTimeMillis()-startTime);
 

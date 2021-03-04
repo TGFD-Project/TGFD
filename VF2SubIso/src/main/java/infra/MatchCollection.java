@@ -1,6 +1,7 @@
 package infra;
 
 import org.jgrapht.GraphMapping;
+import util.myConsole;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -126,6 +127,7 @@ public class MatchCollection
             addVertices(timestamp, mapping);
             matchCount++;
         }
+        myConsole.print("Number of matches: " + matchCount);
         return matchCount;
     }
 

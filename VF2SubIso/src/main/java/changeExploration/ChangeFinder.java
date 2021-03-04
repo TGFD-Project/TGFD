@@ -1,6 +1,6 @@
 package changeExploration;
 
-import graphLoader.dbPediaLoader;
+import graphLoader.DBPediaLoader;
 import infra.*;
 
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ public class ChangeFinder {
     VF2DataGraph g1,g2;
     private List<Change> allChanges=new ArrayList<>();
 
-    public ChangeFinder(dbPediaLoader db1, dbPediaLoader db2)
+    public ChangeFinder(DBPediaLoader db1, DBPediaLoader db2)
     {
         g1=db1.getGraph();
         g2=db2.getGraph();
