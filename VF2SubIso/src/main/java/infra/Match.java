@@ -460,7 +460,7 @@ public final class Match {
     }
     //endregion
 
-    //region --[Methods: Override]---------------------------------------
+    //region --[Methods: Override]-------------------------------------
     @Override
     public String toString() {
         return "Match{" +

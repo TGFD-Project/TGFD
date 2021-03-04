@@ -7,7 +7,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Base class for graph loaders
+ * DBPedia and IMDB loaders extend this class
+ */
+
 public class GraphLoader {
+
+    //region --[Fields: Protected]---------------------------------------
 
     // Graph instance
     protected VF2DataGraph graph;
@@ -20,6 +27,10 @@ public class GraphLoader {
     // Same as validTypes, this will also be used to filter the attributes that are not from the types in our TGFD lists
     // The filtering will be done if "properties.myProperties.optimizedLoadingBasedOnTGFD" set to TRUE
     protected Set<String> validAttributes;
+
+    //endregion
+
+    //region --[Constructors]--------------------------------------------
 
     public GraphLoader(List <TGFD> alltgfd)
     {
@@ -34,10 +45,17 @@ public class GraphLoader {
             }
     }
 
+    //endregion
+
+    //region --[Properties: Public]--------------------------------------
+
     public VF2DataGraph getGraph() {
         return graph;
     }
 
+    //endregion
+
+    //region --[Private Methods]-----------------------------------------
 
     /**
      * Extracts all the types being used in a TGFD from from X->Y dependency and the graph pattern
@@ -102,5 +120,7 @@ public class GraphLoader {
                 validTypes.addAll(v.getAllAttributesNames());
         }
     }
+
+    //endregion
 
 }
