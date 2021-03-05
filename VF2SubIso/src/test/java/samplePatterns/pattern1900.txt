@@ -1,0 +1,9 @@
+tgfd#p1900
+vertex#v1#murderer
+vertex#v2#country
+edge#v1#v2#country
+diameter#1
+literal#x#murderer$name$murderer$name
+literal#x#murderer$uri$murderer$uri
+literal#y#country$name$country$name
+delta#0#365#1
