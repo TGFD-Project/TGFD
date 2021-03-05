@@ -1,4 +1,4 @@
-tgfd#p1
+tgfd#p0100
 vertex#v1#album#name#uri
 vertex#v2#musicalartist#name
 edge#v1#v2#producer
@@ -7,7 +7,7 @@ literal#x#album$name$album$name
 literal#x#album$uri$album$uri
 literal#y#musicalartist$name$musicalartist$name
 delta#0#210#1
-tgfd#p2
+tgfd#p0200
 vertex#v1#primeminister#name#uri
 vertex#v2#politicalparty#name
 edge#v1#v2#party
@@ -16,7 +16,7 @@ literal#x#primeminister$name$primeminister$name
 literal#x#primeminister$uri$primeminister$uri
 literal#y#politicalparty$name$politicalparty$name
 delta#0#800#1
-tgfd#p3
+tgfd#p0300
 vertex#v1#band#name#uri
 vertex#v2#city#name
 edge#v1#v2#hometown
@@ -25,7 +25,7 @@ literal#x#band$name$band$name
 literal#x#band$uri$band$uri
 literal#y#city$name$city$name
 delta#0#800#1
-tgfd#p4
+tgfd#p0400
 vertex#v1#basketballplayer#name#uri
 vertex#v2#basketballteam#name#uri
 vertex#v3#basketballleague#name
@@ -38,7 +38,7 @@ literal#x#basketballteam$name$basketballteam$name
 literal#x#basketballteam$uri$basketballteam$uri
 literal#y#basketballleague$name$basketballleague$name
 delta#0#365#1
-tgfd#p5
+tgfd#p0500
 vertex#v1#book#name#uri
 vertex#v2#publisher#name#uri
 vertex#v3#country#name
@@ -51,7 +51,7 @@ literal#x#country$name$country$name
 literal#x#country$uri$country$uri
 literal#y#publisher$name$publisher$name
 delta#0#30#1
-tgfd#p6
+tgfd#p0600
 vertex#v1#sportsteammember#name#squadnumber#uri
 vertex#v2#soccerplayer#name#uri
 edge#v1#v2#currentmember
@@ -61,7 +61,7 @@ literal#x#sportsteammember$uri$sportsteammember$uri
 literal#x#soccerplayer$uri$soccerplayer$uri
 literal#y#sportsteammember$squadnumber$sportsteammember$squadnumber
 delta#0#190#1
-tgfd#p7
+tgfd#p0700
 vertex#v1#academicjournal$publisher
 vertex#v2#publisher$name
 edge#v1#v2#publisher
@@ -70,7 +70,7 @@ literal#x#academicjournal$publisher$academicjournal$publisher
 literal#x#academicjournal$uri$academicjournal$uri
 literal#y#publisher$name$publisher$name
 delta#0#800#1
-tgfd#p8
+tgfd#p0800
 vertex#v1#basketballplayer
 vertex#v2#basketballteam
 edge#v1#v2#draftteam
@@ -79,7 +79,7 @@ literal#x#basketballplayer$name$basketballplayer$name
 literal#x#basketballplayer$uri$basketballplayer$uri
 literal#y#basketballteam$name$basketballteam$name
 delta#0#800#1
-tgfd#p9
+tgfd#p0900
 vertex#v1#album
 vertex#v2#musicgenre
 edge#v1#v2#genre
@@ -88,7 +88,7 @@ literal#x#album$name$album$name
 literal#x#album$uri$album$uri
 literal#y#musicgenre$name$musicgenre$name
 delta#0#365#1
-tgfd#p10
+tgfd#p1000
 vertex#v1#country
 vertex#v2#city
 edge#v1#v2#capital
@@ -97,7 +97,7 @@ literal#x#country$name$country$name
 literal#x#country$uri$country$uri
 literal#y#city$name$city$name
 delta#0#365#1
-tgfd#p11
+tgfd#p1100
 vertex#v1#country
 vertex#v2#currency
 edge#v1#v2#currency

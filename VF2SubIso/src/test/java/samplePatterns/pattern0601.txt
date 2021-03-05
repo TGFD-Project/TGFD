@@ -1,4 +1,4 @@
-tgfd#p600
+tgfd#p0601
 vertex#v1#sportsteammember#name#uri
 vertex#v2#soccerplayer#name#uri
 edge#v1#v2#currentmember

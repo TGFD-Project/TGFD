@@ -1,4 +1,4 @@
-tgfd#p3
+tgfd#p0300
 vertex#v1#band#name#uri
 vertex#v2#city#name
 edge#v1#v2#hometown
