@@ -8,14 +8,15 @@ import org.json.simple.parser.JSONParser;
 
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-public class DBPediaChangeLoader {
+public class ChangeLoader {
 
     private List<Change> allChanges;
 
-    public DBPediaChangeLoader(String path)
+    public ChangeLoader(String path)
     {
         this.allChanges=new ArrayList<>();
         loadChanges(path);
@@ -38,6 +39,12 @@ public class DBPediaChangeLoader {
             while (iterator.hasNext())
             {
                 JSONObject object= (JSONObject) iterator.next();
+
+                org.json.simple.JSONArray allRelevantTGFDs=(org.json.simple.JSONArray)object.get("tgfds");
+                HashSet <String> relevantTGFDs=new HashSet <>();
+                for (Object TGFDName : allRelevantTGFDs)
+                    relevantTGFDs.add((String) TGFDName);
+
                 ChangeType type = ChangeType.valueOf((String) object.get("typeOfChange"));
                 if(type==ChangeType.deleteEdge || type==ChangeType.insertEdge)
                 {
@@ -45,6 +52,7 @@ public class DBPediaChangeLoader {
                     String dst=(String) object.get("dst");
                     String label=(String) object.get("label");
                     Change change=new EdgeChange(type,src,dst,label);
+                    change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
                 }
                 else if(type==ChangeType.changeAttr || type==ChangeType.deleteAttr || type==ChangeType.insertAttr)
@@ -54,6 +62,7 @@ public class DBPediaChangeLoader {
                     String attrName=(String) attrObject.get("attrName");
                     String attrValue=(String) attrObject.get("attrValue");
                     Change change=new AttributeChange(type,uri,new Attribute(attrName,attrValue));
+                    change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
                 }
                 else if(type==ChangeType.deleteVertex || type==ChangeType.insertVertex)
@@ -82,6 +91,7 @@ public class DBPediaChangeLoader {
                         dataVertex.addAttribute(attribute);
                     }
                     Change change=new VertexChange(type,dataVertex);
+                    change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
                 }
             }

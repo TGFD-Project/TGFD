@@ -5,7 +5,7 @@ import IncrementalRunner.IncrementalChange;
 import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
-import graphLoader.DBPediaChangeLoader;
+import graphLoader.ChangeLoader;
 import graphLoader.DBPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
@@ -178,7 +178,7 @@ public class testDbpediaInc
 
             currentSnapshotDate=timestamps.get((int)ids[i]);
 
-            DBPediaChangeLoader changeLoader=new DBPediaChangeLoader(changeFiles.get(ids[i]));
+            ChangeLoader changeLoader=new ChangeLoader(changeFiles.get(ids[i]));
 
             List<Change> allChanges=changeLoader.getAllChanges();
 

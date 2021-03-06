@@ -1,22 +1,51 @@
 package changeExploration;
 
-import graphLoader.DBPediaLoader;
+import graphLoader.GraphLoader;
 import infra.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+/** This class will find all the change logs between two data graph */
 public class ChangeFinder {
 
-    VF2DataGraph g1,g2;
+    //region --[Fields: Private]-----------------------------------------
+
+    /** First and second data graph. */
+    private VF2DataGraph g1,g2;
+
+    /** Map of the relevant TGFDs for each entity type */
+    private HashMap<String, HashSet<String>> relaventTGFDs=new HashMap <>();
+
+    /** List of all changes to return */
     private List<Change> allChanges=new ArrayList<>();
 
-    public ChangeFinder(DBPediaLoader db1, DBPediaLoader db2)
+    //endregion
+
+    //region --[Constructor]-----------------------------------------
+
+    /**
+     * @param db1 First data graph
+     * @param db2 Second data graph
+     * @param tgfds List of TGFDs
+     */
+    public ChangeFinder(GraphLoader db1, GraphLoader db2, List<TGFD> tgfds)
     {
         g1=db1.getGraph();
         g2=db2.getGraph();
+
+        for (TGFD tgfd:tgfds) {
+            extractValidTypesFromTGFD(tgfd);
+        }
     }
 
+    //endregion
+
+    //region --[Public Methods]-----------------------------------------
+
+    /**
+     * This function will compute the changes over g1 and g2
+     * @return List of all changes
+     */
     public List<Change> findAllChanged()
     {
         findChanges(g1,g2, ChangeType.deleteEdge, ChangeType.deleteVertex, ChangeType.deleteAttr, ChangeType.changeAttr);
@@ -24,6 +53,84 @@ public class ChangeFinder {
         return allChanges;
     }
 
+    //endregion
+
+    //region --[Private Methods]-----------------------------------------
+
+    /**
+     * Extracts all the types being used in a TGFD from from X->Y dependency and the graph pattern
+     * For each type, add the TGFD name to the HashMap so we know
+     * what TGFDs are affected if a an entity of a specific type had a change
+     * @param tgfd input TGFD
+     */
+    private void extractValidTypesFromTGFD(TGFD tgfd)
+    {
+        for (Literal x:tgfd.getDependency().getX()) {
+            if(x instanceof ConstantLiteral)
+                addRelevantType(((ConstantLiteral) x).getVertexType(),tgfd.getName());
+            else if(x instanceof VariableLiteral)
+            {
+                addRelevantType(((VariableLiteral) x).getVertexType_1(),tgfd.getName());
+                addRelevantType(((VariableLiteral) x).getVertexType_2(),tgfd.getName());
+            }
+        }
+        for (Literal y:tgfd.getDependency().getY()) {
+            if(y instanceof ConstantLiteral)
+                addRelevantType(((ConstantLiteral) y).getVertexType(),tgfd.getName());
+            else if(y instanceof VariableLiteral)
+            {
+                addRelevantType(((VariableLiteral) y).getVertexType_1(),tgfd.getName());
+                addRelevantType(((VariableLiteral) y).getVertexType_2(),tgfd.getName());
+            }
+        }
+        for (Vertex v:tgfd.getPattern().getGraph().vertexSet()) {
+            if(v instanceof PatternVertex)
+                for (String type:v.getTypes())
+                    addRelevantType(type,tgfd.getName());
+        }
+    }
+
+    /**
+     * This method adds the TGFD name to the HashSet of the input type
+     * @param type input type
+     * @param TGFDName input TGFD name
+     */
+    private void addRelevantType(String type, String TGFDName)
+    {
+        if(!relaventTGFDs.containsKey(type))
+            relaventTGFDs.put(type,new HashSet <>());
+        relaventTGFDs.get(type).add(TGFDName);
+    }
+
+    /**
+     * This function will find all the relevant TGFDs for the set of types as input
+     * @param types Set of types
+     * @return Set of TGFD names that are relevant to that types
+     */
+    private Collection <String> findRelaventTGFDs(Collection<String> types)
+    {
+        HashSet<String> TGFDNames=new HashSet <>();
+
+        for (String type:types)
+            if(relaventTGFDs.containsKey(type))
+                TGFDNames.addAll(relaventTGFDs.get(type));
+
+        return TGFDNames;
+    }
+
+    /**
+     * This function will do (first - second) and extract all the changes that are in first but not in second
+     * When we input first:t1 and second:t2, then t1-t2 means the changes that are removed
+     * When we input first:t2 and second:t1, then t2-t1 means the changes that are inserted
+     * For attributes that their value is updated (no remove or insertion), we only
+     * pass "ChangeType.changeAttr" once and pass null for the second time to prevent redundant change logs
+     * @param first The first data graph
+     * @param second The second data graph
+     * @param edgeType Type of edge change (either remove or insert)
+     * @param vertexType Type of vertex change (either remove or insert)
+     * @param attrType Type of attribute change (either remove or insert)
+     * @param attrChange Type of attribute change (either update or null)
+     */
     private void findChanges(VF2DataGraph first, VF2DataGraph second, ChangeType edgeType,
                              ChangeType vertexType, ChangeType attrType, ChangeType attrChange)
     {
@@ -34,11 +141,15 @@ public class ChangeFinder {
                 if(second.getNode(v1.getVertexURI())==null)
                 {
                     Change eChange=new EdgeChange(edgeType,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
+                    eChange.addTGFD(findRelaventTGFDs(v1.getTypes()));
+                    eChange.addTGFD(findRelaventTGFDs(dst.getTypes()));
                     allChanges.add(eChange);
                 }
                 else if(second.getNode(dst.getVertexURI())==null)
                 {
                     Change eChange=new EdgeChange(edgeType,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
+                    eChange.addTGFD(findRelaventTGFDs(v1.getTypes()));
+                    eChange.addTGFD(findRelaventTGFDs(dst.getTypes()));
                     allChanges.add(eChange);
                 }
                 else
@@ -56,6 +167,8 @@ public class ChangeFinder {
                     if(!exist)
                     {
                         Change eChange=new EdgeChange(edgeType,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
+                        eChange.addTGFD(findRelaventTGFDs(v1.getTypes()));
+                        eChange.addTGFD(findRelaventTGFDs(dst.getTypes()));
                         allChanges.add(eChange);
                     }
                 }
@@ -68,6 +181,7 @@ public class ChangeFinder {
             if(v2==null)
             {
                 Change vChange=new VertexChange(vertexType,v1);
+                vChange.addTGFD(findRelaventTGFDs(v1.getTypes()));
                 allChanges.add(vChange);
                 continue;
             }
@@ -75,14 +189,19 @@ public class ChangeFinder {
                 if(!v2.hasAttribute(attr.getAttrName()))
                 {
                     Change changeOfAttr=new AttributeChange(attrType,v1.getVertexURI(),attr);
+                    changeOfAttr.addTGFD(findRelaventTGFDs(v1.getTypes()));
                     allChanges.add(changeOfAttr);
                 }
                 else if(attrChange!=null && !v2.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 {
                     Change changeOfAttr=new AttributeChange(ChangeType.changeAttr,v1.getVertexURI(),attr);
+                    changeOfAttr.addTGFD(findRelaventTGFDs(v1.getTypes()));
                     allChanges.add(changeOfAttr);
                 }
             }
         }
     }
+
+    //endregion
+
 }

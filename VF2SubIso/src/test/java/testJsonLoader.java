@@ -1,10 +1,10 @@
-import graphLoader.DBPediaChangeLoader;
+import graphLoader.ChangeLoader;
 
 public class testJsonLoader {
 
     public static void main(String []args)
     {
-        DBPediaChangeLoader loader=new DBPediaChangeLoader("D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\out\\artifacts\\VF2SubIso_jar\\sample.json");
+        ChangeLoader loader=new ChangeLoader("D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\out\\artifacts\\VF2SubIso_jar\\sample.json");
         loader.getAllChanges();
     }
 
