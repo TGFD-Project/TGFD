@@ -1,0 +1,9 @@
+tgfd#imdbp0800
+vertex#v1#country
+vertex#v2#movie
+edge#v1#v2#country_of
+diameter#1
+literal#x#country$name$country$name
+literal#x#country$uri$country$uri
+literal#y#movie$name$movie$name
+delta#0#365#1
