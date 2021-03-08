@@ -1,0 +1,9 @@
+tgfd#imdbp0300
+vertex#v1#director
+vertex#v2#movie
+edge#v1#v2#director_of
+diameter#1
+literal#x#director$name$director$name
+literal#x#director$uri$director$uri
+literal#y#movie$name$movie$name
+delta#0#365#1

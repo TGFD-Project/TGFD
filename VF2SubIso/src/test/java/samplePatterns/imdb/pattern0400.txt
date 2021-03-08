@@ -1,0 +1,9 @@
+tgfd#imdbp0400
+vertex#v1#year
+vertex#v2#movie
+edge#v1#v2#year_of
+diameter#1
+literal#x#year$name$year$name
+literal#x#year$uri$year$uri
+literal#y#movie$name$movie$name
+delta#0#365#1

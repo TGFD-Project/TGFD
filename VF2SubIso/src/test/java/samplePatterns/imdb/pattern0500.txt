@@ -1,0 +1,9 @@
+tgfd#imdbp0500
+vertex#v1#distributor
+vertex#v2#movie
+edge#v1#v2#distributor_of
+diameter#1
+literal#x#distributor$name$distributor$name
+literal#x#distributor$uri$distributor$uri
+literal#y#movie$name$movie$name
+delta#0#365#1

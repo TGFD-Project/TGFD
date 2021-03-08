@@ -1,0 +1,9 @@
+tgfd#imdbp0200
+vertex#v1#actress
+vertex#v2#movie
+edge#v1#v2#actress_of
+diameter#1
+literal#x#actress$name$actress$name
+literal#x#actress$uri$actress$uri
+literal#y#movie$name$movie$name
+delta#0#365#1
