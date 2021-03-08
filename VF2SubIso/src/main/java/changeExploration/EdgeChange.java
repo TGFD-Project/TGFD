@@ -5,8 +5,8 @@ public class EdgeChange extends Change {
     String src,dst;
     String label;
 
-    public EdgeChange(ChangeType cType, String srcURI, String dstURI, String label) {
-        super(cType);
+    public EdgeChange(ChangeType cType, int id, String srcURI, String dstURI, String label) {
+        super(cType,id);
         src=srcURI;
         dst=dstURI;
         this.label=label;

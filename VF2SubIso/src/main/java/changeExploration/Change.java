@@ -16,12 +16,19 @@ public class Change {
     /** The set of relevant TGFDs for each change based on the name of the TGFD */
     private Set <String> TGFDs=new HashSet <>();
 
+    /** Unique id of a change log. */
+    private int id;
     //endregion
 
+    /**
+     * @param cType Type of the change
+     * @param id unique id of the change log
+     */
     //region --[Constructors]------------------------------------
-    public Change(ChangeType cType)
+    public Change(ChangeType cType, int id)
     {
         this.cType=cType;
+        this.id=id;
     }
 
     //endregion
@@ -57,6 +64,11 @@ public class Change {
     /** Gets the name of the set of of relevant TGFDs. */
     public Set <String> getTGFDs() {
         return TGFDs;
+    }
+
+    /** Gets the id of the change. */
+    public int getId() {
+        return id;
     }
 
     //endregion

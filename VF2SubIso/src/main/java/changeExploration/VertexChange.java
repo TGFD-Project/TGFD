@@ -5,8 +5,8 @@ import infra.DataVertex;
 public class VertexChange extends Change {
 
     private DataVertex vertex;
-    public VertexChange(ChangeType cType, DataVertex v) {
-        super(cType);
+    public VertexChange(ChangeType cType, int id, DataVertex v) {
+        super(cType,id);
         this.vertex=v;
     }
 

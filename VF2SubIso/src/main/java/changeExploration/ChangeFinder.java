@@ -19,6 +19,12 @@ public class ChangeFinder {
     /** List of all changes to return */
     private List<Change> allChanges=new ArrayList<>();
 
+    /** Unique id to assign to a change log. */
+    private int changeID=1;
+
+    /** number of changes except the vertex change  */
+    private int numberOfEffectiveChanges=0;
+
     //endregion
 
     //region --[Constructor]-----------------------------------------
@@ -140,17 +146,19 @@ public class ChangeFinder {
                 DataVertex dst=(DataVertex)e.getTarget();
                 if(second.getNode(v1.getVertexURI())==null)
                 {
-                    Change eChange=new EdgeChange(edgeType,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
+                    Change eChange=new EdgeChange(edgeType,changeID++ ,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
                     eChange.addTGFD(findRelaventTGFDs(v1.getTypes()));
                     eChange.addTGFD(findRelaventTGFDs(dst.getTypes()));
                     allChanges.add(eChange);
+                    numberOfEffectiveChanges++;
                 }
                 else if(second.getNode(dst.getVertexURI())==null)
                 {
-                    Change eChange=new EdgeChange(edgeType,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
+                    Change eChange=new EdgeChange(edgeType,changeID++ ,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
                     eChange.addTGFD(findRelaventTGFDs(v1.getTypes()));
                     eChange.addTGFD(findRelaventTGFDs(dst.getTypes()));
                     allChanges.add(eChange);
+                    numberOfEffectiveChanges++;
                 }
                 else
                 {
@@ -166,10 +174,11 @@ public class ChangeFinder {
                     }
                     if(!exist)
                     {
-                        Change eChange=new EdgeChange(edgeType,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
+                        Change eChange=new EdgeChange(edgeType,changeID++ ,v1.getVertexURI(),dst.getVertexURI(),e.getLabel());
                         eChange.addTGFD(findRelaventTGFDs(v1.getTypes()));
                         eChange.addTGFD(findRelaventTGFDs(dst.getTypes()));
                         allChanges.add(eChange);
+                        numberOfEffectiveChanges++;
                     }
                 }
             }
@@ -180,7 +189,7 @@ public class ChangeFinder {
             DataVertex v2= (DataVertex) second.getNode(v1.getVertexURI());
             if(v2==null)
             {
-                Change vChange=new VertexChange(vertexType,v1);
+                Change vChange=new VertexChange(vertexType,changeID++ ,v1);
                 vChange.addTGFD(findRelaventTGFDs(v1.getTypes()));
                 allChanges.add(vChange);
                 continue;
@@ -188,15 +197,17 @@ public class ChangeFinder {
             for (Attribute attr:v.getAllAttributesList()) {
                 if(!v2.hasAttribute(attr.getAttrName()))
                 {
-                    Change changeOfAttr=new AttributeChange(attrType,v1.getVertexURI(),attr);
+                    Change changeOfAttr=new AttributeChange(attrType,changeID++ ,v1.getVertexURI(),attr);
                     changeOfAttr.addTGFD(findRelaventTGFDs(v1.getTypes()));
                     allChanges.add(changeOfAttr);
+                    numberOfEffectiveChanges++;
                 }
                 else if(attrChange!=null && !v2.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 {
-                    Change changeOfAttr=new AttributeChange(ChangeType.changeAttr,v1.getVertexURI(),attr);
+                    Change changeOfAttr=new AttributeChange(ChangeType.changeAttr,changeID++ ,v1.getVertexURI(),attr);
                     changeOfAttr.addTGFD(findRelaventTGFDs(v1.getTypes()));
                     allChanges.add(changeOfAttr);
+                    numberOfEffectiveChanges++;
                 }
             }
         }
@@ -204,4 +215,14 @@ public class ChangeFinder {
 
     //endregion
 
+    //region --[Properties: Public]------------------------------------
+
+    /**
+     * @return number of changes except the vertex change
+     */
+    public int getNumberOfEffectiveChanges() {
+        return numberOfEffectiveChanges;
+    }
+
+    //endregion
 }

@@ -46,12 +46,13 @@ public class ChangeLoader {
                     relevantTGFDs.add((String) TGFDName);
 
                 ChangeType type = ChangeType.valueOf((String) object.get("typeOfChange"));
+                int id=Integer.parseInt(object.get("id").toString());
                 if(type==ChangeType.deleteEdge || type==ChangeType.insertEdge)
                 {
                     String src=(String) object.get("src");
                     String dst=(String) object.get("dst");
                     String label=(String) object.get("label");
-                    Change change=new EdgeChange(type,src,dst,label);
+                    Change change=new EdgeChange(type,id,src,dst,label);
                     change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
                 }
@@ -61,7 +62,7 @@ public class ChangeLoader {
                     JSONObject attrObject=(JSONObject) object.get("attribute");
                     String attrName=(String) attrObject.get("attrName");
                     String attrValue=(String) attrObject.get("attrValue");
-                    Change change=new AttributeChange(type,uri,new Attribute(attrName,attrValue));
+                    Change change=new AttributeChange(type,id,uri,new Attribute(attrName,attrValue));
                     change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
                 }
@@ -90,7 +91,7 @@ public class ChangeLoader {
                     for (Attribute attribute:allAttributes) {
                         dataVertex.addAttribute(attribute);
                     }
-                    Change change=new VertexChange(type,dataVertex);
+                    Change change=new VertexChange(type,id,dataVertex);
                     change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
                 }

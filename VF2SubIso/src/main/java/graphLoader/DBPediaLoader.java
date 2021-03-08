@@ -16,6 +16,20 @@ import java.util.List;
 
 public class DBPediaLoader extends GraphLoader {
 
+    //region --[Fields: Private]----------------------------------------
+
+    /** size of the graph: #edges + #attributes */
+    private int graphSize=0;
+
+    //endregion
+
+    //region --[Methods: Private]---------------------------------------
+
+    /**
+     * @param alltgfd List of TGFDs
+     * @param typesPath Path to the DBPedia type file
+     * @param dataPath Path to the DBPedia graph file
+     */
     public DBPediaLoader(List<TGFD> alltgfd,ArrayList<String> typesPath, ArrayList<String> dataPath)
     {
         super(alltgfd);
@@ -28,6 +42,10 @@ public class DBPediaLoader extends GraphLoader {
             loadDataGraph(dataP);
         }
     }
+
+    //endregion
+
+    //region --[Methods: Private]---------------------------------------
 
     /**
      * Load file in the format of (subject, predicate, object)
@@ -82,6 +100,10 @@ public class DBPediaLoader extends GraphLoader {
         }
     }
 
+    /**
+     * This method will load DBPedia graph file
+     * @param dataGraphFilePath Path to the graph file
+     */
     private void loadDataGraph(String dataGraphFilePath) {
 
         if (dataGraphFilePath == null || dataGraphFilePath.length() == 0) {
@@ -154,11 +176,15 @@ public class DBPediaLoader extends GraphLoader {
                         continue;
                     }
                     graph.addEdge(subjVertex, objVertex, new RelationshipEdge(predicate));
+                    graphSize++;
                 }
                 else
                 {
                     if(properties.myProperties.optimizedLoadingBasedOnTGFD && validAttributes.contains(predicate))
+                    {
                         subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
+                        graphSize++;
+                    }
                 }
             }
             myConsole.print("Subjects and Objects not found: " + numberOfSubjectsNotFound + " ** " + numberOfObjectsNotFound);
@@ -172,4 +198,18 @@ public class DBPediaLoader extends GraphLoader {
             myConsole.print(e.getMessage());
         }
     }
+
+    //endregion
+
+    //region --[Properties: Public]-------------------------------------
+
+    /**
+     * @return Size of the graph
+     */
+    public int getGraphSize() {
+        return graphSize;
+    }
+
+    //endregion
+
 }

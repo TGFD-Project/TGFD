@@ -8,8 +8,8 @@ public class AttributeChange extends Change {
     Attribute attribute;
     String uri;
 
-    public AttributeChange(ChangeType cType, String vertexURI, Attribute attr) {
-        super(cType);
+    public AttributeChange(ChangeType cType, int id, String vertexURI, Attribute attr) {
+        super(cType,id);
         this.attribute=attr;
         uri=vertexURI;
     }

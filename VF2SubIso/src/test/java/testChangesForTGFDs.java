@@ -84,7 +84,8 @@ public class testChangesForTGFDs {
             {
                 ChangeFinder cFinder=new ChangeFinder(second,first,allTGFDs);
                 allChanges= cFinder.findAllChanged();
-                saveChanges(allChanges,t2,t1,name);
+
+                analyzeChanges(allChanges,allTGFDs,second.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t2,t1,name);
             }
 
             if(i+1>=ids.length)
@@ -102,7 +103,44 @@ public class testChangesForTGFDs {
             //
             ChangeFinder cFinder=new ChangeFinder(first,second,allTGFDs);
             allChanges= cFinder.findAllChanged();
-            saveChanges(allChanges,t1,t2,name);
+
+            analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t1,t2,name);
+
+
+        }
+    }
+
+    private static void analyzeChanges(List<Change> allChanges, List<TGFD> allTGFDs, int graphSize,
+                                       int changeSize, int timestamp1, int timestamp2, String TGFDsName)
+    {
+        ChangeTrimmer trimmer=new ChangeTrimmer(allChanges,allTGFDs);
+        for (double i=0.02;i<=0.1;i+=0.02)
+        {
+            int allowedNumberOfChanges= (int) (i*graphSize);
+            if (allowedNumberOfChanges<changeSize)
+            {
+                List<Change> trimmedChanges=trimmer.trimChanges(allowedNumberOfChanges);
+                saveChanges(trimmedChanges,timestamp1,timestamp2,TGFDsName + "_" + i);
+            }
+            else
+            {
+                saveChanges(allChanges,timestamp1,timestamp2,TGFDsName + "_full");
+                return;
+            }
+        }
+        for (double i=0.15;i<=0.2;i+=0.05)
+        {
+            int allowedNumberOfChanges= (int) (i*graphSize);
+            if (allowedNumberOfChanges<changeSize)
+            {
+                List<Change> trimmedChanges=trimmer.trimChanges(allowedNumberOfChanges);
+                saveChanges(trimmedChanges,timestamp1,timestamp2,TGFDsName + "_" + i);
+            }
+            else
+            {
+                saveChanges(allChanges,timestamp1,timestamp2,TGFDsName + "_full");
+                return;
+            }
         }
     }
 
