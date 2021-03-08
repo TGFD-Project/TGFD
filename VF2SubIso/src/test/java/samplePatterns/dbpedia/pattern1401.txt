@@ -1,0 +1,10 @@
+tgfd#p1401
+vertex#v1#judge
+vertex#v2#university
+edge#v1#v2#almamater
+diameter#1
+literal#x#judge$name$judge$name
+literal#x#judge$birthdate$judge$birthdate
+literal#x#judge$uri$judge$uri
+literal#y#university$name$university$name
+delta#0#800#1

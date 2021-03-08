@@ -1,0 +1,9 @@
+tgfd#p1700
+vertex#v1#artwork
+vertex#v2#museum
+edge#v1#v2#museum
+diameter#1
+literal#x#artwork$name$artwork$name
+literal#x#artwork$uri$artwork$uri
+literal#y#museum$name$museum$name
+delta#0#60#1

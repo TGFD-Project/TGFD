@@ -1,0 +1,9 @@
+tgfd#p0200
+vertex#v1#primeminister#name#uri
+vertex#v2#politicalparty#name
+edge#v1#v2#party
+diameter#1
+literal#x#primeminister$name$primeminister$name
+literal#x#primeminister$uri$primeminister$uri
+literal#y#politicalparty$name$politicalparty$name
+delta#0#800#1

@@ -1,0 +1,9 @@
+tgfd#p0700
+vertex#v1#academicjournal$publisher
+vertex#v2#publisher$name
+edge#v1#v2#publisher
+diameter#1
+literal#x#academicjournal$publisher$academicjournal$publisher
+literal#x#academicjournal$uri$academicjournal$uri
+literal#y#publisher$name$publisher$name
+delta#0#800#1

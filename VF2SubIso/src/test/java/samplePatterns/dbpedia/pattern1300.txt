@@ -1,0 +1,9 @@
+tgfd#p1300
+vertex#v1#bank
+vertex#v2#country
+edge#v1#v2#location
+diameter#1
+literal#x#bank$name$bank$name
+literal#x#bank$uri$bank$uri
+literal#y#country$name$country$name
+delta#0#365#1

@@ -1,0 +1,9 @@
+tgfd#p0800
+vertex#v1#basketballplayer
+vertex#v2#basketballteam
+edge#v1#v2#draftteam
+diameter#1
+literal#x#basketballplayer$name$basketballplayer$name
+literal#x#basketballplayer$uri$basketballplayer$uri
+literal#y#basketballteam$name$basketballteam$name
+delta#0#800#1

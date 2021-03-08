@@ -1,0 +1,9 @@
+tgfd#p1000
+vertex#v1#country
+vertex#v2#city
+edge#v1#v2#capital
+diameter#1
+literal#x#country$name$country$name
+literal#x#country$uri$country$uri
+literal#y#city$name$city$name
+delta#0#365#1

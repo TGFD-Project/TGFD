@@ -1,0 +1,10 @@
+tgfd#p0600
+vertex#v1#sportsteammember#name#squadnumber#uri
+vertex#v2#soccerplayer#name#uri
+edge#v1#v2#currentmember
+diameter#1
+literal#x#sportsteammember$name$sportsteammember$name
+literal#x#sportsteammember$uri$sportsteammember$uri
+literal#x#soccerplayer$uri$soccerplayer$uri
+literal#y#sportsteammember$squadnumber$sportsteammember$squadnumber
+delta#0#190#1

@@ -1,0 +1,14 @@
+tgfd#p0401
+vertex#v1#basketballplayer#name#birthdate#uri
+vertex#v2#basketballteam#name#uri
+vertex#v3#basketballleague#name
+edge#v1#v2#team
+edge#v1#v3#league
+diameter#2
+literal#x#basketballplayer$name$basketballplayer$name
+literal#x#basketballplayer$birthdate$basketballplayer$birthdate
+literal#x#basketballplayer$uri$basketballplayer$uri
+literal#x#basketballteam$name$basketballteam$name
+literal#x#basketballteam$uri$basketballteam$uri
+literal#y#basketballleague$name$basketballleague$name
+delta#0#365#1

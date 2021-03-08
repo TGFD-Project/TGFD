@@ -1,0 +1,9 @@
+tgfd#p0900
+vertex#v1#album
+vertex#v2#musicgenre
+edge#v1#v2#genre
+diameter#1
+literal#x#album$name$album$name
+literal#x#album$uri$album$uri
+literal#y#musicgenre$name$musicgenre$name
+delta#0#365#1

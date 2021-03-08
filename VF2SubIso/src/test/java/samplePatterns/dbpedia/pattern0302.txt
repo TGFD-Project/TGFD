@@ -1,0 +1,13 @@
+tgfd#p0302
+vertex#v1#band#name#activeyearsstartyear#uri
+vertex#v2#city#name
+vertex#v3#musicgenre#name
+edge#v1#v2#hometown
+edge#v1#v3#genre
+diameter#2
+literal#x#band$name$band$name
+literal#x#musicgenre$name$musicgenre$name
+literal#x#band$activeyearsstartyear$band$activeyearsstartyear
+literal#x#band$uri$band$uri
+literal#y#city$name$city$name
+delta#0#800#1

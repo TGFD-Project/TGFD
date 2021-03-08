@@ -1,0 +1,10 @@
+tgfd#p0101
+vertex#v1#album#name#runtime#uri
+vertex#v2#musicalartist#name
+edge#v1#v2#producer
+diameter#1
+literal#x#album$name$album$name
+literal#x#album$runtime$album$runtime
+literal#x#album$uri$album$uri
+literal#y#musicalartist$name$musicalartist$name
+delta#0#210#1

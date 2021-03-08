@@ -1,0 +1,9 @@
+tgfd#p1500
+vertex#v1#hospital
+vertex#v2#country
+edge#v1#v2#country
+diameter#1
+literal#x#hospital$name$hospital$name
+literal#x#hospital$uri$hospital$uri
+literal#y#country$name$country$name
+delta#0#800#1

@@ -1,0 +1,9 @@
+tgfd#p1100
+vertex#v1#country
+vertex#v2#currency
+edge#v1#v2#currency
+diameter#1
+literal#x#country$name$country$name
+literal#x#country$uri$country$uri
+literal#y#currency$name$currency$name
+delta#0#365#1

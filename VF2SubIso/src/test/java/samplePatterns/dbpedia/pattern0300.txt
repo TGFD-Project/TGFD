@@ -1,0 +1,9 @@
+tgfd#p0300
+vertex#v1#band#name#uri
+vertex#v2#city#name
+edge#v1#v2#hometown
+diameter#1
+literal#x#band$name$band$name
+literal#x#band$uri$band$uri
+literal#y#city$name$city$name
+delta#0#800#1

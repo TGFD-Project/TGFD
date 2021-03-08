@@ -1,0 +1,10 @@
+tgfd#p1201
+vertex#v1#company
+vertex#v2#country
+edge#v1#v2#location
+diameter#1
+literal#x#company$name$company$name
+literal#x#company$foundingyear$company$foundingyear
+literal#x#company$uri$company$uri
+literal#y#country$name$country$name
+delta#0#365#1

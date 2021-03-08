@@ -1,0 +1,10 @@
+tgfd#p1801
+vertex#v1#airline
+vertex#v2#airport
+edge#v1#v2#hubairport
+diameter#1
+literal#x#airline$name$airline$name
+literal#x#airline$iataairlinecode$airline$iataairlinecode
+literal#x#airline$uri$airline$uri
+literal#y#airport$name$airport$name
+delta#0#365#1

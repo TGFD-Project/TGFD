@@ -1,0 +1,10 @@
+tgfd#p1601
+vertex#v1#recordlabel
+vertex#v2#musicgenre
+edge#v1#v2#genre
+diameter#1
+literal#x#recordlabel$name$recordlabel$name
+literal#x#recordlabel$foundingyear$recordlabel$foundingyear
+literal#x#recordlabel$uri$recordlabel$uri
+literal#y#musicgenre$name$musicgenre$name
+delta#0#365#1
