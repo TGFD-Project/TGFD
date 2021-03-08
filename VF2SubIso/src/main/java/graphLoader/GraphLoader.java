@@ -1,5 +1,6 @@
 package graphLoader;
 
+import changeExploration.*;
 import infra.*;
 import util.properties;
 
@@ -51,6 +52,45 @@ public class GraphLoader {
 
     public VF2DataGraph getGraph() {
         return graph;
+    }
+
+    //endregion
+
+    //region --[Private Methods]-----------------------------------------
+
+    public void updateGraphWithChanges(List<Change> changes)
+    {
+        for (Change change:changes) {
+            if(change instanceof VertexChange && change.getTypeOfChange()==ChangeType.insertVertex)
+                this.graph.addVertex(((VertexChange) change).getVertex());
+        }
+
+        for (Change change:changes)
+        {
+            if(change instanceof EdgeChange)
+            {
+                EdgeChange edgeChange=(EdgeChange) change;
+                DataVertex v1= (DataVertex) this.graph.getNode(edgeChange.getSrc());
+                DataVertex v2= (DataVertex) this.graph.getNode(edgeChange.getDst());
+                if(v1==null || v2==null)
+                    continue;
+                if(edgeChange.getTypeOfChange()== ChangeType.insertEdge)
+                    this.graph.addEdge(v1, v2,new RelationshipEdge(edgeChange.getLabel()));
+                else if(edgeChange.getTypeOfChange()== ChangeType.deleteEdge)
+                    this.graph.removeEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()));
+            }
+            else if(change instanceof AttributeChange)
+            {
+                AttributeChange attributeChange=(AttributeChange) change;
+                DataVertex v1=(DataVertex) this.graph.getNode(attributeChange.getUri());
+                if(v1==null)
+                    continue;
+                if(attributeChange.getTypeOfChange()==ChangeType.changeAttr || attributeChange.getTypeOfChange()==ChangeType.insertAttr)
+                    v1.setOrAddAttribute(attributeChange.getAttribute());
+                else if(attributeChange.getTypeOfChange()==ChangeType.deleteAttr)
+                    v1.deleteAttribute(attributeChange.getAttribute());
+            }
+        }
     }
 
     //endregion
