@@ -1,0 +1,9 @@
+tgfd#imdbp0600
+vertex#v1#genre
+vertex#v2#movie
+edge#v1#v2#genre_of
+diameter#1
+literal#x#genre$name$genre$name
+literal#x#genre$uri$genre$uri
+literal#y#movie$name$movie$name
+delta#0#365#1

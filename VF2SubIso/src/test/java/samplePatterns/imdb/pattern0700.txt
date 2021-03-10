@@ -1,0 +1,9 @@
+tgfd#imdbp0700
+vertex#v1#language
+vertex#v2#movie
+edge#v1#v2#language_of
+diameter#1
+literal#x#language$name$language$name
+literal#x#language$uri$language$uri
+literal#y#movie$name$movie$name
+delta#0#365#1
