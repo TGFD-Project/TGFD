@@ -1,4 +1,3 @@
-import BatchViolation.NaiveBatchTED;
 import BatchViolation.OptBatchTED;
 import IncrementalRunner.IncUpdates;
 import IncrementalRunner.IncrementalChange;
@@ -56,13 +55,6 @@ public class testDbpediaInc
      *     -d2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\mappingbased_objects_en2.ttl"
      */
     public static void main(String []args) throws FileNotFoundException {
-        //Expected arguments:
-        // arges[0]: Type file,             sample ->  "F:\\MorteZa\\Datasets\\Statistical\\2016\\types.ttl"
-        // arges[1]: Object mapping file,   sample ->  "F:\\MorteZa\\Datasets\\Statistical\\2016\\mappingbased_objects_en.ttl"
-        // arges[2]: Literal mapping file,  sample ->  "F:\\MorteZa\\Datasets\\Statistical\\2016\\literals.ttl"
-        // arges[3]: Graph pattern file,    sample ->  "D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt"
-
-        // TODO: input literals [2021-02-14]
 
         long wallClockStart=System.currentTimeMillis();
 
@@ -72,10 +64,6 @@ public class testDbpediaInc
 
         String patternPath = "";
         HashMap<Integer,LocalDate> timestamps=new HashMap<>();
-
-        // This will force the dbpediaLoader to only load entities of certain types in the TGFD
-        // Set to be false if want to load the whole graph
-
 
         System.out.println("Test DBPedia subgraph isomorphism");
 
@@ -119,7 +107,7 @@ public class testDbpediaInc
         }
         // TODO: check that typesPaths.keySet == dataPaths.keySet [2021-02-14]
 
-        // Test whether we loaded all the paths correctly
+        // Test whether we loaded all the files correctly
 
         System.out.println(Arrays.toString(firstTypesPath.toArray()) + " *** " + Arrays.toString(firstDataPath.toArray()));
         System.out.println(changeFiles.keySet() + " *** " + changeFiles.values());
@@ -135,12 +123,9 @@ public class testDbpediaInc
         }
 
         //Load the first timestamp
-        System.out.println("===========Snapshot (1)===========");
-
+        myConsole.print("-----------Snapshot (1)-----------");
         long startTime=System.currentTimeMillis();
-
         LocalDate currentSnapshotDate=timestamps.get(1);
-
         DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,firstTypesPath,firstDataPath);
 
         myConsole.print("Load graph (1)", System.currentTimeMillis()-startTime);
@@ -150,18 +135,13 @@ public class testDbpediaInc
 
         for (TGFD tgfd:allTGFDs) {
             VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
-            System.out.println("\n########## Graph pattern ##########");
-            System.out.println(tgfd.getPattern().toString());
+            myConsole.print("\n###########"+tgfd.getName()+"###########");
             Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(dbpedia.getGraph(), tgfd.getPattern(),false);
 
-
             //Retrieving and storing the matches of each timestamp.
-            System.out.println("Retrieving the matches");
-
+            myConsole.print("Retrieving the matches");
             startTime=System.currentTimeMillis();
-
             matchCollectionHashMap.get(tgfd.getName()).addMatches(currentSnapshotDate,results);
-
             myConsole.print("Match retrieval", System.currentTimeMillis()-startTime);
         }
 
@@ -170,40 +150,36 @@ public class testDbpediaInc
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++)
         {
-            System.out.println("===========Snapshot (" + ids[i] +")===========");
+            myConsole.print("-----------Snapshot (" + ids[i] + ")-----------");
 
             startTime=System.currentTimeMillis();
             currentSnapshotDate=timestamps.get((int)ids[i]);
             ChangeLoader changeLoader=new ChangeLoader(changeFiles.get(ids[i]));
-            List<Change> allChanges=changeLoader.getAllChanges();
+            List<Change> changes=changeLoader.getAllChanges();
 
             myConsole.print("Load changes ("+ids[i] + ")", System.currentTimeMillis()-startTime);
-            myConsole.print("Total number of changes: " + allChanges.size());
+            myConsole.print("Total number of changes: " + changes.size());
 
             // Now, we need to find the matches for each snapshot.
             // Finding the matches...
 
             startTime=System.currentTimeMillis();
-            System.out.println("Updating the graph");
+            myConsole.print("Updating the graph");
             IncUpdates incUpdatesOnDBpedia=new IncUpdates(dbpedia.getGraph());
-            incUpdatesOnDBpedia.AddNewVertices(allChanges);
+            incUpdatesOnDBpedia.AddNewVertices(changes);
 
-            HashMap<String,Set<String>> newMatchesSignaturesByTGFD=new HashMap <>();
-            HashMap<String,Set<String>> removedMatchesSignaturesByTGFD=new HashMap <>();
+            HashMap<String,ArrayList<String>> newMatchesSignaturesByTGFD=new HashMap <>();
+            HashMap<String,ArrayList<String>> removedMatchesSignaturesByTGFD=new HashMap <>();
+            HashMap<String,TGFD> tgfdsByName=new HashMap <>();
             for (TGFD tgfd:allTGFDs) {
-                newMatchesSignaturesByTGFD.put(tgfd.getName(), new HashSet <>());
-                removedMatchesSignaturesByTGFD.put(tgfd.getName(), new HashSet <>());
+                newMatchesSignaturesByTGFD.put(tgfd.getName(), new ArrayList <>());
+                removedMatchesSignaturesByTGFD.put(tgfd.getName(), new ArrayList <>());
+                tgfdsByName.put(tgfd.getName(),tgfd);
             }
+            for (Change change:changes) {
 
-            for (Change change:allChanges) {
-                List<TGFD> affectedTGFDs=new ArrayList <>();
-                for (TGFD tgfd:allTGFDs) {
-                    if(change.getTGFDs().contains(tgfd.getName()))
-                        affectedTGFDs.add(tgfd);
-                }
-
-                HashMap<String,IncrementalChange> incrementalChangeHashMap=incUpdatesOnDBpedia.updateGraph(change,affectedTGFDs);
-
+                //System.out.print("\n" + change.getId() + " --> ");
+                HashMap<String,IncrementalChange> incrementalChangeHashMap=incUpdatesOnDBpedia.updateGraph(change,tgfdsByName);
                 if(incrementalChangeHashMap==null)
                     continue;
                 for (String tgfdName:incrementalChangeHashMap.keySet()) {
@@ -216,7 +192,6 @@ public class testDbpediaInc
                 matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,
                         newMatchesSignaturesByTGFD.get(tgfd.getName()),removedMatchesSignaturesByTGFD.get(tgfd.getName()));
             }
-
             myConsole.print("Update and retrieve matches ", System.currentTimeMillis()-startTime);
             //myConsole.print("#new matches: " + newMatchesSignatures.size()  + " - #removed matches: " + removedMatchesSignatures.size());
         }
@@ -225,29 +200,29 @@ public class testDbpediaInc
 
             // Now, we need to find all the violations
             //First, we run the Naive Batch TED
-            System.out.println("========================="+tgfd.getName()+"=============================");
+            myConsole.print("==========="+tgfd.getName()+"===========");
+
+            /*
             System.out.println("Running the naive TED");
             startTime=System.currentTimeMillis();
-
             NaiveBatchTED naive=new NaiveBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
             Set<Violation> allViolationsNaiveBatchTED=naive.findViolations();
             System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
-
             myConsole.print("Naive Batch TED", System.currentTimeMillis()-startTime);
+            if(properties.myProperties.saveViolations)
+                saveViolations("naive",allViolationsNaiveBatchTED,tgfd);
+            */
 
-            saveViolations("naive",allViolationsNaiveBatchTED,tgfd);
 
+            // we only need to run optimize method to find the violations
 
-            // Next, we need to find all the violations using the optimize method
-            System.out.println("Running the optimized TED");
+            myConsole.print("Running the optimized TED");
+
             startTime=System.currentTimeMillis();
-
             OptBatchTED optimize=new OptBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
             Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
             System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
-
             myConsole.print("Optimized Batch TED", System.currentTimeMillis()-startTime);
-
             if(properties.myProperties.saveViolations)
                 saveViolations("optimized",allViolationsOptBatchTED,tgfd);
         }

@@ -6,59 +6,31 @@ import infra.VF2PatternGraph;
 import infra.Vertex;
 import org.jgrapht.GraphMapping;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class IncrementalChange {
 
     //region Fields: Private
-    private Iterator <GraphMapping <Vertex, RelationshipEdge>> beforeMatchIterator;
-    private Iterator <GraphMapping <Vertex, RelationshipEdge>> afterMatchIterator;
     private VF2PatternGraph pattern;
     private HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches;
-    private Set<String> removedMatchesSignatures;
-    private HashMap<String, GraphMapping<Vertex, RelationshipEdge>> beforeMatches, afterMatches;
+    private ArrayList <String> removedMatchesSignatures;
+    private HashMap<String, GraphMapping<Vertex, RelationshipEdge>> afterMatches;
+    private HashSet<String> beforeMatchesSignatures;
     //endregion
 
     //region Constructors
     public IncrementalChange(Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeMatchIterator,VF2PatternGraph pattern)
     {
-        this.beforeMatchIterator=beforeMatchIterator;
         newMatches=new HashMap<>();
-        removedMatchesSignatures=new HashSet <>();
+        removedMatchesSignatures=new ArrayList <>();
         this.pattern=pattern;
-        computeBeforeMatches();
+        computeBeforeMatches(beforeMatchIterator);
     }
     //endregion
 
     //region Public Functions
 
     public void addAfterMatches(Iterator<GraphMapping<Vertex, RelationshipEdge>> afterMatchIterator)
-    {
-        this.afterMatchIterator=afterMatchIterator;
-        computeAfterMatches();
-    }
-    //endregion
-
-    //region Private Functions
-    private void computeBeforeMatches()
-    {
-        beforeMatches=new HashMap<>();
-        if (beforeMatchIterator!=null)
-        {
-            while (beforeMatchIterator.hasNext())
-            {
-                var mapping = beforeMatchIterator.next();
-                var signatureFromPattern = Match.signatureFromPattern(pattern, mapping);
-
-                beforeMatches.put(signatureFromPattern, mapping);
-            }
-        }
-    }
-
-    private void computeAfterMatches()
     {
         afterMatches=new HashMap<>();
         if(afterMatchIterator!=null) {
@@ -71,12 +43,27 @@ public class IncrementalChange {
         }
 
         for (String key:afterMatches.keySet()) {
-            if(!beforeMatches.containsKey(key))
+            if(!beforeMatchesSignatures.contains(key))
                 newMatches.put(key,afterMatches.get(key));
         }
-        for (String key:beforeMatches.keySet()) {
+        for (String key:beforeMatchesSignatures) {
             if(!afterMatches.containsKey(key))
                 removedMatchesSignatures.add(key);
+        }
+        //System.out.print(beforeMatchesSignatures.size() + " -- " + newMatches.size() + " -- " + removedMatchesSignatures.size());
+    }
+    //endregion
+
+    //region Private Functions
+    private void computeBeforeMatches(Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeMatchIterator)
+    {
+        beforeMatchesSignatures=new HashSet <>();
+        if (beforeMatchIterator!=null)
+        {
+            while (beforeMatchIterator.hasNext())
+            {
+                beforeMatchesSignatures.add(Match.signatureFromPattern(pattern, beforeMatchIterator.next()));
+            }
         }
     }
     //endregion
@@ -86,7 +73,7 @@ public class IncrementalChange {
         return newMatches;
     }
 
-    public Set<String> getRemovedMatchesSignatures() {
+    public ArrayList<String> getRemovedMatchesSignatures() {
         return removedMatchesSignatures;
     }
 

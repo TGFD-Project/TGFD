@@ -101,7 +101,7 @@ public class testDbpediaBatch
         }
 
         //Load the first timestamp
-        System.out.println("===========Snapshot (1)===========");
+        myConsole.print("-----------Snapshot (1)-----------");
 
         long startTime=System.currentTimeMillis();
         LocalDate currentSnapshotDate=timestamps.get(1);
@@ -112,12 +112,11 @@ public class testDbpediaBatch
         // Finding the matches of the first snapshot for each TGFD
         for (TGFD tgfd:allTGFDs) {
             VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
-            System.out.println("\n########## Graph pattern ##########");
-            System.out.println(tgfd.getPattern().toString());
+            myConsole.print("\n###########"+tgfd.getName()+"###########");
             Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(dbpedia.getGraph(), tgfd.getPattern(),false);
 
             //Retrieving and storing the matches of each timestamp.
-            System.out.println("Retrieving the matches");
+            myConsole.print("Retrieving the matches");
             startTime=System.currentTimeMillis();
             matchCollectionHashMap.get(tgfd.getName()).addMatches(currentSnapshotDate,results);
             myConsole.print("Match retrieval", System.currentTimeMillis()-startTime);
@@ -127,7 +126,7 @@ public class testDbpediaBatch
         Object[] ids=changeFiles.keySet().toArray();
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++) {
-            System.out.println("===========Snapshot (" + ids[i] + ")===========");
+            myConsole.print("-----------Snapshot (" + ids[i] + ")-----------");
 
             startTime = System.currentTimeMillis();
             currentSnapshotDate = timestamps.get((int) ids[i]);
@@ -141,12 +140,11 @@ public class testDbpediaBatch
 
             for (TGFD tgfd:allTGFDs) {
                 VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
-                System.out.println("\n########## Graph pattern ##########");
-                System.out.println(tgfd.getPattern().toString());
+                myConsole.print("\n###########"+tgfd.getName()+"###########");
                 Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(dbpedia.getGraph(), tgfd.getPattern(),false);
 
                 //Retrieving and storing the matches of each timestamp.
-                System.out.println("Retrieving the matches");
+                myConsole.print("Retrieving the matches");
                 startTime=System.currentTimeMillis();
                 matchCollectionHashMap.get(tgfd.getName()).addMatches(currentSnapshotDate,results);
                 myConsole.print("Match retrieval", System.currentTimeMillis()-startTime);
@@ -157,8 +155,8 @@ public class testDbpediaBatch
         for (TGFD tgfd:allTGFDs) {
             // Now, we need to find all the violations
             //First, we run the Naive Batch TED
-            System.out.println("=========================="+tgfd.getName()+"============================");
-            System.out.println("Running the naive TED");
+            myConsole.print("==========="+tgfd.getName()+"===========");
+            myConsole.print("Running the naive TED");
             startTime=System.currentTimeMillis();
 
             NaiveBatchTED naive=new NaiveBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
@@ -169,7 +167,7 @@ public class testDbpediaBatch
                 saveViolations("naive",allViolationsNaiveBatchTED,tgfd);
 
             // Next, we need to find all the violations using the optimize method
-            System.out.println("Running the optimized TED");
+            myConsole.print("Running the optimized TED");
             startTime=System.currentTimeMillis();
             OptBatchTED optimize=new OptBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
             Set<Violation> allViolationsOptBatchTED=optimize.findViolations();

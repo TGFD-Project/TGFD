@@ -16,10 +16,9 @@ import java.util.List;
 public class IMDBLoader extends GraphLoader{
 
     public IMDBLoader(List <TGFD> alltgfd, String path) {
+
         super(alltgfd);
-
         loadIMDBGraph(path);
-
     }
 
     private void loadIMDBGraph(String dataGraphFilePath) {
