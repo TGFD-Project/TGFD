@@ -1,27 +1,73 @@
 #!/usr/bin/env bash
 # Applies diffs in reverse order to get snapshots for an IMDB list.
 
-list=$1
-endTimestamp=$2
-verbose=$3
+# --[Parse arguments]---------------------------------------------------------
+
+# TODO: add argumnt to keep every x snapshot [2021-03-12]
+args="$@"
+for i in $args; do
+  case $i in
+    --list=*)
+      list="${i#*=}"
+      shift
+      ;;
+
+    --end=*)
+      end="${i#*=}"
+      shift
+      ;;
+
+    --begin=*)
+      begin="${i#*=}"
+      shift
+      ;;
+
+    --verbose)
+      verbose=true
+      shift
+      ;;
+
+    *)
+      ;;
+  esac
+done
+
+# --[Check preconditions]------------------------------------------------------
 
 if [ "$list" == "" ]; then
-  echo "USAGE: patch.sh <list> [<endTimestamp>] [<verbose>]"
-  echo "EXAMPLEs: patch.sh movies 101231 1"
-  echo "  - patch.sh actors"
-  echo "  - patch.sh movies 101231 1"
+  echo "USAGE: patch.sh --list=<list> [--end=<timestamp>] [--begin=<timestamp>] [--verbose]"
+  echo "EXAMPLES:"
+  echo "  - patch.sh --list=actors"
+  echo "  - patch.sh --list=genres --end=140124"
+  echo "  - patch.sh --list=genres --end=140124 --begin=141219 --verbose"
   echo "ARGS:"
-  echo "  - list: filename without extension of *.list.gz file in frozendata"
-  echo "  - endTimestamp: patch up to and including this timestamp (starting backwards from 171222.tar)"
+  echo "  - list:    filename without extension of *.list.gz file in frozendata"
+  echo "  - end:     optional timestamp to end patching early (in reverse order)"
+  echo "  - begin:   optional timestamp to begin patching from (in reverse order)"
+  echo "             snapshots/{list}-{begin}.list must exist if begin is specified"
   echo "  - verbose: log trace messages"
   exit 1
 fi
 
-if [ ! -d "./ftp.fu-berlin.de/misc/movies/database/frozendata/" ]; then
-  echo "ERROR: missing IMDB list and diff files"
+if [ ! -d "./ftp.fu-berlin.de/misc/movies/database/frozendata/diffs" ]; then
+  echo "ERROR: missing IMDB files"
   echo "Run: ./sync.sh"
   exit 1
 fi
+
+if [ ! -f "./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz" ]; then
+  echo "ERROR: missing list file ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz"
+  echo "Check the spelling of the list argument"
+  exit 1
+fi
+
+if [ "$begin" != "" ] && [ ! -f "./snapshots/$list-$begin.list" ]; then
+  echo "ERROR: missing beginning snapshot ./snapshots/$list-$begin.list"
+  echo "Cannot start patching in the middle without the specified snapshot"
+  exit 1
+fi
+
+# --[Functions]---------------------------------------------------------------
 
 function log
 {
@@ -34,29 +80,48 @@ function trace
   fi
 }
 
-log `basename "$0"` $*
+# --[Script]------------------------------------------------------------------
+
+log `basename "$0"` $args
+log "arguments:"
+log "  - list:    $list"
+log "  - end:     $end"
+log "  - begin:   $begin"
+log "  - verbose: $verbose"
+
 mkdir snapshots 2>/dev/null
 
-trace "Expanding ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz"
-cp ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz ./snapshots/$list.list.gz
-gzip --decompress ./snapshots/$list.list.gz
+# Setup the starting snapshot to apply diffs to (in reverse)
+if [ "$begin" == "" ]; then
+  trace "Expanding ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz"
+  cp ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz ./snapshots/$list.list.gz
+  gzip --decompress ./snapshots/$list.list.gz
+else
+  trace "Copying ./snapshots/$list-$begin.list ./snapshots/$list.list"
+  cp ./snapshots/$list-$begin.list ./snapshots/$list.list
+fi
 
+# Apply diffs to snapshots in reverse
 diffs=(./ftp.fu-berlin.de/misc/movies/database/frozendata/diffs/diffs-*.tar.gz)
-
-# Iterate in reverse because we need to apply the diffs in a reverse order
 for ((i=${#diffs[@]}-1; i>=0; i--)); do
   diff="${diffs[$i]}"
   timestamp=${diff:63:6}
 
   # Skip 199* diffs because they will be sorted first, but we need latest diffs first (2017)
   if [[ "$timestamp" == 9* ]]; then
-    #trace "Skipping $diff"
+    #trace "Skipping $timestamp because 199* diffs are not sorted correctly"
     continue
   fi
 
-  if [ "$endTimestamp" != "" ] && [[ "$timestamp" = *$endTimestamp* ]]; then
-    log "Stopping early at $diff"
-    break
+  # Skip diffs until the specified beginning snapshot
+  if [ "$begin" != "" ] && [ "$timestamp" != "$begin" ]; then
+    trace "Skipping $timestamp because it is not yet the beginning timestamp"
+    continue
+  else
+    trace "Saving ./snapshots/$list-$timestamp.list"
+    cp ./snapshots/$list.list ./snapshots/$list-$timestamp.list
+    begin= # Reset begin so that normal patching will continue from here
+    continue
   fi
 
   log "Creating $list snapshot at $timestamp"
@@ -73,10 +138,18 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   tar -zxf $diff
 
   trace "Patching $diff"
-  patch --reverse --silent ./snapshots/$list.list ./diffs/$list.list
+  if ! patch --reverse --silent ./snapshots/$list.list ./diffs/$list.list; then
+    log "ERROR: patch failed"
+    exit 1
+  fi
 
   trace "Saving ./snapshots/$list-$timestamp.list"
   cp ./snapshots/$list.list ./snapshots/$list-$timestamp.list
+
+  if [ "$endTimestamp" != "" ] && [[ "$timestamp" = *$endTimestamp* ]]; then
+    log "Stopping early at $diff"
+    break
+  fi
 done
 
 trace "Removing ./snapshots/$list.list (same as last snapshot but without the date)"
