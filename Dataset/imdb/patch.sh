@@ -38,8 +38,8 @@ log `basename "$0"` $*
 mkdir snapshots 2>/dev/null
 
 trace "Expanding ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz"
-gzip --decompress --keep ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz
-mv ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list ./snapshots/$list.list
+cp ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz ./snapshots/$list.list.gz
+gzip --decompress ./snapshots/$list.list.gz
 
 diffs=(./ftp.fu-berlin.de/misc/movies/database/frozendata/diffs/diffs-*.tar.gz)
 
@@ -59,7 +59,7 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
     break
   fi
 
-  log "Creating snapshot $timestamp"
+  log "Creating $list snapshot at $timestamp"
 
   # Skip the very last diff because it is empty and the frozendata list is the result of the last diff 
   if [[ "$timestamp" == 171222 ]]; then
@@ -78,3 +78,6 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   trace "Saving ./snapshots/$list-$timestamp.list"
   cp ./snapshots/$list.list ./snapshots/$list-$timestamp.list
 done
+
+trace "Removing ./snapshots/$list.list (same as last snapshot but without the date)"
+rm ./snapshots/$list.list
