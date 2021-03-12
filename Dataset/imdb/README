@@ -1,7 +1,7 @@
 Scripts to create snapshots of IMDB data from the diffs.
 
-To download the data, run:
-./sync.sh
+Run ./batch.sh to create snapshots for all relevant lists.
 
-To create the snapshots for a list, run:
-./patch.sh
+If want to run separately, then:
+  Run synch.sh to download the data.
+  Run patch.sh to create the snapshots for a list.
