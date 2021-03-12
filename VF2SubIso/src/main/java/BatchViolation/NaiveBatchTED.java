@@ -31,7 +31,7 @@ public class NaiveBatchTED {
                 Interval intv=new Interval(allSnapshots[i],allSnapshots[j]);
                 if(intv.inDelta(delta.getMin(),delta.getMax()))
                 {
-                    List<Match> secondMatches=matches.getMatches(allSnapshots[i]);
+                    List<Match> secondMatches=matches.getMatches(allSnapshots[j]);
                     for (Match first:firstMatches) {
                         String firstSignatureX=first.getSignatureX();
                         String firstSignatureY=Match.signatureFromY2(tgfd.getPattern(),first.getMapping(),tgfd.getDependency().getY());

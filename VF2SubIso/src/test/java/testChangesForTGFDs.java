@@ -114,7 +114,7 @@ public class testChangesForTGFDs {
                                        int changeSize, int timestamp1, int timestamp2, String TGFDsName)
     {
         ChangeTrimmer trimmer=new ChangeTrimmer(allChanges,allTGFDs);
-        for (double i=0.02;i<=0.1;i+=0.02)
+        for (double i=0.04;i<=0.04;i+=0.02)
         {
             int allowedNumberOfChanges= (int) (i*graphSize);
             if (allowedNumberOfChanges<changeSize)
@@ -128,7 +128,7 @@ public class testChangesForTGFDs {
                 return;
             }
         }
-        for (double i=0.15;i<=0.2;i+=0.05)
+        for (double i=0.15;i<=0.1;i+=0.05)
         {
             int allowedNumberOfChanges= (int) (i*graphSize);
             if (allowedNumberOfChanges<changeSize)
