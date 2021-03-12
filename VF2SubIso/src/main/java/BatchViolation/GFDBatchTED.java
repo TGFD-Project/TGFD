@@ -13,17 +13,23 @@ public class GFDBatchTED {
     private TGFD tgfd;
 
 
+    /**
+     * We simulate GFD inconsistency detection using TGFDs
+     * @param allMatches set of matches
+     * @param tgfd input TGFD, This will be considered as GFD by ignoring the interval and compare matches at the same timestamp
+     */
     public GFDBatchTED(MatchCollection allMatches, TGFD tgfd)
     {
         this.tgfd=tgfd;
         this.matches=allMatches;
     }
 
+    /**
+     * @return Returns a set of violations for the given TGFD (simulated as GFD) over the matches
+     */
     public Set<Violation> findViolations()
     {
         Set<Violation> violations=new HashSet<>();
-        Delta delta=tgfd.getDelta();
-
         LocalDate[] allSnapshots = matches.getTimestamps();
         for(int i = 0; i < allSnapshots.length; i++)
         {
