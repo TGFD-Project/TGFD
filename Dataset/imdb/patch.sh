@@ -32,6 +32,9 @@ for i in $args; do
   esac
 done
 
+snapshotdir=./snapshots/list
+diffsdir=./snapshots/list/diffs
+
 # --[Check preconditions]------------------------------------------------------
 
 if [ "$list" == "" ]; then
@@ -63,8 +66,8 @@ if [ ! -f "./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz" ]; 
   exit 1
 fi
 
-if [ "$begin" != "" ] && [ ! -f "./snapshots/$list-$begin.list" ]; then
-  echo "ERROR: missing beginning snapshot ./snapshots/$list-$begin.list"
+if [ "$begin" != "" ] && [ ! -f "$snapshotdir/$list-$begin.list" ]; then
+  echo "ERROR: missing beginning snapshot $snapshotdir/$list-$begin.list"
   echo "Cannot start patching in the middle without the specified snapshot"
   exit 1
 fi
@@ -91,16 +94,16 @@ log "  - end:     $end"
 log "  - begin:   $begin"
 log "  - verbose: $verbose"
 
-mkdir ./snapshots 2>/dev/null
+mkdir $snapshotdir 2>/dev/null
 
 # Setup the starting snapshot to apply diffs to (in reverse)
 if [ "$begin" == "" ]; then
   trace "Expanding ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz"
-  cp ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz ./snapshots/$list.list.gz
-  gzip --decompress ./snapshots/$list.list.gz
+  cp ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz $snapshotdir/$list.list.gz
+  gzip --decompress "$snapshotdir/$list.list.gz"
 else
-  trace "Copying ./snapshots/$list-$begin.list ./snapshots/$list.list"
-  cp ./snapshots/$list-$begin.list ./snapshots/$list.list
+  trace "Copying $snapshotdir/$list-$begin.list $snapshotdir/$list.list"
+  cp $snapshotdir/$list-$begin.list $snapshotdir/$list.list
 fi
 
 # Apply diffs to snapshots in reverse
@@ -118,8 +121,8 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   # Skip diffs until the specified beginning snapshot
   if [ "$begin" != "" ]; then
     if [ "$timestamp" == "$begin" ]; then
-      trace "Saving ./snapshots/$list-$timestamp.list"
-      cp ./snapshots/$list.list ./snapshots/$list-$timestamp.list
+      trace "Saving $snapshotdir/$list-$timestamp.list"
+      cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
       begin= # Reset begin so that normal patching will continue from here
     else
       trace "Skipping $timestamp because it is not yet the beginning timestamp"
@@ -131,23 +134,23 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
 
   # Skip the very last diff because it is empty and the frozendata list is the result of the last diff 
   if [[ "$timestamp" == 171222 ]]; then
-    trace "Saving ./snapshots/$list-$timestamp.list"
-    cp ./snapshots/$list.list ./snapshots/$list-$timestamp.list
+    trace "Saving $snapshotdir/$list-$timestamp.list"
+    cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
     continue
   fi
 
   trace "Expanding $diff"
-  rm -rf ./snapshots/diffs/ # Remove any previous diffs
-  tar -zxf $diff
+  rm -rf $diffsdir # Remove any previous diffs
+  tar -zxf $diff # Tar contains a diffs/ dir
 
   trace "Patching $diff"
-  if ! patch --reverse --silent ./snapshots/$list.list ./snapshots/diffs/$list.list; then
+  if ! patch --reverse --silent $snapshotdir/$list.list $diffsdir/$list.list; then
     log "ERROR: patch failed"
     exit 1
   fi
 
-  trace "Saving ./snapshots/$list-$timestamp.list"
-  cp ./snapshots/$list.list ./snapshots/$list-$timestamp.list
+  trace "Saving $snapshotdir/$list-$timestamp.list"
+  cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
 
   if [ "$endTimestamp" != "" ] && [[ "$timestamp" = *$endTimestamp* ]]; then
     log "Stopping early at $diff"
@@ -155,5 +158,5 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   fi
 done
 
-trace "Removing ./snapshots/$list.list (same as last snapshot but without the date)"
-rm ./snapshots/$list.list
+trace "Removing $snapshotdir/$list.list (same as last snapshot but without the date)"
+rm $snapshotdir/$list.list
