@@ -239,10 +239,10 @@ def get_memory_usage():
 
 def log_progress(current, total, milestone):
     '''Logs percentage progess of processing lines in a file.'''
-    if current % (milestone) == 0 or (current + 1) == total:
+    if current % (milestone) == 0 or current == (total - 1):
         percentage = 100 * current / total
         memory = get_memory_usage()
-        logging.info(f"Parsed: {percentage:3.0f}%, Memory: {memory:4.1f}GiB, Line: {current:7d}/{total}")
+        logging.info(f"Parsed: {percentage:3.0f}%, Memory: {memory:4.1f}GiB, Line: {current:7d}/{(total - 1)}")
 
 if __name__ == '__main__':
     try:
