@@ -28,13 +28,14 @@ def main():
 
     num_lines = get_file_lines(filename, encoding)
 
+    logging.info("Parsing")
+    genre_re = re.compile('^"?([^"\n]+)"? \((.+)\)( {.+})?\t+(.+)$')
     with open(filename, encoding=encoding) as f:
         for line_number, line in enumerate(f):
-            if line_number % 100000 == 0:
-                logging.info(f"Parsing {line_number} / {num_lines}")
+            log_progress(line_number, num_lines, 100000)
 
             try:
-                info = re.match('^"?([^"\n]+)"? \((.+)\)( {.+})?\t+(.+)$', line)
+                info = genre_re.match(line)
                 if not info:
                     continue
 
@@ -52,21 +53,35 @@ def main():
             except Exception:
                 print(line)
 
-    print(len(g.all_nodes()))
+    logging.info("Serializing")
     os.makedirs("genres-data/", exist_ok=True)
     g.serialize(destination=f"genres-data/genres-{timestamp}.nt", format='nt')
 
 def get_file_lines(filename, encoding='utf-8'):
-    """Get the number of lines in a file"""
+    '''Get the number of lines in a file.'''
     with open(filename, encoding=encoding) as f:
         for i, l in enumerate(f):
             pass
     return i + 1
 
+def get_memory_usage():
+    '''Get the memory usage of this process in MB.'''
+    with open('/proc/self/status') as f:
+        result = f.read().split('VmRSS:')[1].split('\n')[0][:-3]
+    return int(result.strip()) / 1024
+
+def log_progress(current, total, milestone):
+    '''Logs percentage progess of processing lines in a file.'''
+    if current % (milestone) == 0 or current == total:
+        percentage = 100 * current / total
+        memory = get_memory_usage()
+        logging.info(f"Parsed: {percentage:.0f}%, Line: {current}/{total}, Memory: {memory:.0f}MB")
+
 if __name__ == '__main__':
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(message)s")
+        format="%(asctime)s %(levelname).1s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S")
 
     try:
         start = time.time()
