@@ -18,6 +18,8 @@ def main(sysargv):
     @param sysargv sys.argv
     '''
     args = parse_args(sysargv)
+    if args.verbose:
+        logging.root.setLevel(logging.DEBUG)
 
     parser = ImdbRdfParser(
         listdir=args.listdir,
@@ -32,12 +34,18 @@ def main(sysargv):
     for list in sorted(parseByList):
         logging.info(f"  - {list}")
 
+    prev_num_nodes = 0
     for list in sorted(parseByList):
         logging.info(f"Parsing {list}")
-        num_nodes = parser.get_num_nodes()
         start = time.time()
         parseByList[list]()
-        logging.info(f"Parsed {list} in {time.time() - start:.0f} seconds with {parser.get_num_nodes() - num_nodes} new nodes")
+        logging.info(f"Parsed {list} in {time.time() - start:.0f} seconds")
+
+        # NOTE: Avoid counting nodes if not needed as it is expensive [2021-03-13]
+        if args.verbose:
+            num_nodes = parser.get_num_nodes()
+            logging.debug(f"Parsed {num_nodes - prev_num_nodes} new nodes for {list}")
+            prev_num_nodes = num_nodes
 
     logging.info(f"Serializing to RDF")
     start = time.time()
@@ -63,7 +71,7 @@ class ImdbRdfParser:
     _DISTRIBUTOR_RE = re.compile('^"?([^"\n]+)"? \([0-9]*\)[^\t\n]*?\t+([^\[\]\n]+)[^\(\)\n]+?\(([0-9]+|[0-9]+-[0-9]+)\)')
     _GENRE_RE       = re.compile('^"?([^"\n]+)"? \((.+)\)( {.+})?\t+(.+)$')
 
-    _MILESTONE = 100000 # Number of lines to log progress
+    _MILESTONE = 200000 # Number of lines to log progress
 
     def __init__(self, listdir, timestamp, maxlines=sys.maxsize, encoding='latin-1'):
         '''
@@ -214,6 +222,7 @@ def parse_args(sysargv):
     parser.add_argument('--listdir', type=str, help="path to directory of list snapshots", default="./snapshots/list")
     parser.add_argument('--outdir', type=str, help="path to output directory", default="./snapshots/rdf")
     parser.add_argument('--maxlines', type=int, help="max number of lines to read from a list file (to help with testing)", default=sys.maxsize)
+    parser.add_argument('--verbose', action='store_true', help="log debug log messages")
 
     args = parser.parse_args(sysargv[1:])
     logging.info(" ".join(sysargv))
@@ -222,6 +231,7 @@ def parse_args(sysargv):
     logging.info(f"  listdir:   {args.listdir}")
     logging.info(f"  outdir:    {args.outdir}")
     logging.info(f"  maxlines:  {args.maxlines}")
+    logging.info(f"  verbose:   {args.verbose}")
     return args
 
 def get_file_lines(filename, encoding='utf-8'):
