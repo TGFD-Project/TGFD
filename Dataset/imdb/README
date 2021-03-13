@@ -1,10 +1,12 @@
 Scripts to create snapshots of IMDB data from the diffs.
 
 Run ./batch.sh to create snapshots for all relevant lists.
-
 To run in the background and log output to file, run:
 ./batch.sh > `date +%Y%m%dT%H%M.log` 2>&1 &
 
-If want to run separately, then:
+To convert IMDB lists into RDF format:
+  Run rdf.py <timestamp>
+
+If want to run batch.sh separately, then:
   Run synch.sh to download the data.
   Run patch.sh to create the snapshots for a list.

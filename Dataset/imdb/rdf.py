@@ -27,11 +27,16 @@ def main(sysargv):
         "countries": parser.parse_countries,
         "genres": parser.parse_genres }
 
+    logging.info("IMDB lists:")
+    for list in sorted(parseByList):
+        logging.info(f"  - {list}")
+
     for list in sorted(parseByList):
         logging.info(f"Parsing {list}")
+        num_nodes = parser.get_num_nodes()
         start = time.time()
         parseByList[list]()
-        logging.info(f"Parsed {list} in {time.time() - start:.0f} seconds")
+        logging.info(f"Parsed {list} in {time.time() - start:.0f} seconds with {parser.get_num_nodes() - num_nodes} new nodes")
 
     logging.info(f"Serializing to RDF")
     start = time.time()
@@ -41,8 +46,16 @@ def main(sysargv):
 
 class ImdbRdfParser:
     '''Parser for IMDB into  '''
-    _GENRES = 'genres'
     _COUNTRIES = 'countries'
+    _GENRES = 'genres'
+
+    _NAME = namespace.FOAF.name
+    _COUNTRY_OF = term.URIRef(f"http://xmlns.com/foaf/0.1/country_of_origin")
+    _GENRE_OF = term.URIRef(f"http://xmlns.com/foaf/0.1/genre_of")
+
+    _COUNTRIES_RE = re.compile('^"?([^"\n]+)"? \(([0-9]+|\?+)\/?[IVXLCDM]*\).*\t+([a-zA-Z\(\)\-\. ]+)$')
+    _GENRES_RE = re.compile('^"?([^"\n]+)"? \((.+)\)( {.+})?\t+(.+)$')
+
     _MILESTONE = 100000 # Number of lines to log progress
 
     def __init__(self, listdir, timestamp, maxlines=sys.maxsize, encoding='latin-1'):
@@ -67,85 +80,61 @@ class ImdbRdfParser:
         self._graph = rdflib.Graph()
         self._graph.bind("foaf", namespace.FOAF)
 
+    def get_num_nodes(self):
+        '''Returns the number of nodes in the graph.'''
+        return len(self._graph.all_nodes())
+
     def parse_countries(self):
-        '''
-        Parses IMDB list countries into RDF format.
-        '''
-        list = self._COUNTRIES
-        filename = self._filenames_by_list[list]
-        num_lines = self._lines_by_list[list]
+        '''Parses IMDB list countries into RDF format.'''
+        self._parse_list(self._COUNTRIES, self._parse_country)
 
-        country_of = term.URIRef(f"http://xmlns.com/foaf/0.1/country_of_origin")
-        regex = re.compile('^"?([^"\n]+)"? \(([0-9]+|\?+)\/?[IVXLCDM]*\).*\t+([a-zA-Z\(\)\-\. ]+)$')
+    def _parse_country(self, line, state):
+        '''Parse a country given the current line and any required state.'''
+        info = self._COUNTRIES_RE.match(line)
+        if not info:
+            return
 
-        with open(filename, encoding=self._encoding) as f:
-            for line_number, line in enumerate(f):
-                try:
-                    if line_number >= self._maxlines:
-                        logging.warning(f"Did not parse entire {list} list because of maxlines limit")
-                        break
+        title_string = info.group(1).strip()
+        title_name = term.Literal(title_string)
+        title_partial_uri = urllib.parse.quote(title_string)
+        title = term.URIRef(f"http://imdb.org/movie/{title_partial_uri}")
 
-                    log_progress(line_number, num_lines, self._MILESTONE)
+        country_string = info.group(3).strip()
+        country_name = term.Literal(country_string)
+        country_partial_uri = urllib.parse.quote(country_name)
+        country = term.URIRef(f"http://imdb.org/country/{country_partial_uri}")
 
-                    info = regex.match(line)
-                    if not info:
-                        continue
+        self._graph.add((title,   self._NAME,       title_name))
+        self._graph.add((country, self._NAME,       country_name))
+        self._graph.add((title,   self._COUNTRY_OF, country))
 
-                    title_string = info.group(1).strip()
-                    title_name = term.Literal(title_string)
-                    title_partial_uri = urllib.parse.quote(title_string)
-                    title = term.URIRef(f"http://imdb.org/movie/{title_partial_uri}")
-
-                    country_string = info.group(3).strip()
-                    country_name = term.Literal(country_string)
-                    country_partial_uri = urllib.parse.quote(country_name)
-                    country = term.URIRef(f"http://imdb.org/country/{country_partial_uri}")
-
-                    self._graph.add((title, namespace.FOAF.name, title_name))
-                    self._graph.add((country, namespace.FOAF.name, country_name))
-                    self._graph.add((title, country_of, country))
-                except Exception:
-                    logging.exception(f"Failed to parse {line_number} of {filename}: {line}")
+        return state
 
     def parse_genres(self):
-        '''
-        Parses IMDB list genres into RDF format.
-        '''
-        list = self._GENRES
-        filename = self._filenames_by_list[list]
-        num_lines = self._lines_by_list[list]
+        '''Parses IMDB list genres into RDF format.'''
+        self._parse_list(self._GENRES, self._parse_genre)
 
-        regex = re.compile('^"?([^"\n]+)"? \((.+)\)( {.+})?\t+(.+)$')
-        genre_of = term.URIRef(f"http://xmlns.com/foaf/0.1/genre_of")
+    def _parse_genre(self, line, state):
+        '''Parse a genre given the current line and any required state.'''
+        info = self._GENRES_RE.match(line)
+        if not info:
+            return
 
-        with open(filename, encoding=self._encoding) as f:
-            for line_number, line in enumerate(f):
-                try:
-                    if line_number >= self._maxlines:
-                        logging.warning(f"Did not parse entire {list} list because of maxlines limit")
-                        break
+        movie_string = info.group(1).strip()
+        movie_name = term.Literal(movie_string)
+        movie_partial_uri = urllib.parse.quote(movie_string)
+        movie = term.URIRef(f"http://imdb.org/movie/{movie_partial_uri}")
 
-                    log_progress(line_number, num_lines, self._MILESTONE)
+        genre_string = info.group(4).strip()
+        genre_name = term.Literal(genre_string)
+        genre_partial_uri = urllib.parse.quote(genre_name)
+        genre = term.URIRef(f"http://imdb.org/genre/{genre_partial_uri}")
 
-                    info = regex.match(line)
-                    if not info:
-                        continue
+        self._graph.add((movie, self._NAME,     movie_name))
+        self._graph.add((genre, self._NAME,     genre_name))
+        self._graph.add((genre, self._GENRE_OF, movie))
 
-                    movie_string = info.group(1).strip()
-                    movie_name = term.Literal(movie_string)
-                    movie_partial_uri = urllib.parse.quote(movie_string)
-                    movie = term.URIRef(f"http://imdb.org/movie/{movie_partial_uri}")
-
-                    genre_string = info.group(4).strip()
-                    genre_name = term.Literal(genre_string)
-                    genre_partial_uri = urllib.parse.quote(genre_name)
-                    genre = term.URIRef(f"http://imdb.org/genre/{genre_partial_uri}")
-
-                    self._graph.add((movie, namespace.FOAF.name, movie_name))
-                    self._graph.add((genre, namespace.FOAF.name, genre_name))
-                    self._graph.add((genre, genre_of, movie))
-                except Exception:
-                    logging.exception(f"Failed to parse {line_number} of {filename}: {line}")
+        return state
 
     def serialize(self, output_dir):
         '''
@@ -159,6 +148,29 @@ class ImdbRdfParser:
             destination=f"{output_dir}/imdb-{self._timestamp}.nt",
             format='nt')
         return filepath
+
+    def _parse_list(self, list, parse_line):
+        '''
+        Common function to parse a list.
+        @param list Name of list to parse.
+        @param parse_line Function that will input a line and state (if any
+        needed to track between lines), add to the graph, and return new state.
+        '''
+        filename = self._filenames_by_list[list]
+        num_lines = self._lines_by_list[list]
+
+        with open(filename, encoding=self._encoding) as f:
+            state = {}
+            for line_number, line in enumerate(f):
+                try:
+                    if line_number >= self._maxlines:
+                        logging.warning(f"Did not parse entire {list} list because of maxlines limit")
+                        break
+
+                    log_progress(line_number, num_lines, self._MILESTONE)
+                    state = parse_line(line, state)
+                except Exception:
+                    logging.exception(f"Failed to parse {line_number} of {filename}: {line}")
 
 def parse_args(sysargv):
     '''@param sysargv sys.argv'''
@@ -206,7 +218,7 @@ if __name__ == '__main__':
 
         start = time.time()
         main(sys.argv)
-        logging.info(f"Script took {time.time() - start:.0f} seconds")
+        logging.info(f"Executed script in {time.time() - start:.0f} seconds")
     except KeyboardInterrupt:
         try:
             logging.warning(f"Script interrupted")
