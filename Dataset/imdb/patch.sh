@@ -91,7 +91,7 @@ log "  - end:     $end"
 log "  - begin:   $begin"
 log "  - verbose: $verbose"
 
-mkdir snapshots 2>/dev/null
+mkdir ./snapshots 2>/dev/null
 
 # Setup the starting snapshot to apply diffs to (in reverse)
 if [ "$begin" == "" ]; then
@@ -137,11 +137,11 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   fi
 
   trace "Expanding $diff"
-  rm -rf ./diffs/ # Remove any previous diffs
+  rm -rf ./snapshots/diffs/ # Remove any previous diffs
   tar -zxf $diff
 
   trace "Patching $diff"
-  if ! patch --reverse --silent ./snapshots/$list.list ./diffs/$list.list; then
+  if ! patch --reverse --silent ./snapshots/$list.list ./snapshots/diffs/$list.list; then
     log "ERROR: patch failed"
     exit 1
   fi

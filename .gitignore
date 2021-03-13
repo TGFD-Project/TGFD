@@ -3,16 +3,16 @@
 **/*.pyc
 **/*.settings
 **/*.swp
-**/.DS_Store
+**/.DS_Store/
 **/.idea/
 **/out/
 **/refs
 **/target
 
-/bin
-/Dataset/imdb/diffs
-/Dataset/imdb/ftp.fu-berlin.de
-/Dataset/imdb/snapshots
+/bin/
+/Dataset/imdb/ftp.fu-berlin.de/
+/Dataset/imdb/snapshots/
+
 /project/*
 
 *.*~
