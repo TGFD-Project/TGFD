@@ -36,10 +36,12 @@ done
 
 if [ "$list" == "" ]; then
   echo "USAGE: patch.sh --list=<list> [--end=<timestamp>] [--begin=<timestamp>] [--verbose]"
+  echo
   echo "EXAMPLES:"
   echo "  - patch.sh --list=actors"
-  echo "  - patch.sh --list=genres --end=140124"
-  echo "  - patch.sh --list=genres --end=140124 --begin=141219 --verbose"
+  echo "  - patch.sh --list=genres --end=140214"
+  echo "  - patch.sh --list=genres --end=140214 --begin=141219 --verbose"
+  echo
   echo "ARGS:"
   echo "  - list:    filename without extension of *.list.gz file in frozendata"
   echo "  - end:     optional timestamp to end patching early (in reverse order)"
@@ -114,13 +116,14 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   fi
 
   # Skip diffs until the specified beginning snapshot
-  if [ "$begin" != "" ] && [ "$timestamp" != "$begin" ]; then
-    trace "Skipping $timestamp because it is not yet the beginning timestamp"
-    continue
-  else
-    trace "Saving ./snapshots/$list-$timestamp.list"
-    cp ./snapshots/$list.list ./snapshots/$list-$timestamp.list
-    begin= # Reset begin so that normal patching will continue from here
+  if [ "$begin" != "" ]; then
+    if [ "$timestamp" == "$begin" ]; then
+      trace "Saving ./snapshots/$list-$timestamp.list"
+      cp ./snapshots/$list.list ./snapshots/$list-$timestamp.list
+      begin= # Reset begin so that normal patching will continue from here
+    else
+      trace "Skipping $timestamp because it is not yet the beginning timestamp"
+    fi
     continue
   fi
 
