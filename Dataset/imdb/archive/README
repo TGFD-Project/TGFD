@@ -1,0 +1,6 @@
+Author: Levin Noronha
+Source: https://drive.google.com/drive/u/1/folders/1BN8zoTeRKvFBDKMqAvgdjLcp32fog-1d
+
+Original scripts to parse IMDB list format into RDF format.
+These scripts have been merged into one script in rdfparser.py.
+Keep these for reference and/or testing if necessary.
