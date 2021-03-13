@@ -31,12 +31,12 @@ def main(sysargv):
         logging.info(f"Parsing {list}")
         start = time.time()
         parseByList[list]()
-        logging.info(f"Parsed {list} in {time.time() - start:.0f} sec")
+        logging.info(f"Parsed {list} in {time.time() - start:.0f} seconds")
 
     logging.info(f"Serializing to RDF")
     start = time.time()
     output_file = parser.serialize(args.outdir)
-    logging.info(f"Serialized in {time.time() - start:.0f} sec")
+    logging.info(f"Serialized in {time.time() - start:.0f} seconds")
     logging.info(f"Output is {output_file}")
 
 class ImdbRdfParser:
@@ -71,8 +71,9 @@ class ImdbRdfParser:
         '''
         Parses IMDB list countries into RDF format.
         '''
-        filename = self._filenames_by_list[self._COUNTRIES]
-        num_lines = self._lines_by_list[self._COUNTRIES]
+        list = self._COUNTRIES
+        filename = self._filenames_by_list[list]
+        num_lines = self._lines_by_list[list]
 
         country_of = term.URIRef(f"http://xmlns.com/foaf/0.1/country_of_origin")
         regex = re.compile('^"?([^"\n]+)"? \(([0-9]+|\?+)\/?[IVXLCDM]*\).*\t+([a-zA-Z\(\)\-\. ]+)$')
@@ -81,6 +82,7 @@ class ImdbRdfParser:
             for line_number, line in enumerate(f):
                 try:
                     if line_number >= self._maxlines:
+                        logging.warning(f"Did not parse entire {list} list because of maxlines limit")
                         break
 
                     log_progress(line_number, num_lines, self._MILESTONE)
@@ -102,15 +104,16 @@ class ImdbRdfParser:
                     self._graph.add((title, namespace.FOAF.name, title_name))
                     self._graph.add((country, namespace.FOAF.name, country_name))
                     self._graph.add((title, country_of, country))
-                except:
+                except Exception:
                     logging.exception(f"Failed to parse {line_number} of {filename}: {line}")
 
     def parse_genres(self):
         '''
         Parses IMDB list genres into RDF format.
         '''
-        filename = self._filenames_by_list[self._GENRES]
-        num_lines = self._lines_by_list[self._GENRES]
+        list = self._GENRES
+        filename = self._filenames_by_list[list]
+        num_lines = self._lines_by_list[list]
 
         regex = re.compile('^"?([^"\n]+)"? \((.+)\)( {.+})?\t+(.+)$')
         genre_of = term.URIRef(f"http://xmlns.com/foaf/0.1/genre_of")
@@ -119,6 +122,7 @@ class ImdbRdfParser:
             for line_number, line in enumerate(f):
                 try:
                     if line_number >= self._maxlines:
+                        logging.warning(f"Did not parse entire {list} list because of maxlines limit")
                         break
 
                     log_progress(line_number, num_lines, self._MILESTONE)
@@ -202,9 +206,7 @@ if __name__ == '__main__':
 
         start = time.time()
         main(sys.argv)
-        end = time.time()
-
-        logging.info(f"Script took {end - start:.0f} sec")
+        logging.info(f"Script took {time.time() - start:.0f} seconds")
     except KeyboardInterrupt:
         try:
             logging.warning(f"Script interrupted")
