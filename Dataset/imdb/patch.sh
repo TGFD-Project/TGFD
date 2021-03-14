@@ -158,7 +158,7 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   # Some diffs are missing but this may be okay if there were no changes.
   # If there is an actual error, then the next patch with an exsiting diff will fail.
   if [ ! -f "$diffsdir/$list.list" ]; then
-    warn "Skip patching $diffsdir/$list.list because it does not exist (if actually an error then next patch will fail)"
+    warn "Skip patching $list-$timestamp because it does not exist (if actually an error then next patch will fail)"
     continue
   fi
 
