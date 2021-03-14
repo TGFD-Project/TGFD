@@ -28,6 +28,7 @@ def main(sysargv):
         maxlines=args.maxlines)
     parseByList = {
         'actors':      parser.parse_actors,
+        'actresses':   parser.parse_actresses,
         'countries':   parser.parse_countries,
         'disributors': parser.parse_distributors,
         'movies':      parser.parse_movies,
@@ -61,14 +62,18 @@ class ImdbRdfParser:
 
     # Lists
     _ACTORS       = 'actors'
+    _ACTRESSES    = 'actresses'
     _COUNTRIES    = 'countries'
+    _DIRECTORS    = 'directors'
     _DISTRIBUTORS = 'distributors'
     _GENRES       = 'genres'
     _MOVIES       = 'movies'
 
     # List types
     _ACTOR       = 'actor'
+    _ACTRESS     = 'actress'
     _COUNTRY     = 'country'
+    _DIRECTORS   = 'directors'
     _DISTRIBUTOR = 'distributor'
     _GENRE       = 'genre'
     _MOVIE       = 'movie'
@@ -104,6 +109,7 @@ class ImdbRdfParser:
 
         lists = [
             self._ACTORS,
+            self._ACTRESSES,
             self._COUNTRIES,
             self._DISTRIBUTORS,
             self._GENRES,
@@ -129,7 +135,14 @@ class ImdbRdfParser:
         self._parse_list(
             self._ACTORS,
             self._parse_person,
-            {'person_type': 'actor', 'predicate': self._ACTOR_OF})
+            {'person_type': self._ACTOR, 'predicate': self._ACTOR_OF})
+
+    def parse_actresses(self):
+        '''Parse a IMDB actresses list.'''
+        self._parse_list(
+            self._ACTRESSES,
+            self._parse_person,
+            {'person_type': self._ACTRESS, 'predicate': self._ACTRESS_OF})
 
     def _parse_person(self, line, state):
         '''Parse a person given the current line and any required state.'''
