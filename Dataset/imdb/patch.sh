@@ -80,7 +80,7 @@ function log
 }
 function warn
 {
-  echo "$(date +%Y-%m-%dT%H:%M:%S) W $*"
+  echo "$(date +%Y-%m-%dT%H:%M:%S) W WARNING: $*"
 }
 function trace
 {
@@ -145,7 +145,7 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
 
   # Skip diff whose corresponding snapshot already exists
   if [ -f "$snapshotdir/$list-$timestamp.list" ]; then
-    warn "WARNING: skip creating $snapshotdir/$list-$timestamp.list because it already exists"
+    warn "Skip creating $snapshotdir/$list-$timestamp.list because it already exists"
     trace cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
     cp  $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
     continue
@@ -154,6 +154,13 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   trace tar -zxf $diff --directory $snapshotdir
   rm -rf $diffsdir # Remove any previous diffs
   tar -zxf $diff --directory $snapshotdir # Tar contains a diffs/ dir so path will be $snapshotdir/diffs/
+
+  # Some diffs are missing but this may be okay if there were no changes.
+  # If there is an actual error, then the next patch with an exsiting diff will fail.
+  if [ ! -f "$diffsdir/$list.list" ]; then
+    warn "Skip patching $diffsdir/$list.list because it does not exist (if actually an error then next patch will fail)"
+    continue
+  fi
 
   trace patch --reverse --silent $snapshotdir/$list.list $diffsdir/$list.list
   if ! patch --reverse --silent $snapshotdir/$list.list $diffsdir/$list.list; then
