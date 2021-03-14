@@ -15,15 +15,16 @@ function panic
 # NB: IMDB database is missing diffs for 2014-02-07 and 2014-01-31 [2021-03-14]
 # So we cannot recreate snapshots back any further than 2014-02-14 (2014-01-24 will fail).
 first_invalid_timestamp=140124
-./patch.sh --list=actors       --end=$first_invalid_timestamp || panic "patch.sh failed"
-./patch.sh --list=actresses    --end=$first_invalid_timestamp || panic "patch.sh failed"
-./patch.sh --list=countries    --end=$first_invalid_timestamp || panic "patch.sh failed"
-./patch.sh --list=directors    --end=$first_invalid_timestamp || panic "patch.sh failed"
-./patch.sh --list=distributors --end=$first_invalid_timestamp || panic "patch.sh failed"
-./patch.sh --list=genres       --end=$first_invalid_timestamp || panic "patch.sh failed"
-./patch.sh --list=language     --end=$first_invalid_timestamp || panic "patch.sh failed"
-./patch.sh --list=movies       --end=$first_invalid_timestamp || panic "patch.sh failed"
-./patch.sh --list=ratings      --end=$first_invalid_timestamp || panic "patch.sh failed"
+granularity_weeks=4 # Save only every 4 snapshots (each snapshot represents a week)
+./patch.sh --list=actors       --end=$first_invalid_timestamp --output-every=$granularity_weeks || panic "patch.sh failed"
+./patch.sh --list=actresses    --end=$first_invalid_timestamp --output-every=$granularity_weeks || panic "patch.sh failed"
+./patch.sh --list=countries    --end=$first_invalid_timestamp --output-every=$granularity_weeks || panic "patch.sh failed"
+./patch.sh --list=directors    --end=$first_invalid_timestamp --output-every=$granularity_weeks || panic "patch.sh failed"
+./patch.sh --list=distributors --end=$first_invalid_timestamp --output-every=$granularity_weeks || panic "patch.sh failed"
+./patch.sh --list=genres       --end=$first_invalid_timestamp --output-every=$granularity_weeks || panic "patch.sh failed"
+./patch.sh --list=language     --end=$first_invalid_timestamp --output-every=$granularity_weeks || panic "patch.sh failed"
+./patch.sh --list=movies       --end=$first_invalid_timestamp --output-every=$granularity_weeks || panic "patch.sh failed"
+./patch.sh --list=ratings      --end=$first_invalid_timestamp --output-every=$granularity_weeks || panic "patch.sh failed"
 
 # Grab the timestamps from the movies snapshots.
 # Assumes that all IMDB lists have the same timestamps (as they should from above).
