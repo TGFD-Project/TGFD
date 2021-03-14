@@ -170,8 +170,19 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   # Skip diff whose corresponding snapshot already exists
   if [ -f "$snapshotdir/$list-$timestamp.list" ]; then
     warn "Skipping creation $snapshotdir/$list-$timestamp.list because it already exists"
-    trace cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
-    cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
+
+    # Skip mulitple diffs if next `output_every` snapshot also exists
+    next_step_index=$(( $i - $output_every ))
+    next_step_diff="${diffs[$next_step_index]}"
+    next_step_timestamp=${next_step_diff:63:6}
+    if [ -f "$snapshotdir/$list-$next_step_timestamp.list" ]; then
+      warn "Skipping $output_every diffs because snapshot also exists at next step $next_step_timestamp"
+      i=$(( $next_step_index + 1 )) # Add one because loop will substract one
+      snapshot_num=$(( $snapshot_num + $output_every ))
+    else
+      trace cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
+      cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
+    fi
     continue
   fi
 
