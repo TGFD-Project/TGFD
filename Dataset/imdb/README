@@ -7,6 +7,10 @@ To run in the background and log output to file, run:
 To convert IMDB lists into RDF format:
   Run rdf.py <timestamp>
 
-If want to run batch.sh separately, then:
+If you want to run batch.sh separately, then:
   Run synch.sh to download the data.
   Run patch.sh to create the snapshots for a list.
+
+If you want to profile rdf.py, then run:
+  ./profilerdf.sh <rdf.py args>
+e.g.  ./profilerdf.sh 171222 --maxlines 10000
