@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Mirror the temporal IMDB database.
-# Alternative mirror: ftp.funet.fi /.m/mirrors/ftp.imdb.com/pub
+# Mirror the IMDB database diffs.
+# Alternative mirror: ftp://ftp.funet.fi/.m/mirrors/ftp.imdb.com/pub/frozendata
 
 filename=$(basename "$0")
 echo "$(date +%Y-%m-%dT%H:%M:%S) I ./$filename $@"
@@ -12,6 +12,8 @@ if [ $size == 13429004 ] || [ $size == 13429160 ]; then
 fi
 
 if ! wget --mirror --no-parent ftp://ftp.fu-berlin.de/misc/movies/database/frozendata/; then
+  # TODO: try ftp://ftp.funet.fi/.m/mirrors/ftp.imdb.com/pub/frozendata [2021-03-14]
+  # Will have to modify patch.sh to handle the different path.
   echo "$(date +%Y-%m-%dT%H:%M:%S) E ERROR: wget failed"
   exit 1
 fi
