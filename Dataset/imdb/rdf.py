@@ -55,7 +55,8 @@ def main(sysargv):
     logging.info(f"Output is {output_file}")
 
 class ImdbRdfParser:
-    '''Parser for IMDB into  '''
+    '''Parser for IMDB lists into RDF'''
+
     # Lists
     _COUNTRIES    = 'countries'
     _DISTRIBUTORS = 'distributors'
@@ -244,7 +245,7 @@ class ImdbRdfParser:
                         logging.warning(f"Did not parse entire {list} list because of maxlines limit")
                         break
 
-                    log_progress(line_number, total=num_lines, milestone=200000)
+                    log_progress(line_number, total=num_lines, milestone=250000)
                     state = parse_line(line, state)
                 except Exception:
                     logging.exception(f"Failed to parse {line_number} of {filename}: {line}")
