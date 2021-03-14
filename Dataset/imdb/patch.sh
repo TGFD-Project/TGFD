@@ -76,12 +76,12 @@ fi
 
 function log
 {
-  echo "$(date +%Y-%m-%dT%H:%M:%S) $*"
+  echo "$(date +%Y-%m-%dT%H:%M:%S) I $*"
 }
 function trace
 {
   if [ "$verbose" != "" ]; then
-    echo "$(date +%Y-%m-%dT%H:%M:%S) $*"
+    echo "$(date +%Y-%m-%dT%H:%M:%S) D $*"
   fi
 }
 
@@ -121,7 +121,7 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   # Skip diffs until the specified beginning snapshot
   if [ "$begin" != "" ]; then
     if [ "$timestamp" == "$begin" ]; then
-      trace "Saving $snapshotdir/$list-$timestamp.list"
+      trace cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
       cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
       begin= # Reset begin so that normal patching will continue from here
     else
@@ -134,29 +134,29 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
 
   # Skip the very last diff because it is empty and the frozendata list is the result of the last diff 
   if [[ "$timestamp" == 171222 ]]; then
-    trace "Saving $snapshotdir/$list-$timestamp.list"
+    trace cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
     cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
     continue
   fi
 
-  trace "Expanding $diff"
+  trace tar -zxf $diff --directory $snapshotdir
   rm -rf $diffsdir # Remove any previous diffs
-  tar -zxf $diff # Tar contains a diffs/ dir
+  tar -zxf $diff --directory $snapshotdir # Tar contains a diffs/ dir so path will be $snapshotdir/diffs/
 
-  trace "Patching $diff"
+  trace patch --reverse --silent $snapshotdir/$list.list $diffsdir/$list.list
   if ! patch --reverse --silent $snapshotdir/$list.list $diffsdir/$list.list; then
     log "ERROR: patch failed"
     exit 1
   fi
 
-  trace "Saving $snapshotdir/$list-$timestamp.list"
+  trace cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
   cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
 
-  if [ "$endTimestamp" != "" ] && [[ "$timestamp" = *$endTimestamp* ]]; then
+  if [ "$end" != "" ] && [[ "$timestamp" = *$end* ]]; then
     log "Stopping early at $diff"
     break
   fi
 done
 
-trace "Removing $snapshotdir/$list.list (same as last snapshot but without the date)"
+trace rm $snapshotdir/$list.list "# duplicate of $snapshotdir/$list-$timestamp"
 rm $snapshotdir/$list.list
