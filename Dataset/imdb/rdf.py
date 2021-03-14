@@ -28,6 +28,7 @@ def main(sysargv):
     parseByList = {
         "countries":   parser.parse_countries,
         "disributors": parser.parse_distributors,
+        "movies":      parser.parse_movies,
         "genres":      parser.parse_genres }
 
     logging.info("IMDB lists:")
@@ -59,19 +60,27 @@ class ImdbRdfParser:
     _COUNTRIES    = 'countries'
     _DISTRIBUTORS = 'distributors'
     _GENRES       = 'genres'
+    _MOVIES       = 'movies'
+
+    # List types
+    _COUNTRY     = 'country'
+    _DISTRIBUTOR = 'distributor'
+    _GENRE       = 'genre'
+    _MOVIE       = 'movie'
 
     # Predicates
     _NAME           = namespace.FOAF.name
+    _EPISODE        = term.URIRef(f"http://xmlns.com/foaf/0.1/episode")
     _COUNTRY_OF     = term.URIRef(f"http://xmlns.com/foaf/0.1/country_of_origin")
     _DISTRIBUTOR_OF = term.URIRef(f"http://xmlns.com/foaf/0.1/distributor_of")
     _GENRE_OF       = term.URIRef(f"http://xmlns.com/foaf/0.1/genre_of")
+    _YEAR_OF        = term.URIRef(f"http://xmlns.com/foaf/0.1/year_of")
 
     # Regex
     _COUNTRY_RE     = re.compile('^"?([^"\n]+)"? \(([0-9]+|\?+)\/?[IVXLCDM]*\).*\t+([a-zA-Z\(\)\-\. ]+)$')
     _DISTRIBUTOR_RE = re.compile('^"?([^"\n]+)"? \([0-9]*\)[^\t\n]*?\t+([^\[\]\n]+)[^\(\)\n]+?\(([0-9]+|[0-9]+-[0-9]+)\)')
     _GENRE_RE       = re.compile('^"?([^"\n]+)"? \((.+)\)( {.+})?\t+(.+)$')
-
-    _MILESTONE = 200000 # Number of lines to log progress
+    _MOVIE_RE       = re.compile('^"?([^"\n]+)"? \(([0-9]+|\?+)\/?[IVXLCDM]*\)( {(.+)})?')
 
     def __init__(self, listdir, timestamp, maxlines=sys.maxsize, encoding='latin-1'):
         '''
@@ -87,7 +96,8 @@ class ImdbRdfParser:
         lists = [
             self._COUNTRIES,
             self._DISTRIBUTORS,
-            self._GENRES]
+            self._GENRES,
+            self._MOVIES]
 
         self._filenames_by_list = {}
         for list in lists:
@@ -112,17 +122,15 @@ class ImdbRdfParser:
         '''Parse a country given the current line and any required state.'''
         info = self._COUNTRY_RE.match(line)
         if not info:
-            return
+            return state
 
         title_string = info.group(1).strip()
-        title_name = term.Literal(title_string)
-        title_partial_uri = urllib.parse.quote(title_string)
-        title = term.URIRef(f"http://imdb.org/movie/{title_partial_uri}")
+        title_name   = term.Literal(title_string)
+        title        = self._uriref(self._MOVIE, title_string)
 
         country_string = info.group(3).strip()
-        country_name = term.Literal(country_string)
-        country_partial_uri = urllib.parse.quote(country_name)
-        country = term.URIRef(f"http://imdb.org/country/{country_partial_uri}")
+        country_name   = term.Literal(country_string)
+        country        = self._uriref(self._COUNTRY, country_name)
 
         self._graph.add((title,   self._NAME,       title_name))
         self._graph.add((country, self._NAME,       country_name))
@@ -137,21 +145,46 @@ class ImdbRdfParser:
         '''Parse a distributor given the current line and any required state.'''
         info = self._DISTRIBUTOR_RE.match(line)
         if not info:
-            return
+            return state
 
         movie_string = info.group(1).strip()
-        movie_name = term.Literal(movie_string)
-        movie_partial_uri = urllib.parse.quote(movie_string)
-        movie = term.URIRef(f"http://imdb.org/movie/{movie_partial_uri}")
+        movie_name   = term.Literal(movie_string)
+        movie        = self._uriref(self._MOVIE, movie_string)
 
         distributor_string = info.group(2).strip()
-        distributor_name = term.Literal(distributor_string)
-        distributor_partial_uri = urllib.parse.quote(distributor_name)
-        distributor = term.URIRef(f"http://imdb.org/distributor/{distributor_partial_uri}")
+        distributor_name   = term.Literal(distributor_string)
+        distributor        = self._uriref(self._DISTRIBUTOR, distributor_name)
 
         self._graph.add((movie,       self._NAME,           movie_name))
         self._graph.add((distributor, self._NAME,           distributor_name))
         self._graph.add((movie,       self._DISTRIBUTOR_OF, distributor_name))
+        return state
+
+    def parse_movies(self):
+        '''Parses a IMDB movies list.'''
+        self._parse_list(self._MOVIES, self._parse_movie)
+
+    def _parse_movie(self, line, state):
+        '''Parse a movie given the current line and any required state.'''
+        info = self._MOVIE_RE.match(line)
+        if not info:
+            return state
+
+        title_string = info.group(1).strip()
+        title_name   = term.Literal(title_string)
+        title        = self._uriref(self._MOVIE, title_string)
+
+        year_string = info.group(2).strip()
+        year        = term.Literal(year_string)
+
+        self._graph.add((title, self._NAME,    title_name))
+        self._graph.add((year,  self._YEAR_OF, title))
+
+        if info.group(4):
+            episode_string = info.group(4).strip()
+            episode_name = term.Literal(episode_string)
+            self._graph.add((title, self._EPISODE, episode_name))
+
         return state
 
     def parse_genres(self):
@@ -162,17 +195,15 @@ class ImdbRdfParser:
         '''Parse a genre given the current line and any required state.'''
         info = self._GENRE_RE.match(line)
         if not info:
-            return
+            return state
 
         movie_string = info.group(1).strip()
-        movie_name = term.Literal(movie_string)
-        movie_partial_uri = urllib.parse.quote(movie_string)
-        movie = term.URIRef(f"http://imdb.org/movie/{movie_partial_uri}")
+        movie_name   = term.Literal(movie_string)
+        movie        = self._uriref(self._MOVIE, movie_string)
 
         genre_string = info.group(4).strip()
-        genre_name = term.Literal(genre_string)
-        genre_partial_uri = urllib.parse.quote(genre_name)
-        genre = term.URIRef(f"http://imdb.org/genre/{genre_partial_uri}")
+        genre_name   = term.Literal(genre_string)
+        genre        = self._uriref(self._GENRE, genre_name)
 
         self._graph.add((movie, self._NAME,     movie_name))
         self._graph.add((genre, self._NAME,     genre_name))
@@ -187,9 +218,12 @@ class ImdbRdfParser:
         '''
         os.makedirs(output_dir, exist_ok=True)
         filepath = f"{output_dir}/imdb-{self._timestamp}.nt"
+
+         # rdflib.graph.serialize overwrites existing file
         self._graph.serialize(
             destination=f"{output_dir}/imdb-{self._timestamp}.nt",
             format='nt')
+
         return filepath
 
     def _parse_list(self, list, parse_line):
@@ -210,10 +244,19 @@ class ImdbRdfParser:
                         logging.warning(f"Did not parse entire {list} list because of maxlines limit")
                         break
 
-                    log_progress(line_number, num_lines, self._MILESTONE)
+                    log_progress(line_number, total=num_lines, milestone=200000)
                     state = parse_line(line, state)
                 except Exception:
                     logging.exception(f"Failed to parse {line_number} of {filename}: {line}")
+
+    def _uriref(self, listType, identifier):
+        '''
+        Create a URIRef of the given list type and id.
+        @param listType Singular of lists (e.g. movie for the movies list)
+        @param id Identifier of node
+        '''
+        partial_uri = urllib.parse.quote(identifier)
+        return term.URIRef(f"http://imdb.org/{listType}/{partial_uri}")
 
 def parse_args(sysargv):
     '''@param sysargv sys.argv'''
