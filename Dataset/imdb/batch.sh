@@ -8,6 +8,7 @@ timestamp=171013
 ./patch.sh actors $timestamp
 ./patch.sh actresses $timestamp
 ./patch.sh countries $timestamp
+./patch.sh directors $timestamp
 ./patch.sh distributors $timestamp
 ./patch.sh genres $timestamp
 ./patch.sh language $timestamp
