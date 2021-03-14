@@ -171,7 +171,7 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   if [ -f "$snapshotdir/$list-$timestamp.list" ]; then
     warn "Skipping creation $snapshotdir/$list-$timestamp.list because it already exists"
     trace cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
-    cp  $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
+    cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
     continue
   fi
 

@@ -6,8 +6,8 @@ filename=$(basename "$0")
 echo "$(date +%Y-%m-%dT%H:%M:%S) I ./$filename $@"
 
 size=$(du -s ftp.fu-berlin.de/ | awk '{print $1}')
-if [ $size == 13429004 ]; then
-  echo "$(date +%Y-%m-%dT%H:%M:%S) W WARNING: Skipping download of files because total size matches"
+if [ $size == 13429004 ] || [ $size == 13429160 ]; then
+  echo "$(date +%Y-%m-%dT%H:%M:%S) W WARNING: Skipping download of files because total size matches $size"
   exit 0
 fi
 
