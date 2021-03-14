@@ -159,14 +159,6 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
   snapshot_num=$(( $snapshot_num + 1 ))
   log "Creating $list snapshot at $timestamp (#$snapshot_num)"
 
-  # Skip the very last diff because it is empty and the frozendata list is the result of the last diff 
-  if [[ "$timestamp" == 171222 ]]; then
-    log "Persisting $list snapshot at $timestamp (#$snapshot_num)"
-    trace cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
-    cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
-    continue
-  fi
-
   # Skip diff whose corresponding snapshot already exists
   if [ -f "$snapshotdir/$list-$timestamp.list" ]; then
     warn "Skipping creation $snapshotdir/$list-$timestamp.list because it already exists"
@@ -183,6 +175,14 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
       trace cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
       cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
     fi
+    continue
+  fi
+
+  # Skip the very last diff because it is empty and the frozendata list is the result of the last diff
+  if [[ "$timestamp" == 171222 ]]; then
+    log "Persisting $list snapshot at $timestamp (#$snapshot_num)"
+    trace cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
+    cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
     continue
   fi
 
