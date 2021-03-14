@@ -2,9 +2,9 @@ Scripts to create snapshots of IMDB data from the diffs.
 
 Run ./batch.sh to create IMDB lists and RDF snapshots for all relevant lists.
 To run in the background and log output to file, run:
-./batch.sh > `date +%Y%m%dT%H%M.log` 2>&1 &
+./batch.sh > `date +%Y%m%dT%H%M.batch.log` 2>&1 &
 To run in the foreground, but log output to console and file, run:
-./batch.sh 2>&1 | tee `date +%Y%m%dT%H%M.log`
+./batch.sh 2>&1 | tee `date +%Y%m%dT%H%M.batch.log`
 
 If you want to run each step in batch.sh separately, then:
   Run synch.sh to download the data.

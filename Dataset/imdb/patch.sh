@@ -3,7 +3,7 @@
 
 # --[Parse arguments]---------------------------------------------------------
 
-# TODO: add argumnt to keep every x snapshot [2021-03-12]
+# TODO: add argument to keep every x snapshot [2021-03-12]
 args="$@"
 for i in $args; do
   case $i in
@@ -47,8 +47,8 @@ if [ "$list" == "" ]; then
   echo
   echo "ARGS:"
   echo "  - list:    filename without extension of *.list.gz file in frozendata"
-  echo "  - end:     optional timestamp to end patching early (in reverse order)"
-  echo "  - begin:   optional timestamp to begin patching from (in reverse order)"
+  echo "  - end:     optional timestamp to end patching early (non-inclusive) (in reverse order)"
+  echo "  - begin:   optional timestamp to begin patching from (inclusive) (in reverse order)"
   echo "             snapshots/{list}-{begin}.list must exist if begin is specified"
   echo "  - verbose: log trace messages"
   exit 1
@@ -78,6 +78,10 @@ function log
 {
   echo "$(date +%Y-%m-%dT%H:%M:%S) I $*"
 }
+function error
+{
+  echo "$(date +%Y-%m-%dT%H:%M:%S) E ERROR: $*"
+}
 function warn
 {
   echo "$(date +%Y-%m-%dT%H:%M:%S) W WARNING: $*"
@@ -91,7 +95,7 @@ function trace
 
 # --[Script]------------------------------------------------------------------
 
-log `basename "$0"` $args
+log ./`basename "$0"` $args
 log "arguments:"
 log "  - list:    $list"
 log "  - end:     $end"
@@ -115,6 +119,11 @@ diffs=(./ftp.fu-berlin.de/misc/movies/database/frozendata/diffs/diffs-*.tar.gz)
 for ((i=${#diffs[@]}-1; i>=0; i--)); do
   diff="${diffs[$i]}"
   timestamp=${diff:63:6}
+
+  if [ "$end" != "" ] && [[ "$timestamp" = *$end* ]]; then
+    warn "Stopping early at $diff"
+    break
+  fi
 
   # Skip 199* diffs because they will be sorted first, but we need latest diffs first (2017)
   if [[ "$timestamp" == 9* ]]; then
@@ -164,17 +173,12 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
 
   trace patch --reverse --silent $snapshotdir/$list.list $diffsdir/$list.list
   if ! patch --reverse --silent $snapshotdir/$list.list $diffsdir/$list.list; then
-    log "ERROR: patch failed"
+    error "patch failed"
     exit 1
   fi
 
   trace cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
   cp $snapshotdir/$list.list $snapshotdir/$list-$timestamp.list
-
-  if [ "$end" != "" ] && [[ "$timestamp" = *$end* ]]; then
-    log "Stopping early at $diff"
-    break
-  fi
 done
 
 trace rm $snapshotdir/$list.list "# duplicate of $snapshotdir/$list-$timestamp"

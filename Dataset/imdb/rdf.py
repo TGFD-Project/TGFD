@@ -366,7 +366,7 @@ class ImdbRdfParser:
         if current % (milestone) == 0 or current == (total - 1):
             percentage = 100 * current / total
             memory = get_memory_usage()
-            logging.info(f"Parsed: {percentage:3.0f}%, Memory: {memory:4.1f}GiB, Line: {current:7d}/{(total - 1)}")
+            logging.info(f"Parsed: {percentage:3.0f}%, Memory: {memory:4.1f}GiB, Line: {current:8d}/{(total - 1)}")
 
     def _parse_list(self, list, parse_line, initial_state={}):
         '''

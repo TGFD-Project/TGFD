@@ -11,19 +11,19 @@ function panic
 # Sync the dataset
 ./sync.sh || panic "sync.sh failed"
 
-# Create snapshots for the following lists backwards from 2017-12-25 to 2014-02-14.
+# Create snapshots for the following lists backwards from 2017-12-22 to 2014-02-14.
 # NB: IMDB database is missing diffs for 2014-02-07 and 2014-01-31 [2021-03-14]
-# So we cannot recreate snapshots back any further than 2014-02-14.
-last_valid_timestamp=140214
-./patch.sh --list=actors       --end=$last_valid_timestamp || panic "patch.sh failed"
-./patch.sh --list=actresses    --end=$last_valid_timestamp || panic "patch.sh failed"
-./patch.sh --list=countries    --end=$last_valid_timestamp || panic "patch.sh failed"
-./patch.sh --list=directors    --end=$last_valid_timestamp || panic "patch.sh failed"
-./patch.sh --list=distributors --end=$last_valid_timestamp || panic "patch.sh failed"
-./patch.sh --list=genres       --end=$last_valid_timestamp || panic "patch.sh failed"
-./patch.sh --list=language     --end=$last_valid_timestamp || panic "patch.sh failed"
-./patch.sh --list=movies       --end=$last_valid_timestamp || panic "patch.sh failed"
-./patch.sh --list=ratings      --end=$last_valid_timestamp || panic "patch.sh failed"
+# So we cannot recreate snapshots back any further than 2014-02-14 (2014-01-24 will fail).
+first_invalid_timestamp=140124
+./patch.sh --list=actors       --end=$first_invalid_timestamp || panic "patch.sh failed"
+./patch.sh --list=actresses    --end=$first_invalid_timestamp || panic "patch.sh failed"
+./patch.sh --list=countries    --end=$first_invalid_timestamp || panic "patch.sh failed"
+./patch.sh --list=directors    --end=$first_invalid_timestamp || panic "patch.sh failed"
+./patch.sh --list=distributors --end=$first_invalid_timestamp || panic "patch.sh failed"
+./patch.sh --list=genres       --end=$first_invalid_timestamp || panic "patch.sh failed"
+./patch.sh --list=language     --end=$first_invalid_timestamp || panic "patch.sh failed"
+./patch.sh --list=movies       --end=$first_invalid_timestamp || panic "patch.sh failed"
+./patch.sh --list=ratings      --end=$first_invalid_timestamp || panic "patch.sh failed"
 
 # Grab the timestamps from the movies snapshots.
 # Assumes that all IMDB lists have the same timestamps (as they should from above).
