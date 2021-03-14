@@ -28,7 +28,7 @@ def main(sysargv):
 
     rdf_output_file = f"{args.outdir}/imdb-{args.timestamp}.nt"
     if os.path.exists(rdf_output_file):
-        logging.warning(f"WARNING: Skip creating {rdf_output_file} because it already exists")
+        logging.warning(f"WARNING: Skipping creation of {rdf_output_file} because it already exists")
         return 1
 
     logging.info("Initializing parser")
@@ -361,12 +361,12 @@ class ImdbRdfParser:
         # rdflib.graph.serialize overwrites existing file
         self._graph.serialize(destination=output_file, format='nt')
 
-    def _log_progress(self, current, total, milestone):
+    def _log_progress(self, list, current, total, milestone):
         '''Logs percentage progess of processing lines in a file.'''
         if current % (milestone) == 0 or current == (total - 1):
             percentage = 100 * current / total
             memory = get_memory_usage()
-            logging.info(f"Parsed: {percentage:3.0f}%, Memory: {memory:4.1f}GiB, Line: {current:8d}/{(total - 1)}")
+            logging.info(f"Snapshot: {list}-{self._timestamp}, Parsed: {percentage:3.0f}%, Memory: {memory:4.1f}GiB, Line: {current:8d}/{(total - 1)}")
 
     def _parse_list(self, list, parse_line, initial_state={}):
         '''
@@ -387,7 +387,7 @@ class ImdbRdfParser:
                         logging.warning(f"WARNING: Did not parse entire {list} list because of maxlines limit")
                         break
 
-                    self._log_progress(line_number, total=num_lines, milestone=500000)
+                    self._log_progress(list, line_number, total=num_lines, milestone=500000)
                     state = parse_line(line, state)
                 except Exception:
                     logging.exception(f"Failed to parse {line_number} of {filename}: {line}")
