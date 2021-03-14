@@ -21,15 +21,17 @@ def main(sysargv):
     if args.verbose:
         logging.root.setLevel(logging.DEBUG)
 
+    logging.info("Initializing parser")
     parser = ImdbRdfParser(
         listdir=args.listdir,
         timestamp=args.timestamp,
         maxlines=args.maxlines)
     parseByList = {
-        "countries":   parser.parse_countries,
-        "disributors": parser.parse_distributors,
-        "movies":      parser.parse_movies,
-        "genres":      parser.parse_genres }
+        'actors':      parser.parse_actors,
+        'countries':   parser.parse_countries,
+        'disributors': parser.parse_distributors,
+        'movies':      parser.parse_movies,
+        'genres':      parser.parse_genres }
 
     logging.info("IMDB lists:")
     for list in sorted(parseByList):
@@ -58,12 +60,14 @@ class ImdbRdfParser:
     '''Parser for IMDB lists into RDF'''
 
     # Lists
+    _ACTORS       = 'actors'
     _COUNTRIES    = 'countries'
     _DISTRIBUTORS = 'distributors'
     _GENRES       = 'genres'
     _MOVIES       = 'movies'
 
     # List types
+    _ACTOR       = 'actor'
     _COUNTRY     = 'country'
     _DISTRIBUTOR = 'distributor'
     _GENRE       = 'genre'
@@ -71,9 +75,12 @@ class ImdbRdfParser:
 
     # Predicates
     _NAME           = namespace.FOAF.name
-    _EPISODE        = term.URIRef(f"http://xmlns.com/foaf/0.1/episode")
+    _ACTOR_OF       = term.URIRef(f"http://xmlns.com/foaf/0.1/actor_of")
+    _ACTRESS_OF     = term.URIRef(f"http://xmlns.com/foaf/0.1/actress_of")
     _COUNTRY_OF     = term.URIRef(f"http://xmlns.com/foaf/0.1/country_of_origin")
+    _DIRECTOR_OF    = term.URIRef(f"http://xmlns.com/foaf/0.1/director_of")
     _DISTRIBUTOR_OF = term.URIRef(f"http://xmlns.com/foaf/0.1/distributor_of")
+    _EPISODE        = term.URIRef(f"http://xmlns.com/foaf/0.1/episode")
     _GENRE_OF       = term.URIRef(f"http://xmlns.com/foaf/0.1/genre_of")
     _YEAR_OF        = term.URIRef(f"http://xmlns.com/foaf/0.1/year_of")
 
@@ -82,6 +89,7 @@ class ImdbRdfParser:
     _DISTRIBUTOR_RE = re.compile('^"?([^"\n]+)"? \([0-9]*\)[^\t\n]*?\t+([^\[\]\n]+)[^\(\)\n]+?\(([0-9]+|[0-9]+-[0-9]+)\)')
     _GENRE_RE       = re.compile('^"?([^"\n]+)"? \((.+)\)( {.+})?\t+(.+)$')
     _MOVIE_RE       = re.compile('^"?([^"\n]+)"? \(([0-9]+|\?+)\/?[IVXLCDM]*\)( {(.+)})?')
+    _PERSON_RE      = re.compile('^(([^\t\n]+\t+)|\t+)"?([^"\n]+)"? \(([0-9?]{4})[^\)]*\)( {([^}]+)})?.*$')
 
     def __init__(self, listdir, timestamp, maxlines=sys.maxsize, encoding='latin-1'):
         '''
@@ -95,6 +103,7 @@ class ImdbRdfParser:
         self._maxlines = maxlines
 
         lists = [
+            self._ACTORS,
             self._COUNTRIES,
             self._DISTRIBUTORS,
             self._GENRES,
@@ -106,7 +115,7 @@ class ImdbRdfParser:
 
         self._lines_by_list = {}
         for list, filename in self._filenames_by_list.items():
-            self._lines_by_list[list] = get_file_lines(filename, encoding)
+            self._lines_by_list[list] = get_file_lines(filename, encoding, maxlines)
 
         self._graph = rdflib.Graph()
         self._graph.bind("foaf", namespace.FOAF)
@@ -114,6 +123,44 @@ class ImdbRdfParser:
     def get_num_nodes(self):
         '''Returns the number of nodes in the graph.'''
         return len(self._graph.all_nodes())
+
+    def parse_actors(self):
+        '''Parse a IMDB actors list.'''
+        self._parse_list(
+            self._ACTORS,
+            self._parse_person,
+            {'person_type': 'actor', 'predicate': self._ACTOR_OF})
+
+    def _parse_person(self, line, state):
+        '''Parse a person given the current line and any required state.'''
+        if line == '\n':
+            state['person_name'] = None
+            state['person']      = None
+            return state
+
+        info = self._PERSON_RE.match(line)
+        if not info:
+            return state
+
+        if info.group(2):
+            person_string = info.group(2).strip()
+            state['person_name'] = term.Literal(person_string)
+            state['person']      = self._uriref(state['person_type'], person_string)
+
+        movie_string = info.group(3).strip()
+        movie_name   = term.Literal(movie_string)
+        movie        = self._uriref(self._MOVIE, movie_string)
+
+        self._graph.add((movie,           self._NAME,         movie_name))
+        self._graph.add((state['person'], self._NAME,         state['person_name']))
+        self._graph.add((state['person'], state['predicate'], movie))
+
+        if info.group(6):
+            episode_string = info.group(6).strip()
+            episode_name   = term.Literal(episode_string)
+            self._graph.add((movie, self._EPISODE, episode_name))
+
+        return state
 
     def parse_countries(self):
         '''Parse a IMDB countries list.'''
@@ -227,37 +274,38 @@ class ImdbRdfParser:
 
         return filepath
 
-    def _parse_list(self, list, parse_line):
+    def _parse_list(self, list, parse_line, initial_state={}):
         '''
         Common function to parse a list.
         @param list Name of list to parse.
         @param parse_line Function that will input a line and state (if any
         needed to track between lines), add to the graph, and return new state.
+        @param inital_state Any initial state to set for the line parser.
         '''
         filename = self._filenames_by_list[list]
         num_lines = self._lines_by_list[list]
 
         with open(filename, encoding=self._encoding) as f:
-            state = {}
+            state = initial_state
             for line_number, line in enumerate(f):
                 try:
                     if line_number >= self._maxlines:
                         logging.warning(f"Did not parse entire {list} list because of maxlines limit")
                         break
 
-                    log_progress(line_number, total=num_lines, milestone=250000)
+                    log_progress(line_number, total=num_lines, milestone=500000)
                     state = parse_line(line, state)
                 except Exception:
                     logging.exception(f"Failed to parse {line_number} of {filename}: {line}")
 
-    def _uriref(self, listType, identifier):
+    def _uriref(self, list_type, identifier):
         '''
         Create a URIRef of the given list type and id.
-        @param listType Singular of lists (e.g. movie for the movies list)
+        @param list_type Singular of lists (e.g. movie for the movies list)
         @param id Identifier of node
         '''
         partial_uri = urllib.parse.quote(identifier)
-        return term.URIRef(f"http://imdb.org/{listType}/{partial_uri}")
+        return term.URIRef(f"http://imdb.org/{list_type}/{partial_uri}")
 
 def parse_args(sysargv):
     '''@param sysargv sys.argv'''
@@ -278,11 +326,12 @@ def parse_args(sysargv):
     logging.info(f"  verbose:   {args.verbose}")
     return args
 
-def get_file_lines(filename, encoding='utf-8'):
+def get_file_lines(filename, encoding='utf-8', maxlines=sys.maxsize):
     '''Get the number of lines in a file.'''
     with open(filename, encoding=encoding) as f:
         for i, l in enumerate(f):
-            pass
+            if i >= maxlines:
+                break
     return i + 1
 
 def get_memory_usage():
