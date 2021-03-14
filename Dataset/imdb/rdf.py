@@ -26,23 +26,16 @@ def main(sysargv):
         listdir=args.listdir,
         timestamp=args.timestamp,
         maxlines=args.maxlines)
-    parseByList = {
-        'actors':      parser.parse_actors,
-        'actresses':   parser.parse_actresses,
-        'countries':   parser.parse_countries,
-        'disributors': parser.parse_distributors,
-        'movies':      parser.parse_movies,
-        'genres':      parser.parse_genres }
 
     logging.info("IMDB lists:")
-    for list in sorted(parseByList):
+    for list in sorted(parser.parse_funcs_by_list):
         logging.info(f"  - {list}")
 
     prev_num_nodes = 0
-    for list in sorted(parseByList):
+    for list in sorted(parser.parse_funcs_by_list):
         logging.info(f"Parsing {list}")
         start = time.time()
-        parseByList[list]()
+        parser.parse_funcs_by_list[list]()
         logging.info(f"Parsed {list} in {time.time() - start:.0f} seconds")
 
         # NOTE: Avoid counting nodes if not needed as it is expensive [2021-03-13]
@@ -73,7 +66,7 @@ class ImdbRdfParser:
     _ACTOR       = 'actor'
     _ACTRESS     = 'actress'
     _COUNTRY     = 'country'
-    _DIRECTORS   = 'directors'
+    _DIRECTOR    = 'director'
     _DISTRIBUTOR = 'distributor'
     _GENRE       = 'genre'
     _MOVIE       = 'movie'
@@ -107,16 +100,17 @@ class ImdbRdfParser:
         self._encoding = encoding
         self._maxlines = maxlines
 
-        lists = [
-            self._ACTORS,
-            self._ACTRESSES,
-            self._COUNTRIES,
-            self._DISTRIBUTORS,
-            self._GENRES,
-            self._MOVIES]
+        self._parse_funcs_by_list = {
+            self._ACTORS:       self.parse_actors,
+            self._ACTRESSES:    self.parse_actresses,
+            self._COUNTRIES:    self.parse_countries,
+            self._DIRECTORS:    self.parse_directors,
+            self._DISTRIBUTORS: self.parse_distributors,
+            self._MOVIES:       self.parse_movies,
+            self._GENRES:       self.parse_genres }
 
         self._filenames_by_list = {}
-        for list in lists:
+        for list in self._parse_funcs_by_list:
             self._filenames_by_list[list] = f"{listdir}/{list}-{timestamp}.list"
 
         self._lines_by_list = {}
@@ -125,6 +119,11 @@ class ImdbRdfParser:
 
         self._graph = rdflib.Graph()
         self._graph.bind("foaf", namespace.FOAF)
+
+    @property
+    def parse_funcs_by_list(self):
+        '''Returns dict of list to parse function.'''
+        return self._parse_funcs_by_list
 
     def get_num_nodes(self):
         '''Returns the number of nodes in the graph.'''
@@ -143,6 +142,13 @@ class ImdbRdfParser:
             self._ACTRESSES,
             self._parse_person,
             {'person_type': self._ACTRESS, 'predicate': self._ACTRESS_OF})
+
+    def parse_directors(self):
+        '''Parse a IMDB directors list.'''
+        self._parse_list(
+            self._DIRECTORS,
+            self._parse_person,
+            {'person_type': self._DIRECTOR, 'predicate': self._DIRECTOR_OF})
 
     def _parse_person(self, line, state):
         '''Parse a person given the current line and any required state.'''
@@ -287,6 +293,13 @@ class ImdbRdfParser:
 
         return filepath
 
+    def _log_progress(self, current, total, milestone):
+        '''Logs percentage progess of processing lines in a file.'''
+        if current % (milestone) == 0 or current == (total - 1):
+            percentage = 100 * current / total
+            memory = get_memory_usage()
+            logging.info(f"Parsed: {percentage:3.0f}%, Memory: {memory:4.1f}GiB, Line: {current:7d}/{(total - 1)}")
+
     def _parse_list(self, list, parse_line, initial_state={}):
         '''
         Common function to parse a list.
@@ -306,7 +319,7 @@ class ImdbRdfParser:
                         logging.warning(f"Did not parse entire {list} list because of maxlines limit")
                         break
 
-                    log_progress(line_number, total=num_lines, milestone=500000)
+                    self._log_progress(line_number, total=num_lines, milestone=500000)
                     state = parse_line(line, state)
                 except Exception:
                     logging.exception(f"Failed to parse {line_number} of {filename}: {line}")
@@ -352,13 +365,6 @@ def get_memory_usage():
     with open('/proc/self/status') as f:
         result = f.read().split('VmRSS:')[1].split('\n')[0][:-3]
     return float(result.strip()) / 1024 / 1024
-
-def log_progress(current, total, milestone):
-    '''Logs percentage progess of processing lines in a file.'''
-    if current % (milestone) == 0 or current == (total - 1):
-        percentage = 100 * current / total
-        memory = get_memory_usage()
-        logging.info(f"Parsed: {percentage:3.0f}%, Memory: {memory:4.1f}GiB, Line: {current:7d}/{(total - 1)}")
 
 if __name__ == '__main__':
     try:
