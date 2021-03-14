@@ -78,6 +78,10 @@ function log
 {
   echo "$(date +%Y-%m-%dT%H:%M:%S) I $*"
 }
+function warn
+{
+  echo "$(date +%Y-%m-%dT%H:%M:%S) W $*"
+}
 function trace
 {
   if [ "$verbose" != "" ]; then
@@ -100,7 +104,7 @@ mkdir $snapshotdir 2>/dev/null
 if [ "$begin" == "" ]; then
   trace "Expanding ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz"
   cp ./ftp.fu-berlin.de/misc/movies/database/frozendata/$list.list.gz $snapshotdir/$list.list.gz
-  gzip --decompress "$snapshotdir/$list.list.gz"
+  gzip --decompress --force "$snapshotdir/$list.list.gz"
 else
   trace "Copying $snapshotdir/$list-$begin.list $snapshotdir/$list.list"
   cp $snapshotdir/$list-$begin.list $snapshotdir/$list.list
@@ -141,7 +145,7 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
 
   # Skip diff whose corresponding snapshot already exists
   if [ -f "$snapshotdir/$list-$timestamp.list" ]; then
-    log "WARNING: skip creating $snapshotdir/$list-$timestamp.list because it already exists"
+    warn "WARNING: skip creating $snapshotdir/$list-$timestamp.list because it already exists"
     trace cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
     cp  $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
     continue
