@@ -139,6 +139,14 @@ for ((i=${#diffs[@]}-1; i>=0; i--)); do
     continue
   fi
 
+  # Skip diff whose corresponding snapshot already exists
+  if [ -f "$snapshotdir/$list-$timestamp.list" ]; then
+    log "WARNING: skip creating $snapshotdir/$list-$timestamp.list because it already exists"
+    trace cp $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
+    cp  $snapshotdir/$list-$timestamp.list $snapshotdir/$list.list
+    continue
+  fi
+
   trace tar -zxf $diff --directory $snapshotdir
   rm -rf $diffsdir # Remove any previous diffs
   tar -zxf $diff --directory $snapshotdir # Tar contains a diffs/ dir so path will be $snapshotdir/diffs/
