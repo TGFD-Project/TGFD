@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+'''
+Converts multiple IMDB lists of one timestamp into a single RDF file.
+
+Run `./rdf.py -h` or see `def parse_args` for command line arguments.
+'''
 
 import argparse
 import logging
@@ -21,6 +26,11 @@ def main(sysargv):
     if args.verbose:
         logging.root.setLevel(logging.DEBUG)
 
+    rdf_output_file = f"{args.outdir}/imdb-{args.timestamp}.nt"
+    if os.path.exists(rdf_output_file):
+        logging.warning(f"WARNING: Skip creating {rdf_output_file} because it already exists")
+        return 1
+
     logging.info("Initializing parser")
     parser = ImdbRdfParser(
         listdir   = args.listdir,
@@ -33,10 +43,10 @@ def main(sysargv):
 
     prev_num_nodes = 0
     for list in sorted(parser.parse_funcs_by_list):
-        logging.info(f"Parsing {list}")
+        logging.info(f"Parsing {list}-{args.timestamp}")
         start = time.time()
         parser.parse_funcs_by_list[list]()
-        logging.info(f"Parsed {list} in {time.time() - start:.0f} seconds")
+        logging.info(f"Parsed {list}-{args.timestamp} in {time.time() - start:.0f} seconds")
 
         # NOTE: Avoid counting nodes if not needed as it is expensive [2021-03-13]
         if args.verbose:
@@ -44,11 +54,14 @@ def main(sysargv):
             logging.debug(f"Parsed {num_nodes - prev_num_nodes} new nodes for {list}")
             prev_num_nodes = num_nodes
 
-    logging.info(f"Serializing to RDF")
+    logging.info(f"Serializing timestamp {args.timestamp} to RDF")
+    os.makedirs(args.outdir, exist_ok=True)
     start = time.time()
-    output_file = parser.serialize(args.outdir)
+    parser.serialize(rdf_output_file)
     logging.info(f"Serialized in {time.time() - start:.0f} seconds")
-    logging.info(f"Output is {output_file}")
+    logging.info(f"Output is {rdf_output_file}")
+
+    return 0
 
 class ImdbRdfParser:
     '''Parser for IMDB lists into RDF'''
@@ -340,21 +353,13 @@ class ImdbRdfParser:
 
         return state
 
-    def serialize(self, output_dir):
+    def serialize(self, output_file):
         '''
         Serialize graph into a RDF NT file.
-        @param output_dir Output directory.
-        @returns Output filepath.
+        @param output_file Output file.
         '''
-        os.makedirs(output_dir, exist_ok=True)
-        filepath = f"{output_dir}/imdb-{self._timestamp}.nt"
-
-         # rdflib.graph.serialize overwrites existing file
-        self._graph.serialize(
-            destination=f"{output_dir}/imdb-{self._timestamp}.nt",
-            format='nt')
-
-        return filepath
+        # rdflib.graph.serialize overwrites existing file
+        self._graph.serialize(destination=output_file, format='nt')
 
     def _log_progress(self, current, total, milestone):
         '''Logs percentage progess of processing lines in a file.'''
@@ -379,7 +384,7 @@ class ImdbRdfParser:
             for line_number, line in enumerate(f):
                 try:
                     if line_number >= self._maxlines:
-                        logging.warning(f"Did not parse entire {list} list because of maxlines limit")
+                        logging.warning(f"WARNING: Did not parse entire {list} list because of maxlines limit")
                         break
 
                     self._log_progress(line_number, total=num_lines, milestone=500000)
@@ -437,11 +442,12 @@ if __name__ == '__main__':
             datefmt="%Y-%m-%dT%H:%M:%S")
 
         start = time.time()
-        main(sys.argv)
+        result = main(sys.argv)
         logging.info(f"Executed script in {time.time() - start:.0f} seconds")
+        sys.exit(result)
     except KeyboardInterrupt:
         try:
-            logging.warning(f"Script interrupted")
+            logging.warning(f"WARNING: Script interrupted")
             sys.exit(1)
         except SystemExit:
             os._exit(1)
