@@ -62,6 +62,7 @@ class ImdbRdfParser:
     _LANGUAGE     = 'language'
     _GENRES       = 'genres'
     _MOVIES       = 'movies'
+    _RATINGS      = 'ratings'
 
     # List types
     _ACTOR       = 'actor'
@@ -70,8 +71,9 @@ class ImdbRdfParser:
     _DIRECTOR    = 'director'
     _DISTRIBUTOR = 'distributor'
     _GENRE       = 'genre'
-   #_LANGUAGE    = 'language' # Same as value as Lists
+   #_LANGUAGE    = 'language' # Same name and value as Lists identifier
     _MOVIE       = 'movie'
+    _RATING      = 'rating'
 
     # Predicates
     _NAME           = namespace.FOAF.name
@@ -83,6 +85,8 @@ class ImdbRdfParser:
     _EPISODE_OF     = term.URIRef('http://xmlns.com/foaf/0.1/episode_of')
     _GENRE_OF       = term.URIRef('http://xmlns.com/foaf/0.1/genre_of')
     _LANGUAGE_OF    = term.URIRef('http://xmlns.com/foaf/0.1/language_of')
+    _RATING_OF      = term.URIRef('http://xmlns.com/foaf/0.1/rating_of')
+    _VOTES_OF       = term.URIRef('http://xmlns.com/foaf/0.1/votes_of')
     _YEAR_OF        = term.URIRef('http://xmlns.com/foaf/0.1/year_of')
 
     # Regex
@@ -92,6 +96,7 @@ class ImdbRdfParser:
     _LANGUAGE_RE    = re.compile('^"?([^"\n]+)"? \((.+)\)( {.+})?\t+(.+)')
     _MOVIE_RE       = re.compile('^"?([^"\n]+)"? \(([0-9]+|\?+)\/?[IVXLCDM]*\)( {(.+)})?')
     _PERSON_RE      = re.compile('^(([^\t\n]+\t+)|\t+)"?([^"\n]+)"? \(([0-9?]{4})[^\)]*\)( {([^}]+)})?.*$')
+    _RATING_RE      = re.compile('^ +[0-9.]+ +([0-9]+) +([0-9.]+) +"?([^"\n]+)"? \(([0-9]+)[^\)]*\)( {(.+)})?')
 
     def __init__(self, listdir, timestamp, maxlines=sys.maxsize, encoding='latin-1'):
         '''
@@ -112,7 +117,8 @@ class ImdbRdfParser:
             self._DISTRIBUTORS: self.parse_distributors,
             self._GENRES:       self.parse_genres,
             self._LANGUAGE:     self.parse_language,
-            self._MOVIES:       self.parse_movies }
+            self._MOVIES:       self.parse_movies,
+            self._RATINGS:      self.parse_ratings }
 
         self._filenames_by_list = {}
         for list in self._parse_funcs_by_list:
@@ -127,7 +133,7 @@ class ImdbRdfParser:
 
     @property
     def parse_funcs_by_list(self):
-        '''Returns dict of list to parse function.'''
+        '''Returns dict of lists identifier to its parse function.'''
         return self._parse_funcs_by_list
 
     def get_num_nodes(self):
@@ -301,6 +307,37 @@ class ImdbRdfParser:
         self._graph.add((movie, self._NAME,     movie_name))
         self._graph.add((genre, self._NAME,     genre_name))
         self._graph.add((genre, self._GENRE_OF, movie))
+        return state
+
+    def parse_ratings(self):
+        '''Parses a IMDB ratings list.'''
+        self._parse_list(self._RATINGS, self._parse_rating)
+
+    def _parse_rating(self, line, state):
+        '''Parse a rating given the current line and any required state.'''
+        info = self._RATING_RE.match(line)
+        if not info:
+            return state
+
+        movie_string = info.group(3).strip()
+        movie_name   = term.Literal(movie_string)
+        movie        = self._uriref(self._MOVIE, movie_string)
+
+        rating_string = info.group(2).strip()
+        rating_name   = term.Literal(rating_string, datatype=namespace.XSD.integer)
+
+        votes_string = info.group(1).strip()
+        votes_name   = term.Literal(votes_string, datatype=namespace.XSD.float)
+
+        self._graph.add((movie, self._NAME,      movie_name))
+        self._graph.add((movie, self._RATING_OF, rating_name))
+        self._graph.add((movie, self._VOTES_OF,  votes_name))
+
+        if info.group(6):
+            episode_string = info.group(6).strip()
+            episode_name   = term.Literal(episode_string)
+            self._graph.add((movie, self._EPISODE_OF, episode_name))
+
         return state
 
     def serialize(self, output_dir):
