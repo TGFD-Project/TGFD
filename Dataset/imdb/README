@@ -4,7 +4,7 @@ Scripts to create RDF snapshots from IMDB lists and diffs.
 
 ## Prerequisites
 
-`pip intall rdflib`
+`pip intall [--user] rdflib`
 
 ## Creating RDF snapshots
 
