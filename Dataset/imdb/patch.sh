@@ -3,7 +3,6 @@
 
 # --[Parse arguments]---------------------------------------------------------
 
-# TODO: add argument to keep every x snapshot [2021-03-12]
 args="$@"
 for i in $args; do
   case $i in

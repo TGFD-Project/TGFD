@@ -1,4 +1,47 @@
 #!/usr/bin/env bash
+# Batches all scripts together to run in a pipeline to create IMDB RDF snapshots.
+# Specify --rdfstart=yymmdd to skip generating RDF snapshots until this timestamp.
+# This is useful when running on different servers to avoid generating the same snapshots.
+
+# --[Parse arguments]---------------------------------------------------------
+
+args="$@"
+for i in $args; do
+  case $i in
+    --rdfstart=*)
+      rdfstart="${i#*=}"
+      shift
+      ;;
+
+    --help)
+      showhelp=1
+      shift
+      ;;
+
+    *)
+      ;;
+  esac
+done
+
+if [ "$showhelp" == "1" ]; then
+  echo "USAGE: batch.sh [--rdfstart=<timestamp>] [--help]"
+  echo
+  echo "EXAMPLES:"
+  echo "  - batch.sh"
+  echo "  - batch.sh --rdfstart=150123"
+  echo
+  echo "ARGS:"
+  echo "  - rdfstart: skip generating rdf snapshots until this timestamp in form of yymmdd"
+  echo "  - help: show this help message"
+  exit 0
+fi
+
+# --[Functions]---------------------------------------------------------------
+
+function log
+{
+  echo "$(date +%Y-%m-%dT%H:%M:%S) I $*"
+}
 
 # Log that a fatal error was encountered and exit the script.
 function panic
@@ -7,6 +50,8 @@ function panic
   echo "Aborting batch.sh"
   exit 1
 }
+
+# --[Script]------------------------------------------------------------------
 
 # Sync the dataset
 ./sync.sh || panic "sync.sh failed"
@@ -33,6 +78,16 @@ for movie_snapshot in "${movie_snapshots[@]}"; do
   # Split by either '-' or '.' so that ./snapshots/list/movies-171222.list
   # will be split into ['.', '/snapshots/list/movies', '171222', 'list'].
   timestamp=`echo $movie_snapshot | awk -F'[-.]' '{print $3}'`
+
+  # Skip timestamps until specified beginning snapshot
+  if [ "$rdfstart" != "" ]; then
+    if [ "$rdfstart" == "$timestamp" ]; then
+      rdfstart= # Reset rdfstart to continue creating RDF snapshots after this timestamp
+    else
+      log "Skipping creation of RDF $timestamp until $rdfstart"
+      continue
+    fi
+  fi
 
   ./rdf.py $timestamp || panic "rdf.py failed"
 done
