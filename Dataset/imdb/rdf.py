@@ -29,7 +29,7 @@ def main(sysargv):
     rdf_output_file = f"{args.outdir}/imdb-{args.timestamp}.nt"
     if os.path.exists(rdf_output_file):
         logging.warning(f"WARNING: Skipping creation of {rdf_output_file} because it already exists")
-        return 1
+        return
 
     logging.info("Initializing parser")
     parser = ImdbRdfParser(
@@ -60,8 +60,6 @@ def main(sysargv):
     parser.serialize(rdf_output_file)
     logging.info(f"Serialized in {time.time() - start:.0f} seconds")
     logging.info(f"Output is {rdf_output_file}")
-
-    return 0
 
 class ImdbRdfParser:
     '''Parser for IMDB lists into RDF'''
@@ -442,12 +440,15 @@ if __name__ == '__main__':
             datefmt="%Y-%m-%dT%H:%M:%S")
 
         start = time.time()
-        result = main(sys.argv)
+        main(sys.argv)
         logging.info(f"Executed script in {time.time() - start:.0f} seconds")
-        sys.exit(result)
+        sys.exit(0)
     except KeyboardInterrupt:
         try:
             logging.warning(f"WARNING: Script interrupted")
             sys.exit(1)
         except SystemExit:
             os._exit(1)
+    except Exception:
+        logging.exception(f"Uncaught exception")
+        sys.exit(1)
