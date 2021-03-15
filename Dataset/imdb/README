@@ -2,19 +2,6 @@
 
 Scripts to create RDF snapshots from IMDB lists and diffs.
 
-## IMDB
-
-IMDB snapshots can be recreated backwards from 2017-12-22 to 2014-02-14.
-IMDB mirrors are missing the original list file that the diffs are based on.
-
-IMDB mirrors do have the final list file that is the result of the final diff on 2017-12-22.
-So we can patch in reverse to get the snapshots, but diffs are missing for 2017-01-31 and 2017-02-07.
-This is true for both mirrors:
-- ftp://ftp.fu-berlin.de/misc/movies/database/frozendata
-- ftp://ftp.funet.fi/.m/mirrors/ftp.imdb.com/pub/frozendata
-
-Not all lists can be patched back to 2014-02-14 as actors fails to reverse patch on 2014-10-10.
-
 ## Prerequisites
 
 `pip intall rdflib`
@@ -28,9 +15,22 @@ To run in the foreground, run:
 
 To run in the background, run:
 ```
-./batch.sh > `date +%Y%m%dT%H%M.batch.log` 2>&1 &
+nohup ./batch.sh > `date +%Y%m%dT%H%M.batch.log` 2>&1 &
 watch -n 30 tail -n 50 <timestamp.batch.log>
 ```
+
+## IMDB
+
+IMDB snapshots can be recreated backwards from 2017-12-22 to 2014-02-14.
+IMDB mirrors are missing the original list file that the diffs are based on.
+
+IMDB mirrors do have the final list file that is the result of the final diff on 2017-12-22.
+So we can patch in reverse to get the snapshots, but diffs are missing for 2017-01-31 and 2017-02-07.
+This is true for both mirrors:
+- ftp://ftp.fu-berlin.de/misc/movies/database/frozendata
+- ftp://ftp.funet.fi/.m/mirrors/ftp.imdb.com/pub/frozendata
+
+Not all lists can be patched back to 2014-02-14 as actors fails to reverse patch on 2014-10-10.
 
 ## synch.sh
 
