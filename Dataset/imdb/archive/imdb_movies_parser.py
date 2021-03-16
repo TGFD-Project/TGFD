@@ -21,7 +21,7 @@ for year in range(2018,1850,-1):
 						title = URIRef(f"http://imdb.org/movie/{urllib.parse.quote(title_string)}")
 						g.add((title,FOAF.name,title_name))
 						year = Literal(year_string)
-						g.add((year,predicate,title))
+						g.add((title,predicate,year))
 						if info.group(4):
 							episode_string = info.group(4).strip()
 							episode_name = Literal(episode_string)

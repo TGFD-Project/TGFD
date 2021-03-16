@@ -288,7 +288,7 @@ class ImdbRdfParser:
         year        = term.Literal(year_string)
 
         self._graph.add((title, self._NAME,    title_name))
-        self._graph.add((year,  self._YEAR_OF, title))
+        self._graph.add((title, self._YEAR_OF, year))
 
         if info.group(4):
             episode_string = info.group(4).strip()
