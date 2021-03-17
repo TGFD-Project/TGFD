@@ -53,6 +53,10 @@ function panic
 
 # --[Script]------------------------------------------------------------------
 
+log ./`basename "$0"` $args
+log "arguments:"
+log "  - rdfstart: $rdfstart"
+
 # Sync the dataset
 ./sync.sh || panic "sync.sh failed"
 
