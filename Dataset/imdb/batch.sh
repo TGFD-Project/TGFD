@@ -93,5 +93,6 @@ for movie_snapshot in "${movie_snapshots[@]}"; do
     fi
   fi
 
-  ./rdf.py $timestamp || panic "rdf.py failed"
+  ./rdf.py $timestamp --listdir ./snapshots/list --outdir ./snapshots/rdf || panic "rdf.py failed"
+  chmod 664 "./snapshots/rdf/imdb-$timestamp.nt"
 done
