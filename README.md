@@ -1,4 +1,10 @@
-# [TGFD](https://adammansfield.github.io/tgfd/)
+# [TGFD](https://tgfd-project.github.io/TGFD/)
+
+## 1. Overview
+
+The *T*emporal *G*raph *F*unctional *D*ependencies (TGFD) project detects errors in TGFDs. A TGFD is a new class of temporal dependencies over graphs that specify topological and attribute requirements over a time interval.
+
+This page provides supplementary experimental details, TGFD samples, dataset characteristics, and a link to the source code.
 
 * [1. Overview](#1-overview)
 * [2. Datasets](#2-datasets)
@@ -8,13 +14,12 @@
   + [2.2 IMDB](#22-imdb)
     - [2.2.1 IMDB Schema](#221-imdb-schema)
     - [2.2.2 IMDB TGFDs](#222-imdb-tgfds)
+  + [2.3 Sythetic](#23-sythetic)
+    - [2.3.1 Sythetic Schema](#231-sythetic-schema)
+    - [2.3.2 Sythetic TGFDs](#232-sythetic-tgfds)
 * [3. Getting started](#3-getting-started)
-
-## 1. Overview
-
-The Temporal Graph Functional Dependencies project. 
-
-Source code is available at https://github.com/TGFD-Project/TGFD.
+* [4. Comparative Baselines](#4-comparative-baselines)
+* [5. Source Code](#5-source-code)
 
 ## 2. Datasets
 
@@ -25,6 +30,7 @@ Source: https://wiki.dbpedia.org/
 #### 2.1.1 DBpedia Schema
 
 **Vertices:**
+
 | Type             | Attributes |
 | :--------------- | :--------- |
 | academicjournal  | publisher  |
@@ -55,6 +61,7 @@ Source: https://wiki.dbpedia.org/
 
 
 **Edges:**
+
 | Type       | Source           | Destination      | Attributes |
 | :--------- | :--------------- | :--------------- | :--------- |
 | almamater  | judge            | university       | `none`     |
@@ -107,6 +114,7 @@ Source: https://www.imdb.com/interfaces/.
 #### 2.2.1 IMDB Schema
 
 **Vertices:**
+
 | Type        | Attributes                                   |
 | :---------- | :------------------------------------------- |
 | actor       | name                                         |
@@ -118,6 +126,7 @@ Source: https://www.imdb.com/interfaces/.
 | movie       | name, episode, year, rating, votes, language |
 
 **Edges:**
+
 | Type           | Source   | Destination | Attribute  |
 | :------------- | :------- | :---------- | :--------- |
 | actor_of       | actor    | movie       | `none`     |
@@ -129,7 +138,6 @@ Source: https://www.imdb.com/interfaces/.
 | genre_of       | genre    | movie       | `none`     |
 
 #### 2.2.2 IMDB TGFDs
-
 
 ```diff
 ! TODO: define more human friendly TGFD (json?) [2021-03-19] [@adammansfield]
@@ -151,6 +159,24 @@ delta#0#365#1
 ! TODO: add the rest of IMDB TGFDs [2021-03-19] [@adammansfield]
 ```
 
+### 2.3 Sythetic
+
+```diff
+! TODO: explain synthetic tool [2021-03-21] [@levin-noro]
+```
+
+#### 2.3.1 Sythetic Schema
+
+```diff
+! TODO: define sythetic schema [2021-03-21] [@levin-noro]
+```
+
+#### 2.3.2 Sythetic TGFDs
+
+```diff
+! TODO: define sythetic TGFDs [2021-03-21] [@levin-noro]
+```
+
 ## 3. Getting started
 
 ```diff
@@ -158,3 +184,12 @@ delta#0#365#1
 ! TODO: add examples [2021-03-19] [@adammansfield]
 ```
 
+## 4. Comparative Baselines
+
+```diff
+! TODO: describe other algorithms that we evaluated, how they were implemented and configured. Provide the source code link of their implementation [2021-03-21] [@adammansfield]
+```
+
+## 5. Source Code
+
+Source code is available at https://github.com/TGFD-Project/TGFD.
