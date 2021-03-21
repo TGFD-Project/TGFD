@@ -2,6 +2,7 @@
 
 [comment]: # (Use HTML to define headers so that Github and Github Pages will have the same header IDs)
 [comment]: # (E.g. For "# 1. Overview", Github generates id="1-overview" and Github Pages generates id="overview")
+[comment]: # (Must use Gitub's generated id to be consistent between Github and Github Pages because Github will override it")
 
 <h2 id="1-overview">1. Overview</h2>
 
@@ -24,13 +25,13 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
 * [4. Comparative Baselines](#4-comparative-baselines)
 * [5. Source Code](#5-source-code)
 
-## 2. Datasets
+<h2 id="2-datasets">2. Datasets</h2>
 
-### 2.1 DBpedia
+<h3 id="21-dbpedia">2.1 DBpedia</h3>
 
 **Source:** https://wiki.dbpedia.org/
 
-#### 2.1.1 DBpedia Schema
+<h4 id="211-dbpedia-schema">2.1.1 DBpedia Schema</h4>
 
 **Vertices:**
 
@@ -88,7 +89,7 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
 | publisher  | book             | publisher        | `none`     |
 | team       | basketballplayer | basketballteam   | `none`     |
 
-#### 2.1.2 DBpedia TGFDs
+<h4 id="212-dbpedia-tgfds">2.1.2 DBpedia TGFDs</h4>
 
 ```diff
 ! TODO: define more human friendly TGFD (json?) [2021-03-19] [@adammansfield]
@@ -110,11 +111,11 @@ delta#0#210#1
 ! TODO: add the rest of DBpedia TGFDs [2021-03-19] [@adammansfield]
 ```
 
-### 2.2 IMDB
+<h3 id="22-imdb">2.2 IMDB</h3>
 
 Source: https://www.imdb.com/interfaces/.
 
-#### 2.2.1 IMDB Schema
+<h4 id="221-imdb-schema">2.2.1 IMDB Schema</h4>
 
 **Vertices:**
 
@@ -140,7 +141,7 @@ Source: https://www.imdb.com/interfaces/.
 | language_of    | movie    | language    | `none`     |
 | genre_of       | genre    | movie       | `none`     |
 
-#### 2.2.2 IMDB TGFDs
+<h4 id="222-imdb-tgfds">2.2.2 IMDB TGFDs</h4>
 
 ```diff
 ! TODO: define more human friendly TGFD (json?) [2021-03-19] [@adammansfield]
@@ -162,37 +163,37 @@ delta#0#365#1
 ! TODO: add the rest of IMDB TGFDs [2021-03-19] [@adammansfield]
 ```
 
-### 2.3 Sythetic
+<h3 id="23-synthetic">2.3 Synthetic</h3>
 
 ```diff
 ! TODO: explain synthetic tool [2021-03-21] [@levin-noro]
 ```
 
-#### 2.3.1 Sythetic Schema
+<h4 id="231-synthetic-schema">2.3.1 Synthetic Schema</h4>
 
 ```diff
 ! TODO: define sythetic schema [2021-03-21] [@levin-noro]
 ```
 
-#### 2.3.2 Sythetic TGFDs
+<h4 id="232-synthetic-tgfds">2.3.2 Synthetic TGFDs</h4>
 
 ```diff
 ! TODO: define sythetic TGFDs [2021-03-21] [@levin-noro]
 ```
 
-## 3. Getting started
+<h2 id="3-getting-started">3. Getting started</h2>
 
 ```diff
 ! TODO: add dependencies [2021-03-19] [@adammansfield]
 ! TODO: add examples [2021-03-19] [@adammansfield]
 ```
 
-## 4. Comparative Baselines
+<h2 id="4-comparative-baselines">4. Comparative Baselines</h2>
 
 ```diff
 ! TODO: describe other algorithms that we evaluated, how they were implemented and configured. Provide the source code link of their implementation [2021-03-21] [@adammansfield]
 ```
 
-## 5. Source Code
+<h2 id="5-source-code">5. Source Code</h2>
 
 Source code is available at https://github.com/TGFD-Project/TGFD.
