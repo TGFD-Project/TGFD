@@ -9,8 +9,8 @@ import java.util.Scanner;
 
 public class configParser {
 
-    private ArrayList <String> seedDataFilePath=new ArrayList<>();
-    private ArrayList<String> seedTypesFilePath=new ArrayList<>();
+    HashMap<Integer, ArrayList<String>> typesPaths = new HashMap<>();
+    HashMap<Integer, ArrayList<String>> dataPaths = new HashMap<>();
     private HashMap <Integer, String> diffFilesPath=new HashMap<>();
     private String patternPath = "";
     private HashMap<Integer,LocalDate> timestamps=new HashMap<>();
@@ -41,14 +41,16 @@ public class configParser {
             if (conf[0].toLowerCase().startsWith("-t"))
             {
                 var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if(snapshotId==1)
-                    seedTypesFilePath.add(conf[1]);
+                if (!typesPaths.containsKey(snapshotId))
+                    typesPaths.put(snapshotId, new ArrayList <>());
+                typesPaths.get(snapshotId).add(conf[1]);
             }
             else if (conf[0].toLowerCase().startsWith("-d"))
             {
                 var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if(snapshotId==1)
-                    seedDataFilePath.add(conf[1]);
+                if (!dataPaths.containsKey(snapshotId))
+                    dataPaths.put(snapshotId, new ArrayList <>());
+                dataPaths.get(snapshotId).add(conf[1]);
             }
             else if (conf[0].toLowerCase().startsWith("-c"))
             {
@@ -76,12 +78,20 @@ public class configParser {
         }
     }
 
-    public ArrayList <String> getSeedDataFilePath() {
-        return seedDataFilePath;
+    public ArrayList <String> getFirstDataFilePath() {
+        return dataPaths.get(1);
     }
 
-    public ArrayList <String> getSeedTypesFilePath() {
-        return seedTypesFilePath;
+    public ArrayList <String> getFirstTypesFilePath() {
+        return typesPaths.get(1);
+    }
+
+    public HashMap <Integer, ArrayList <String>> getAllDataPaths() {
+        return dataPaths;
+    }
+
+    public HashMap <Integer, ArrayList <String>> getAllTypesPaths() {
+        return typesPaths;
     }
 
     public HashMap <Integer, LocalDate> getTimestamps() {

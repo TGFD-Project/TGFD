@@ -3,58 +3,29 @@ import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphLoader.DBPediaLoader;
 import infra.TGFD;
-import util.properties;
+import util.configParser;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class testChangesForTGFDs {
+public class testDiffExtractorDBPedia {
 
     public static void main(String []args) throws FileNotFoundException {
 
-        HashMap<Integer, ArrayList<String>> typePathsById = new HashMap<>();
-        HashMap<Integer, ArrayList<String>> dataPathsById = new HashMap<>();
-        String patternPath = "";
+        System.out.println("Test extract diffs over DBPedia graph");
 
+        configParser conf=new configParser(args[0]);
 
-        System.out.println("Test changes over DBPedia graph");
-
-        Scanner scanner = new Scanner(new File(args[0]));
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            String []conf=line.split(" ");
-            if(conf.length!=2)
-                continue;
-            if (conf[0].toLowerCase().startsWith("-t"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if (!typePathsById.containsKey(snapshotId))
-                    typePathsById.put(snapshotId, new ArrayList<String>());
-                typePathsById.get(snapshotId).add(conf[1]);
-            }
-            else if (conf[0].toLowerCase().startsWith("-d"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if (!dataPathsById.containsKey(snapshotId))
-                    dataPathsById.put(snapshotId, new ArrayList<String>());
-                dataPathsById.get(snapshotId).add(conf[1]);
-            }
-            else if (conf[0].toLowerCase().startsWith("-p"))
-            {
-                patternPath = conf[1];
-            }
-            else if(conf[0].toLowerCase().startsWith("-optgraphload"))
-            {
-                properties.myProperties.optimizedLoadingBasedOnTGFD=Boolean.parseBoolean(conf[1]);
-            }
-        }
-
-        System.out.println(dataPathsById.keySet() + " *** " + dataPathsById.values());
-        System.out.println(typePathsById.keySet() + " *** " + typePathsById.values());
+        System.out.println(conf.getAllDataPaths().keySet() + " *** " + conf.getAllDataPaths().values());
+        System.out.println(conf.getAllTypesPaths().keySet() + " *** " + conf.getAllTypesPaths().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(patternPath);
+        TGFDGenerator generator = new TGFDGenerator(conf.getPatternPath());
         List<TGFD> allTGFDs=generator.getTGFDs();
 
         String name="";
@@ -66,8 +37,8 @@ public class testChangesForTGFDs {
         else
             name="noSpecificTGFDs";
 
-        System.out.println("Generating the change files for the TGFD: " + name);
-        Object[] ids=dataPathsById.keySet().toArray();
+        System.out.println("Generating the diff files for the TGFD: " + name);
+        Object[] ids=conf.getAllDataPaths().keySet().toArray();
         Arrays.sort(ids);
         DBPediaLoader first, second=null;
         List<Change> allChanges;
@@ -78,8 +49,8 @@ public class testChangesForTGFDs {
             long startTime = System.currentTimeMillis();
 
             t1=(int)ids[i];
-            first = new DBPediaLoader(allTGFDs,typePathsById.get((int) ids[i]),
-                    dataPathsById.get((int) ids[i]));
+            first = new DBPediaLoader(allTGFDs,conf.getAllTypesPaths().get((int) ids[i]),
+                    conf.getAllDataPaths().get((int) ids[i]));
 
             printWithTime("Load graph (" + ids[i] + ")", System.currentTimeMillis() - startTime);
 
@@ -99,8 +70,8 @@ public class testChangesForTGFDs {
             startTime = System.currentTimeMillis();
 
             t2=(int)ids[i+1];
-            second = new DBPediaLoader(allTGFDs,typePathsById.get((int) ids[i+1]),
-                    dataPathsById.get((int) ids[i+1]));
+            second = new DBPediaLoader(allTGFDs,conf.getAllTypesPaths().get((int) ids[i+1]),
+                    conf.getAllDataPaths().get((int) ids[i+1]));
 
             printWithTime("Load graph (" + ids[i+1] + ")", System.currentTimeMillis() - startTime);
 
@@ -109,8 +80,6 @@ public class testChangesForTGFDs {
             allChanges= cFinder.findAllChanged();
 
             analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t1,t2,name);
-
-
         }
     }
 
@@ -206,12 +175,8 @@ public class testChangesForTGFDs {
             e.printStackTrace();
         }
         System.out.println("Total number of changes: " + allChanges.size());
-        System.out.println("insertChangeEdge: " + insertChangeEdge);
-        System.out.println("insertChangeVertex: " + insertChangeVertex);
-        System.out.println("insertChangeAttribute: " + insertChangeAttribute);
-        System.out.println("deleteChangeEdge: " + deleteChangeEdge);
-        System.out.println("deleteChangeVertex: " + deleteChangeVertex);
-        System.out.println("deleteChangeAttribute: " + deleteChangeAttribute);
-        System.out.println("changeAttributeValue: " + changeAttributeValue);
+        System.out.println("Edges: +" + insertChangeEdge + " ** -" + deleteChangeEdge);
+        System.out.println("Vertices: +" + insertChangeVertex + " ** -" + deleteChangeVertex);
+        System.out.println("Attributes: +" + insertChangeAttribute + " ** -" + deleteChangeAttribute +" ** updates: "+ changeAttributeValue);
     }
 }

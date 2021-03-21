@@ -31,7 +31,7 @@ public class testIMDBInc
         configParser conf=new configParser(args[0]);
 
         // Test whether we loaded all the files correctly
-        System.out.println(Arrays.toString(conf.getSeedTypesFilePath().toArray()) + " *** " + Arrays.toString(conf.getSeedDataFilePath().toArray()));
+        System.out.println(Arrays.toString(conf.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(conf.getFirstDataFilePath().toArray()));
         System.out.println(conf.getDiffFilesPath().keySet() + " *** " + conf.getDiffFilesPath().values());
 
         //Load the TGFDs.
@@ -48,7 +48,7 @@ public class testIMDBInc
         System.out.println("===========Snapshot 1 (" + conf.getTimestamps().get(1) + ")===========");
         long startTime=System.currentTimeMillis();
         LocalDate currentSnapshotDate=conf.getTimestamps().get(1);
-        GraphLoader imdb = new IMDBLoader(allTGFDs,conf.getSeedDataFilePath());
+        GraphLoader imdb = new IMDBLoader(allTGFDs,conf.getFirstDataFilePath());
         printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
         // Now, we need to find the matches for the first snapshot.

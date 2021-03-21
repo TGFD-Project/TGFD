@@ -25,9 +25,13 @@ public class ErrorGenerator {
     public void evaluate(double errorRate)
     {
         this.errorRate=errorRate;
+        System.out.println("Finding the pairs.");
         List<PairsOfMatches> pairs=findpairs();
+        System.out.println("Extracting the domain");
         findDomain(pairs);
+        System.out.println("Injecting the errors");
         injectError(pairs,tgfd.getName().hashCode());
+        System.out.println("Evaluating the results.");
         findViolations(pairs);
     }
 
@@ -75,7 +79,7 @@ public class ErrorGenerator {
         {
             while (true)
             {
-                int id = random.nextInt()* (pairs.size() + 1);
+                int id = random.nextInt(pairs.size());
                 if(!positiveErrors.contains(id))
                 {
                     positiveErrors.add(id);
@@ -87,7 +91,7 @@ public class ErrorGenerator {
         {
             while (true)
             {
-                int id = random.nextInt()* (pairs.size() + 1);
+                int id = random.nextInt(pairs.size());
                 if(!positiveErrors.contains(id) && !negativeErrors.contains(id))
                 {
                     negativeErrors.add(id);
@@ -97,7 +101,7 @@ public class ErrorGenerator {
         }
         for (Integer id:positiveErrors) {
             PairsOfMatches pair=pairs.get(id);
-            pair.Y1= RandomStringUtils.randomAlphabetic(10);
+            pair.Y1 = RandomStringUtils.randomAlphabetic(10);
         }
         for (Integer id:negativeErrors) {
             PairsOfMatches pair=pairs.get(id);
@@ -110,11 +114,11 @@ public class ErrorGenerator {
         String []temp=pair.X.split(",");
         while (true)
         {
-            int id = random.nextInt()* (temp.length);
+            int id = random.nextInt(temp.length);
             if(!temp[id].equals(","))
             {
-                String newValue=domainX.get(id).get(random.nextInt()* (domainX.get(id).size()));
-                pair.X.replace(temp[id],newValue);
+                String newValue=domainX.get(id).get(random.nextInt(domainX.get(id).size()));
+                pair.X = pair.X.replace(temp[id],newValue);
                 break;
             }
         }

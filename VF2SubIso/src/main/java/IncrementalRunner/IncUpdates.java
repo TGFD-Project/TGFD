@@ -6,10 +6,7 @@ import infra.*;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class IncUpdates {
 
@@ -25,6 +22,9 @@ public class IncUpdates {
 
     public HashMap<String,IncrementalChange> updateGraph(Change change, HashMap<String,TGFD> tgfdsByName)
     {
+        // Remove TGFDs from the Affected TGFD lists of the change if that TGFD is not loaded.
+        change.getTGFDs().removeIf(TGFDName -> !tgfdsByName.containsKey(TGFDName));
+
         if(change instanceof EdgeChange)
         {
             EdgeChange edgeChange=(EdgeChange) change;
