@@ -31,7 +31,26 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
 
 **Source:** https://wiki.dbpedia.org/
 
+```diff
+! TODO: add stats of the DBpedia dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
+```
+
 <h4 id="211-dbpedia-schema">2.1.1 DBpedia Schema</h4>
+
+```diff
+! TODO: write description of DBpedia dataset [2021-03-21] [@adammansfield]
+```
+
+<h4 id="212-dbpedia-tgfds">2.1.2 DBpedia TGFDs</h4>
+
+```diff
+! TODO: add rest of the attributes we are using for the TGFDs [2021-03-21] [@adammansfield]
+
+! TODO: explain that the schema below is a subset of the overall schema that we use for TGFDs [2021-03-21] [@adammansfield]
+
+! TODO: add description of approach of generating TGFDs [2021-03-21] [@adammansfield]
+# We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary Q (adding attribute), expanding delta, increasing the number attributes.
+```
 
 **Vertices:**
 
@@ -89,10 +108,8 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
 | publisher  | book             | publisher        | `none`     |
 | team       | basketballplayer | basketballteam   | `none`     |
 
-<h4 id="212-dbpedia-tgfds">2.1.2 DBpedia TGFDs</h4>
-
 ```diff
-! TODO: define more human friendly TGFD (json?) [2021-03-19] [@adammansfield]
+! TODO: define 5 human friendly TGFDs (picture of pattern, delta, depednency) [2021-03-21] [@adammansfield]
 ```
 
 ```
@@ -115,7 +132,26 @@ delta#0#210#1
 
 Source: https://www.imdb.com/interfaces/.
 
+```diff
+! TODO: add stats of the DBpedia dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
+! TODO: write explanation of IMDB timerange (explain extracted subset of types) [2021-03-21] [@adammansfield]
+! TODO: write explanation of IMDB subset of types (did not use all available types) [2021-03-21] [@adammansfield]
+```
+
 <h4 id="221-imdb-schema">2.2.1 IMDB Schema</h4>
+
+```diff
+! TODO: write description of IMDB dataset [2021-03-21] [@adammansfield]
+```
+
+<h4 id="222-imdb-tgfds">2.2.2 IMDB TGFDs</h4>
+
+```diff
+! TODO: explain that the schema below is a subset of the overall schema that we use for TGFDs [2021-03-21] [@adammansfield]
+
+! TODO: add description of approach of generating TGFDs [2021-03-21] [@adammansfield]
+# We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary Q (adding attribute), expanding delta, increasing the number attributes.
+```
 
 **Vertices:**
 
@@ -141,10 +177,8 @@ Source: https://www.imdb.com/interfaces/.
 | language_of    | movie    | language    | `none`     |
 | genre_of       | genre    | movie       | `none`     |
 
-<h4 id="222-imdb-tgfds">2.2.2 IMDB TGFDs</h4>
-
 ```diff
-! TODO: define more human friendly TGFD (json?) [2021-03-19] [@adammansfield]
+! TODO: define 5 human friendly TGFDs (picture of pattern, delta, depednency) [2021-03-21] [@adammansfield]
 ```
 
 ```
@@ -185,7 +219,9 @@ delta#0#365#1
 
 ```diff
 ! TODO: add dependencies [2021-03-19] [@adammansfield]
-! TODO: add examples [2021-03-19] [@adammansfield]
+! TODO: add instructions for generating IMDB RDF snapshots [2021-03-19] [@adammansfield]
+! TODO: add example of generating IMDB changelogs [2021-03-19] [@adammansfield]
+! TODO: add example of detecting IMDB TGFD errors [2021-03-19] [@adammansfield]
 ```
 
 <h2 id="4-comparative-baselines">4. Comparative Baselines</h2>
