@@ -33,6 +33,7 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
 
 ```diff
 ! TODO: add stats of the DBpedia dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
+! TODO: check if stats listed in paper match the actual experimental stats listed here [2021-03-21] [@mortez28]
 ```
 
 <h4 id="211-dbpedia-schema">2.1.1 DBpedia Schema</h4>
@@ -45,11 +46,12 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
 
 ```diff
 ! TODO: add rest of the attributes we are using for the TGFDs [2021-03-21] [@adammansfield]
-
+! TODO: list attributes a sets (e.g. {airline, airport, etc}) if we do not have different attributes per type [2021-03-21] [@adammansfield]
 ! TODO: explain that the schema below is a subset of the overall schema that we use for TGFDs [2021-03-21] [@adammansfield]
 
 ! TODO: add description of approach of generating TGFDs [2021-03-21] [@adammansfield]
 # We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary Q (adding attribute), expanding delta, increasing the number attributes.
+# This needs more explanation of how you generated TGFDs, what is the process?  How do you vary |Q|, \Delta and X->Y?    Give some samples after this explanation.
 ```
 
 **Vertices:**
@@ -85,28 +87,28 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
 
 **Edges:**
 
-| Type       | Source           | Destination      | Attributes |
-| :--------- | :--------------- | :--------------- | :--------- |
-| almamater  | judge            | university       | `none`     |
-| capital    | country          | city             | `none`     |
-| country    | book             | country          | `none`     |
-| country    | hospital         | country          | `none`     |
-| country    | murderer         | country          | `none`     |
-| currency   | country          | currency         | `none`     |
-| draftteam  | basketballplayer | basketballteam   | `none`     |
-| genre      | album            | musicgenre       | `none`     |
-| genre      | recordlabel      | musicgenre       | `none`     |
-| hometown   | band             | city             | `none`     |
-| hubairport | airline          | airport          | `none`     |
-| league     | basketballplayer | basketballleague | `none`     |
-| location   | bank             | country          | `none`     |
-| location   | company          | country          | `none`     |
-| museum     | artwork          | museum           | `none`     |
-| party      | primeminister    | politicalparty   | `none`     |
-| producer   | album            | musicalartist    | `none`     |
-| publisher  | academicjournal  | publisher        | `none`     |
-| publisher  | book             | publisher        | `none`     |
-| team       | basketballplayer | basketballteam   | `none`     |
+| Type       | Source           | Destination      |
+| :--------- | :--------------- | :--------------- |
+| almamater  | judge            | university       |
+| capital    | country          | city             |
+| country    | book             | country          |
+| country    | hospital         | country          |
+| country    | murderer         | country          |
+| currency   | country          | currency         |
+| draftteam  | basketballplayer | basketballteam   |
+| genre      | album            | musicgenre       |
+| genre      | recordlabel      | musicgenre       |
+| hometown   | band             | city             |
+| hubairport | airline          | airport          |
+| league     | basketballplayer | basketballleague |
+| location   | bank             | country          |
+| location   | company          | country          |
+| museum     | artwork          | museum           |
+| party      | primeminister    | politicalparty   |
+| producer   | album            | musicalartist    |
+| publisher  | academicjournal  | publisher        |
+| publisher  | book             | publisher        |
+| team       | basketballplayer | basketballteam   |
 
 ```diff
 ! TODO: define 5 human friendly TGFDs (picture of pattern, delta, depednency) [2021-03-21] [@adammansfield]
@@ -134,6 +136,10 @@ Source: https://www.imdb.com/interfaces/.
 
 ```diff
 ! TODO: add stats of the DBpedia dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
+! TODO: check if stats listed in paper match the actual experimental stats listed here [2021-03-21] [@mortez28]
+```
+
+```diff
 ! TODO: write explanation of IMDB timerange (explain extracted subset of types) [2021-03-21] [@adammansfield]
 ! TODO: write explanation of IMDB subset of types (did not use all available types) [2021-03-21] [@adammansfield]
 ```
@@ -151,9 +157,15 @@ Source: https://www.imdb.com/interfaces/.
 
 ! TODO: add description of approach of generating TGFDs [2021-03-21] [@adammansfield]
 # We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary Q (adding attribute), expanding delta, increasing the number attributes.
+# This needs more explanation of how you generated TGFDs, what is the process?  How do you vary |Q|, \Delta and X->Y?    Give some samples after this explanation.
 ```
 
 **Vertices:**
+
+```diff
+! TODO: explain why the limited number of attributes (that is what is available) [2021-03-21] [@adammansfield]
+! TODO: replace IMDB vertices table with a sentence (You can list these as part of a set, and then add a sentence at the end saying for movie, you have additional attributes) [2021-03-21] [@adammansfield]
+```
 
 | Type        | Attributes                                   |
 | :---------- | :------------------------------------------- |
@@ -167,15 +179,15 @@ Source: https://www.imdb.com/interfaces/.
 
 **Edges:**
 
-| Type           | Source   | Destination | Attribute  |
-| :------------- | :------- | :---------- | :--------- |
-| actor_of       | actor    | movie       | `none`     |
-| actress_of     | actress  | movie       | `none`     |
-| director_of    | director | movie       | `none`     |
-| country_of     | movie    | country     | `none`     |
-| distributor_of | movie    | distributor | `none`     |
-| language_of    | movie    | language    | `none`     |
-| genre_of       | genre    | movie       | `none`     |
+| Type           | Source   | Destination |
+| :------------- | :------- | :---------- |
+| actor_of       | actor    | movie       |
+| actress_of     | actress  | movie       |
+| director_of    | director | movie       |
+| country_of     | movie    | country     |
+| distributor_of | movie    | distributor |
+| language_of    | movie    | language    |
+| genre_of       | genre    | movie       |
 
 ```diff
 ! TODO: define 5 human friendly TGFDs (picture of pattern, delta, depednency) [2021-03-21] [@adammansfield]
@@ -200,7 +212,9 @@ delta#0#365#1
 <h3 id="23-synthetic">2.3 Synthetic</h3>
 
 ```diff
-! TODO: explain synthetic tool [2021-03-21] [@levin-noro]
+! TODO: explain synthetic data generator tool [2021-03-21] [@levin-noro]
+! TODO: describe how data is generated (parameters configured) [2021-03-21]  [@levin-noro]
+! TODO: give link to dataset download [2021-03-21]  [@levin-noro]
 ```
 
 <h4 id="231-synthetic-schema">2.3.1 Synthetic Schema</h4>
@@ -227,7 +241,8 @@ delta#0#365#1
 <h2 id="4-comparative-baselines">4. Comparative Baselines</h2>
 
 ```diff
-! TODO: describe other algorithms that we evaluated, how they were implemented and configured. Provide the source code link of their implementation [2021-03-21] [@adammansfield]
+! TODO: describe other algorithms that we evaluated, how they were implemented and configured [2021-03-21] [@adammansfield]
+! TODO: provide the source code link of their implementation [2021-03-21] [@adammansfield]
 ```
 
 <h2 id="5-source-code">5. Source Code</h2>
