@@ -3,7 +3,7 @@
 [comment]: # (Use HTML to define headers so that Github and Github Pages will have the same header IDs)
 [comment]: # (E.g. For "# 1. Overview", Github generates id="1-overview" and Github Pages generates id="overview")
 
-<h2 id="overview">1. Overview</h2>
+<h2 id="1-overview">1. Overview</h2>
 
 The **T**emporal **G**raph **F**unctional **D**ependencies (TGFD) project detects errors in TGFDs. A TGFD is a new class of temporal dependencies over graphs that specify topological and attribute requirements over a time interval.
 
@@ -28,7 +28,7 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
 
 ### 2.1 DBpedia
 
-Source: https://wiki.dbpedia.org/
+**Source:** https://wiki.dbpedia.org/
 
 #### 2.1.1 DBpedia Schema
 
