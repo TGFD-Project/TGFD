@@ -1,6 +1,6 @@
 # [TGFD](https://tgfd-project.github.io/TGFD/)
 
-[comment]: # (Use HTML to define headers so that Github and Github Pages will have the same header IDs)
+[comment]: # (WORKAROUND: Use HTML to define headers so that Github and Github Pages will have the same header IDs [2021-03-21])
 [comment]: # (E.g. For "# 1. Overview", Github generates id="1-overview" and Github Pages generates id="overview")
 [comment]: # (Must use Gitub's generated id to be consistent between Github and Github Pages because Github will override it")
 
