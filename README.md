@@ -1,8 +1,11 @@
 # [TGFD](https://tgfd-project.github.io/TGFD/)
 
-## 1. Overview
+[comment]: # (Use HTML to define headers so that Github and Github Pages will have the same header IDs)
+[comment]: # (E.g. For "# 1. Overview", Github generates id="1-overview" and Github Pages generates id="overview")
 
-The *T*emporal *G*raph *F*unctional *D*ependencies (TGFD) project detects errors in TGFDs. A TGFD is a new class of temporal dependencies over graphs that specify topological and attribute requirements over a time interval.
+<h2 id="overview">1. Overview</h2>
+
+The **T**emporal **G**raph **F**unctional **D**ependencies (TGFD) project detects errors in TGFDs. A TGFD is a new class of temporal dependencies over graphs that specify topological and attribute requirements over a time interval.
 
 This page provides supplementary experimental details, TGFD samples, dataset characteristics, and a link to the source code.
 
