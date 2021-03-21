@@ -18,7 +18,7 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
   + [2.2 IMDB](#22-imdb)
     - [2.2.1 IMDB Schema](#221-imdb-schema)
     - [2.2.2 IMDB TGFDs](#222-imdb-tgfds)
-  + [2.3 Sythetic](#23-sythetic)
+  + [2.3 Synthetic](#23-synthetic)
     - [2.3.1 Synthetic Schema](#231-synthetic-schema)
     - [2.3.2 Synthetic TGFDs](#232-synthetic-tgfds)
 * [3. Getting started](#3-getting-started)
@@ -206,13 +206,13 @@ delta#0#365#1
 <h4 id="231-synthetic-schema">2.3.1 Synthetic Schema</h4>
 
 ```diff
-! TODO: define sythetic schema [2021-03-21] [@levin-noro]
+! TODO: define synthetic schema [2021-03-21] [@levin-noro]
 ```
 
 <h4 id="232-synthetic-tgfds">2.3.2 Synthetic TGFDs</h4>
 
 ```diff
-! TODO: define sythetic TGFDs [2021-03-21] [@levin-noro]
+! TODO: define synthetic TGFDs [2021-03-21] [@levin-noro]
 ```
 
 <h2 id="3-getting-started">3. Getting started</h2>
