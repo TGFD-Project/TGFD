@@ -24,10 +24,6 @@ Source: https://wiki.dbpedia.org/
 
 #### 2.1.1 DBpedia Schema
 
-```diff
-! TODO: fix table schema for Github pages [2021-03-19] [@adammansfield]
-```
-
 **Vertices:**
 | Type             | Attributes |
 | :--------------- | :--------- |
@@ -59,28 +55,28 @@ Source: https://wiki.dbpedia.org/
 
 
 **Edges:**
-Type       | Source           | Destination      | Attributes
----------- | ---------------- | ---------------- | -----------
-almamater  | judge            | university       | `none`
-capital    | country          | city             | `none`
-country    | book             | country          | `none`
-country    | hospital         | country          | `none`
-country    | murderer         | country          | `none`
-currency   | country          | currency         | `none`
-draftteam  | basketballplayer | basketballteam   | `none`
-genre      | album            | musicgenre       | `none`
-genre      | recordlabel      | musicgenre       | `none`
-hometown   | band             | city             | `none`
-hubairport | airline          | airport          | `none`
-league     | basketballplayer | basketballleague | `none`
-location   | bank             | country          | `none`
-location   | company          | country          | `none`
-museum     | artwork          | museum           | `none`
-party      | primeminister    | politicalparty   | `none`
-producer   | album            | musicalartist    | `none`
-publisher  | academicjournal  | publisher        | `none`
-publisher  | book             | publisher        | `none`
-team       | basketballplayer | basketballteam   | `none`
+| Type       | Source           | Destination      | Attributes |
+| :--------- | :--------------- | :--------------- | :--------- |
+| almamater  | judge            | university       | `none`     |
+| capital    | country          | city             | `none`     |
+| country    | book             | country          | `none`     |
+| country    | hospital         | country          | `none`     |
+| country    | murderer         | country          | `none`     |
+| currency   | country          | currency         | `none`     |
+| draftteam  | basketballplayer | basketballteam   | `none`     |
+| genre      | album            | musicgenre       | `none`     |
+| genre      | recordlabel      | musicgenre       | `none`     |
+| hometown   | band             | city             | `none`     |
+| hubairport | airline          | airport          | `none`     |
+| league     | basketballplayer | basketballleague | `none`     |
+| location   | bank             | country          | `none`     |
+| location   | company          | country          | `none`     |
+| museum     | artwork          | museum           | `none`     |
+| party      | primeminister    | politicalparty   | `none`     |
+| producer   | album            | musicalartist    | `none`     |
+| publisher  | academicjournal  | publisher        | `none`     |
+| publisher  | book             | publisher        | `none`     |
+| team       | basketballplayer | basketballteam   | `none`     |
 
 #### 2.1.2 DBpedia TGFDs
 
@@ -111,26 +107,26 @@ Source: https://www.imdb.com/interfaces/.
 #### 2.2.1 IMDB Schema
 
 **Vertices:**
-Type        | Attributes
------------ | ----------
-actor       | name
-actress     | name
-country     | name
-director    | name
-distributor | name
-genre       | name 
-movie       | name, episode, year, rating, votes, language
+| Type        | Attributes                                   |
+| :---------- | :------------------------------------------- |
+| actor       | name                                         |
+| actress     | name                                         |
+| country     | name                                         |
+| director    | name                                         |
+| distributor | name                                         |
+| genre       | name                                         |
+| movie       | name, episode, year, rating, votes, language |
 
 **Edges:**
-Type           | Source   | Destination | Attributes
--------------- | -------- | ----------- | -----------
-actor_of       | actor    | movie       | none
-actress_of     | actress  | movie       | none
-director_of    | director | movie       | none
-country_of     | movie    | country     | none
-distributor_of | movie    | distributor | none
-language_of    | movie    | language    | none
-genre_of       | genre    | movie       | none
+| Type           | Source   | Destination | Attribute  |
+| :------------- | :------- | :---------- | :--------- |
+| actor_of       | actor    | movie       | `none`     |
+| actress_of     | actress  | movie       | `none`     |
+| director_of    | director | movie       | `none`     |
+| country_of     | movie    | country     | `none`     |
+| distributor_of | movie    | distributor | `none`     |
+| language_of    | movie    | language    | `none`     |
+| genre_of       | genre    | movie       | `none`     |
 
 #### 2.2.2 IMDB TGFDs
 

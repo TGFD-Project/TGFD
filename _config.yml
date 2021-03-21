@@ -1,1 +1,5 @@
+description: Temporal Graph Functional Dependencies
+markdown: GFM
+name: tgfd
 theme: jekyll-theme-cayman
+url: "https://adammansfield.github.io/tgfd/"
