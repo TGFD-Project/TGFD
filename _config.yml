@@ -1,1 +1,5 @@
+description: Welcome to the homepage of the TGFD project!
+markdown: GFM
+name: Temporal Graph Functional Dependencies
+title: tgfd
 theme: jekyll-theme-cayman
