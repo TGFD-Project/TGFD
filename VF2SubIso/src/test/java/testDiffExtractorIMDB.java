@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +62,8 @@ public class testDiffExtractorIMDB {
                 ChangeFinder cFinder=new ChangeFinder(second,first,allTGFDs);
                 allChanges= cFinder.findAllChanged();
 
-                analyzeChanges(allChanges,allTGFDs,second.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),conf.getTimestamps().get(t2),conf.getTimestamps().get(t1),name);
+                analyzeChanges(allChanges,allTGFDs,second.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),
+                        conf.getTimestamps().get(t2),conf.getTimestamps().get(t1),name,conf.getDiffCaps());
             }
 
             if(i+1>=ids.length)
@@ -80,17 +82,18 @@ public class testDiffExtractorIMDB {
             ChangeFinder cFinder=new ChangeFinder(first,second,allTGFDs);
             allChanges= cFinder.findAllChanged();
 
-            analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),conf.getTimestamps().get(t1),conf.getTimestamps().get(t2),name);
+            analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),
+                    conf.getTimestamps().get(t1),conf.getTimestamps().get(t2),name,conf.getDiffCaps());
 
 
         }
     }
 
     private static void analyzeChanges(List<Change> allChanges, List<TGFD> allTGFDs, int graphSize,
-                                       int changeSize, LocalDate timestamp1, LocalDate timestamp2, String TGFDsName)
+                                       int changeSize, LocalDate timestamp1, LocalDate timestamp2, String TGFDsName, ArrayList<Double> diffCaps)
     {
         ChangeTrimmer trimmer=new ChangeTrimmer(allChanges,allTGFDs);
-        for (double i=0.2;i<=1;i+=0.02)
+        for (double i:diffCaps)
         {
             int allowedNumberOfChanges= (int) (i*graphSize);
             if (allowedNumberOfChanges<changeSize)

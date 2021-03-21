@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -60,7 +61,7 @@ public class testDiffExtractorDBPedia {
                 ChangeFinder cFinder=new ChangeFinder(second,first,allTGFDs);
                 allChanges= cFinder.findAllChanged();
 
-                analyzeChanges(allChanges,allTGFDs,second.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t2,t1,name);
+                analyzeChanges(allChanges,allTGFDs,second.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t2,t1,name,conf.getDiffCaps());
             }
 
             if(i+1>=ids.length)
@@ -79,29 +80,15 @@ public class testDiffExtractorDBPedia {
             ChangeFinder cFinder=new ChangeFinder(first,second,allTGFDs);
             allChanges= cFinder.findAllChanged();
 
-            analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t1,t2,name);
+            analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t1,t2,name,conf.getDiffCaps());
         }
     }
 
     private static void analyzeChanges(List<Change> allChanges, List<TGFD> allTGFDs, int graphSize,
-                                       int changeSize, int timestamp1, int timestamp2, String TGFDsName)
+                                       int changeSize, int timestamp1, int timestamp2, String TGFDsName, ArrayList <Double> diffCaps)
     {
         ChangeTrimmer trimmer=new ChangeTrimmer(allChanges,allTGFDs);
-        for (double i=0.04;i<=0.04;i+=0.02)
-        {
-            int allowedNumberOfChanges= (int) (i*graphSize);
-            if (allowedNumberOfChanges<changeSize)
-            {
-                List<Change> trimmedChanges=trimmer.trimChanges(allowedNumberOfChanges);
-                saveChanges(trimmedChanges,timestamp1,timestamp2,TGFDsName + "_" + i);
-            }
-            else
-            {
-                saveChanges(allChanges,timestamp1,timestamp2,TGFDsName + "_full");
-                return;
-            }
-        }
-        for (double i=0.15;i<=0.1;i+=0.05)
+        for (double i:diffCaps)
         {
             int allowedNumberOfChanges= (int) (i*graphSize);
             if (allowedNumberOfChanges<changeSize)
