@@ -20,46 +20,13 @@ import java.util.concurrent.TimeUnit;
 
 public class testDbpediaInc
 {
-    // TODO: input a JSON file for arguments [2021-02-14]
-    // {
-    //   "patternFile": "D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt",
-    //   "snapshots: [
-    //     {
-    //       "date": "2017",
-    //       "literalFile": "2017-literals-0.txt",
-    //       "objectFiles": [
-    //         "2017-mappings-0.ttl",
-    //         "2017-mappings-1.ttl"
-    //       ],
-    //       typefiles: [
-    //         "2017-types-0.ttl",
-    //         "2017-types-1.ttl"
-    //       ],
-    //     }
-    //   ]
-    // }
-    /**
-     * Arguments: -p <patternFile> [-t<snapshotId> <typeFile>] [-d<snapshotId> <dataFile>]
-     *
-     * Example:
-     *   TestDBPedia \
-     *     -p "D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt" \
-     *     -t1 "F:\\MorteZa\\Datasets\\Statistical\\2016\\types.ttl" \
-     *     -t1 "F:\\MorteZa\\Datasets\\Statistical\\2016\\types2.ttl" \
-     *     -d1 "F:\\MorteZa\\Datasets\\Statistical\\2016\\mappingbased_objects_en.ttl" \
-     *     -d1 "F:\\MorteZa\\Datasets\\Statistical\\2016\\mappingbased_objects_en2.ttl" \
-     *     -t2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\types.ttl" \
-     *     -t2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\types2.ttl" \
-     *     -d2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\mappingbased_objects_en.ttl" \
-     *     -d2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\mappingbased_objects_en2.ttl"
-     */
     public static void main(String []args) throws FileNotFoundException {
 
         long wallClockStart=System.currentTimeMillis();
 
         configParser conf=new configParser(args[0]);
 
-        System.out.println("Test DBPedia subgraph isomorphism");
+        System.out.println("Test DBPedia incremental");
 
         // Test whether we loaded all the files correctly
 

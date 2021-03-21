@@ -7,9 +7,9 @@ import graphLoader.ChangeLoader;
 import graphLoader.DBPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
+import util.configParser;
 import util.properties;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,78 +19,21 @@ import java.util.concurrent.TimeUnit;
 
 public class testDbpediaBatch
 {
-    /**
-     * Arguments: -p <patternFile> [-t<snapshotId> <typeFile>] [-d<snapshotId> <dataFile>]
-     *
-     * Example:
-     *   TestDBPedia \
-     *     -p "D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt" \
-     *     -t1 "F:\\MorteZa\\Datasets\\Statistical\\2016\\types.ttl" \
-     *     -t1 "F:\\MorteZa\\Datasets\\Statistical\\2016\\types2.ttl" \
-     *     -d1 "F:\\MorteZa\\Datasets\\Statistical\\2016\\mappingbased_objects_en.ttl" \
-     *     -d1 "F:\\MorteZa\\Datasets\\Statistical\\2016\\mappingbased_objects_en2.ttl" \
-     *     -t2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\types.ttl" \
-     *     -t2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\types2.ttl" \
-     *     -d2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\mappingbased_objects_en.ttl" \
-     *     -d2 "F:\\MorteZa\\Datasets\\Statistical\\2017\\mappingbased_objects_en2.ttl"
-     */
+
     public static void main(String []args) throws FileNotFoundException {
 
         long wallClockStart=System.currentTimeMillis();
 
-        ArrayList<String> firstDataPath=new ArrayList<>();
-        ArrayList<String> firstTypesPath=new ArrayList<>();
-        String patternPath = "";
-        HashMap<Integer,LocalDate> timestamps=new HashMap<>();
-        HashMap<Integer, String> changeFiles=new HashMap<>();
+        System.out.println("Test DBPedia batch");
 
-        System.out.println("Test DBPedia subgraph isomorphism");
+        configParser conf=new configParser(args[0]);
 
-        Scanner scanner = new Scanner(new File(args[0]));
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            String []conf=line.split(" ");
-            if(conf.length!=2)
-                continue;
-            if (conf[0].toLowerCase().startsWith("-t"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if(snapshotId==1)
-                    firstTypesPath.add(conf[1]);
-            }
-            else if (conf[0].toLowerCase().startsWith("-d"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if(snapshotId==1)
-                    firstDataPath.add(conf[1]);
-            }
-            else if (conf[0].toLowerCase().startsWith("-p"))
-            {
-                patternPath = conf[1];
-            }
-            else if (conf[0].toLowerCase().startsWith("-s"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                timestamps.put(snapshotId,LocalDate.parse(conf[1]));
-            }
-            else if (conf[0].toLowerCase().startsWith("-c"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if(snapshotId!=1)
-                    changeFiles.put(snapshotId, conf[1]);
-            }
-            else if(conf[0].toLowerCase().startsWith("-optgraphload"))
-            {
-                properties.myProperties.optimizedLoadingBasedOnTGFD=Boolean.parseBoolean(conf[1]);
-            }
-        }
-        // TODO: check that typesPaths.keySet == dataPaths.keySet [2021-02-14]
 
-        System.out.println(Arrays.toString(firstTypesPath.toArray()) + " *** " + Arrays.toString(firstDataPath.toArray()));
-        System.out.println(changeFiles.keySet() + " *** " + changeFiles.values());
+        System.out.println(Arrays.toString(conf.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(conf.getFirstDataFilePath().toArray()));
+        System.out.println(conf.getDiffFilesPath().keySet() + " *** " + conf.getDiffFilesPath().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(patternPath);
+        TGFDGenerator generator = new TGFDGenerator(conf.getPatternPath());
         List<TGFD> allTGFDs=generator.getTGFDs();
 
         //Create the match collection for all the TGFDs in the list
@@ -103,9 +46,9 @@ public class testDbpediaBatch
         System.out.println("-----------Snapshot (1)-----------");
 
         long startTime=System.currentTimeMillis();
-        LocalDate currentSnapshotDate=timestamps.get(1);
+        LocalDate currentSnapshotDate=conf.getTimestamps().get(1);
         // load first snapshot of the dbpedia graph
-        DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,firstTypesPath,firstDataPath);
+        DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,conf.getFirstTypesFilePath(),conf.getFirstDataFilePath());
         printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
         // Finding the matches of the first snapshot for each TGFD
@@ -122,14 +65,14 @@ public class testDbpediaBatch
         }
 
         //Load the change files
-        Object[] ids=changeFiles.keySet().toArray();
+        Object[] ids=conf.getDiffFilesPath().keySet().toArray();
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++) {
             System.out.println("-----------Snapshot (" + ids[i] + ")-----------");
 
             startTime = System.currentTimeMillis();
-            currentSnapshotDate = timestamps.get((int) ids[i]);
-            ChangeLoader changeLoader = new ChangeLoader(changeFiles.get(ids[i]));
+            currentSnapshotDate = conf.getTimestamps().get((int) ids[i]);
+            ChangeLoader changeLoader = new ChangeLoader(conf.getDiffFilesPath().get(ids[i]));
             List <Change> changes = changeLoader.getAllChanges();
 
             //update the dbpedia graph with the changes.
