@@ -1,5 +1,5 @@
 tgfd#imdbp0100
-vertex#v1#actor#name#uri
+vertex#v1#actor#name$john#uri
 vertex#v2#movie#name
 edge#v1#v2#actor_of
 diameter#1

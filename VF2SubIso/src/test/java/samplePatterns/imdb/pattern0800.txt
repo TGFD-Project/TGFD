@@ -1,6 +1,6 @@
 tgfd#imdbp0800
-vertex#v1#country
-vertex#v2#movie
+vertex#v1#country#name$china#uri
+vertex#v2#movie#name
 edge#v1#v2#country_of
 diameter#1
 literal#x#country$name$country$name

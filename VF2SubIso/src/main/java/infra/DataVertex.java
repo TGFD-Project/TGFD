@@ -35,6 +35,8 @@ public class DataVertex extends Vertex {
 
     @Override
     public boolean isMapped(Vertex v) {
+        if(v instanceof DataVertex)
+            return false;
         if (!super.getTypes().containsAll(v.getTypes()))
             return false;
         if(!super.getAllAttributesNames().containsAll(v.getAllAttributesNames()))

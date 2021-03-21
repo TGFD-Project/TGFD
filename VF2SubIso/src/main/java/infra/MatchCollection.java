@@ -1,11 +1,11 @@
 package infra;
 
 import org.jgrapht.GraphMapping;
-import util.myConsole;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -69,7 +69,7 @@ public class MatchCollection
         LocalDate timestamp,
         GraphMapping<Vertex, RelationshipEdge> mapping)
     {
-        var signature = Match.signatureFromX2(pattern, mapping, dependency.getX());
+        var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
 
         var match = matchesBySignature.getOrDefault(signature, null);
         if (match == null)
@@ -78,7 +78,7 @@ public class MatchCollection
             matchesBySignature.put(signature, match);
         }
 
-        var signatureY=Match.signatureFromY2(pattern,mapping,dependency.getY());
+        var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
 
         match.addTimepoint(timestamp, granularity);
         match.addSignatureY(timestamp,granularity,signatureY);
@@ -120,14 +120,21 @@ public class MatchCollection
         timestamps.add(timestamp);
 
         int matchCount = 0;
+        long start= System.currentTimeMillis();
         while (mappingIterator.hasNext())
         {
             var mapping = mappingIterator.next();
             addMatch(timestamp, mapping);
             addVertices(timestamp, mapping);
-            matchCount++;
+            if(matchCount++%1000==0) {
+                System.out.println("Retrived " + matchCount + " matches in " +
+                        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-start) +  "(sec) ** " +
+                        TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()-start) + "(min)");
+                start=System.currentTimeMillis();
+
+            }
         }
-        myConsole.print("Number of matches: " + matchCount);
+        System.out.println("Total Number of matches: " + matchCount);
         return matchCount;
     }
 

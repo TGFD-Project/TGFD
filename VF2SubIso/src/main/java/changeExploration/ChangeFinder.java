@@ -117,9 +117,10 @@ public class ChangeFinder {
     {
         HashSet<String> TGFDNames=new HashSet <>();
 
-        for (String type:types)
-            if(relaventTGFDs.containsKey(type))
-                TGFDNames.addAll(relaventTGFDs.get(type));
+        if(types!=null)
+            for (String type:types)
+                if(relaventTGFDs.containsKey(type))
+                    TGFDNames.addAll(relaventTGFDs.get(type));
 
         return TGFDNames;
     }

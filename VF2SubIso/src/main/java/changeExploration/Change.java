@@ -49,7 +49,9 @@ public class Change {
      */
     public void addTGFD(Collection <String> TGFDNames)
     {
-        this.TGFDs.addAll(TGFDNames);
+        if(TGFDNames!=null) {
+            this.TGFDs.addAll(TGFDNames);
+        }
     }
 
     //endregion

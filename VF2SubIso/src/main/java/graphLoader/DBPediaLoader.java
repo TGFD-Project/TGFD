@@ -6,7 +6,6 @@ import infra.RelationshipEdge;
 import infra.TGFD;
 import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.*;
-import util.myConsole;
 import util.properties;
 
 import java.nio.file.Path;
@@ -15,13 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DBPediaLoader extends GraphLoader {
-
-    //region --[Fields: Private]----------------------------------------
-
-    /** size of the graph: #edges + #attributes */
-    private int graphSize=0;
-
-    //endregion
 
     //region --[Methods: Private]---------------------------------------
 
@@ -55,13 +47,13 @@ public class DBPediaLoader extends GraphLoader {
     private void loadNodeMap(String nodeTypesPath) {
 
         if (nodeTypesPath == null || nodeTypesPath.length() == 0) {
-            myConsole.print("No Input Node Types File Path!");
+            System.out.println("No Input Node Types File Path!");
             return;
         }
         try
         {
             Model model = ModelFactory.createDefaultModel();
-            myConsole.print("Loading Node Types: " + nodeTypesPath);
+            System.out.println("Loading Node Types: " + nodeTypesPath);
 
             Path input= Paths.get(nodeTypesPath);
             model.read(input.toUri().toString());
@@ -92,11 +84,11 @@ public class DBPediaLoader extends GraphLoader {
                     v.addTypes(nodeType);
                 }
             }
-            myConsole.print("Done. Number of Types: " + graph.getSize());
+            System.out.println("Done. Number of Types: " + graph.getSize());
         }
         catch (Exception e)
         {
-            myConsole.print(e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
 
@@ -107,10 +99,10 @@ public class DBPediaLoader extends GraphLoader {
     private void loadDataGraph(String dataGraphFilePath) {
 
         if (dataGraphFilePath == null || dataGraphFilePath.length() == 0) {
-            myConsole.print("No Input Graph Data File Path!");
+            System.out.println("No Input Graph Data File Path!");
             return;
         }
-        myConsole.print("Loading DBPedia Graph: "+dataGraphFilePath);
+        System.out.println("Loading DBPedia Graph: "+dataGraphFilePath);
         int numberOfObjectsNotFound=0,numberOfSubjectsNotFound=0, numberOfLoops=0;
 
         try
@@ -187,27 +179,16 @@ public class DBPediaLoader extends GraphLoader {
                     }
                 }
             }
-            myConsole.print("Subjects and Objects not found: " + numberOfSubjectsNotFound + " ** " + numberOfObjectsNotFound);
-            myConsole.print("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());
+            System.out.println("Subjects and Objects not found: " + numberOfSubjectsNotFound + " ** " + numberOfObjectsNotFound);
+            System.out.println("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());
             //System.out.println("Done Loading DBPedia Graph.");
             //System.out.println("Number of subjects not found: " + numberOfSubjectsNotFound);
             //System.out.println("Number of loops found: " + numberOfLoops);
         }
         catch (Exception e)
         {
-            myConsole.print(e.getMessage());
+            System.out.println(e.getMessage());
         }
-    }
-
-    //endregion
-
-    //region --[Properties: Public]-------------------------------------
-
-    /**
-     * @return Size of the graph
-     */
-    public int getGraphSize() {
-        return graphSize;
     }
 
     //endregion

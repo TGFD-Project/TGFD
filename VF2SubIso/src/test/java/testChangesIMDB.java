@@ -1,7 +1,8 @@
 import TGFDLoader.TGFDGenerator;
 import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import graphLoader.DBPediaLoader;
+import graphLoader.GraphLoader;
+import graphLoader.IMDBLoader;
 import infra.TGFD;
 import util.properties;
 
@@ -10,19 +11,17 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class testChangesForSingleTGFD {
+public class testChangesIMDB {
 
     public static void main(String []args) throws FileNotFoundException {
 
-        long wallClockStart=System.currentTimeMillis();
-
         HashMap<Integer, ArrayList<String>> typePathsById = new HashMap<>();
         HashMap<Integer, ArrayList<String>> dataPathsById = new HashMap<>();
-        String patternPath = "";
         HashMap<Integer,LocalDate> timestamps=new HashMap<>();
+        String patternPath = "";
 
 
-        System.out.println("Test changes over DBPedia graph");
+        System.out.println("Test changes over IMDB graph");
 
         Scanner scanner = new Scanner(new File(args[0]));
         while (scanner.hasNextLine()) {
@@ -34,14 +33,14 @@ public class testChangesForSingleTGFD {
             {
                 var snapshotId = Integer.parseInt(conf[0].substring(2));
                 if (!typePathsById.containsKey(snapshotId))
-                    typePathsById.put(snapshotId, new ArrayList<String>());
+                    typePathsById.put(snapshotId, new ArrayList <>());
                 typePathsById.get(snapshotId).add(conf[1]);
             }
             else if (conf[0].toLowerCase().startsWith("-d"))
             {
                 var snapshotId = Integer.parseInt(conf[0].substring(2));
                 if (!dataPathsById.containsKey(snapshotId))
-                    dataPathsById.put(snapshotId, new ArrayList<String>());
+                    dataPathsById.put(snapshotId, new ArrayList <>());
                 dataPathsById.get(snapshotId).add(conf[1]);
             }
             else if (conf[0].toLowerCase().startsWith("-p"))
@@ -66,62 +65,83 @@ public class testChangesForSingleTGFD {
         TGFDGenerator generator = new TGFDGenerator(patternPath);
         List<TGFD> allTGFDs=generator.getTGFDs();
 
-        for (TGFD tgfd:allTGFDs) {
+        String name="";
+        for (TGFD tgfd:allTGFDs)
+            name+=tgfd.getName() + "_";
 
-            System.out.println("Generating the change files for the TGFD: " + tgfd.getName());
-            Object[] ids=dataPathsById.keySet().toArray();
-            Arrays.sort(ids);
-            DBPediaLoader first, second=null;
-            List<Change> allChanges;
-            int t1,t2=0;
-            for (int i=0;i<ids.length;i+=2) {
+        if(!name.equals(""))
+            name=name.substring(0, name.length() - 1);
+        else
+            name="noTGFDs";
 
-                System.out.println("===========Snapshot (" + ids[i] + ")===========");
-                long startTime = System.currentTimeMillis();
+        System.out.println("Generating the change files for the TGFD: " + name);
+        Object[] ids=dataPathsById.keySet().toArray();
+        Arrays.sort(ids);
+        GraphLoader first, second=null;
+        List<Change> allChanges;
+        int t1,t2=0;
+        for (int i=0;i<ids.length;i+=2) {
 
-                t1=(int)ids[i];
-                first = new DBPediaLoader(Collections.singletonList(tgfd),typePathsById.get((int) ids[i]),
-                        dataPathsById.get((int) ids[i]));
+            System.out.println("===========Snapshot "+ids[i]+" (" + timestamps.get(ids[i]) + ")===========");
+            long startTime = System.currentTimeMillis();
 
-                printWithTime("Load graph (" + ids[i] + ")", System.currentTimeMillis() - startTime);
+            t1=(int)ids[i];
+            first = new IMDBLoader(allTGFDs,dataPathsById.get((int) ids[i]));
 
-                //
-                if(second!=null)
-                {
-                    ChangeFinder cFinder=new ChangeFinder(second,first,Collections.singletonList(tgfd));
-                    allChanges= cFinder.findAllChanged();
-                    saveChanges(allChanges,t2,t1,tgfd.getName());
-                }
+            printWithTime("Load graph "+ids[i]+" (" + timestamps.get(ids[i]) + ")", System.currentTimeMillis() - startTime);
 
-                if(i+1>=ids.length)
-                    break;
-
-                System.out.println("===========Snapshot (" + ids[i+1] + ")===========");
-                startTime = System.currentTimeMillis();
-
-                t2=(int)ids[i+1];
-                second = new DBPediaLoader(Collections.singletonList(tgfd),typePathsById.get((int) ids[i+1]),
-                        dataPathsById.get((int) ids[i+1]));
-
-                printWithTime("Load graph (" + ids[i+1] + ")", System.currentTimeMillis() - startTime);
-
-                //
-                ChangeFinder cFinder=new ChangeFinder(first,second,Collections.singletonList(tgfd));
+            //
+            if(second!=null)
+            {
+                ChangeFinder cFinder=new ChangeFinder(second,first,allTGFDs);
                 allChanges= cFinder.findAllChanged();
-                saveChanges(allChanges,t1,t2,tgfd.getName());
 
+                analyzeChanges(allChanges,allTGFDs,second.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),timestamps.get(t2),timestamps.get(t1),name);
+            }
+
+            if(i+1>=ids.length)
+                break;
+
+            System.out.println("===========Snapshot "+ids[i+1]+" (" + timestamps.get(ids[i+1]) + ")===========");
+            startTime = System.currentTimeMillis();
+
+            t2=(int)ids[i+1];
+            second = new IMDBLoader(allTGFDs,dataPathsById.get((int) ids[i+1]));
+
+            printWithTime("Load graph "+ids[i+1]+" (" + timestamps.get(ids[i+1])+ ")", System.currentTimeMillis() - startTime);
+
+            //
+            System.out.println("Finding the diffs.");
+            ChangeFinder cFinder=new ChangeFinder(first,second,allTGFDs);
+            allChanges= cFinder.findAllChanged();
+
+            analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),timestamps.get(t1),timestamps.get(t2),name);
+
+
+        }
+    }
+
+    private static void analyzeChanges(List<Change> allChanges, List<TGFD> allTGFDs, int graphSize,
+                                       int changeSize, LocalDate timestamp1, LocalDate timestamp2, String TGFDsName)
+    {
+        ChangeTrimmer trimmer=new ChangeTrimmer(allChanges,allTGFDs);
+        for (double i=0.2;i<=1;i+=0.02)
+        {
+            int allowedNumberOfChanges= (int) (i*graphSize);
+            if (allowedNumberOfChanges<changeSize)
+            {
+                List<Change> trimmedChanges=trimmer.trimChanges(allowedNumberOfChanges);
+                saveChanges(trimmedChanges,timestamp1,timestamp2,TGFDsName + "_" + i);
+            }
+            else
+            {
+                saveChanges(allChanges,timestamp1,timestamp2,TGFDsName + "_full");
+                return;
             }
         }
     }
 
-    private static void printWithTime(String message, long runTimeInMS)
-    {
-        System.out.println(message + " time: " + runTimeInMS + "(ms) ** " +
-                TimeUnit.MILLISECONDS.toSeconds(runTimeInMS) + "(sec) ** " +
-                TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
-    }
-
-    private static void saveChanges(List<Change> allChanges, int t1, int t2, String tgfdName)
+    private static void saveChanges(List<Change> allChanges, LocalDate t1, LocalDate t2, String tgfdName)
     {
         System.out.println("Printing the changes: " + t1 +" -> " + t2);
         int insertChangeEdge=0;
@@ -163,7 +183,7 @@ public class testChangesForSingleTGFD {
         try
         {
             mapper.writeValue(sw, allChanges);
-            FileWriter file = new FileWriter("./changes_t"+t1+"_t"+t2+"_"+tgfdName+".json");
+            FileWriter file = new FileWriter("./diff_"+t1+"_"+t2+"_"+tgfdName+".json");
             file.write(sw.toString());
             file.close();
             System.out.println("Successfully wrote to the file.");
@@ -172,12 +192,15 @@ public class testChangesForSingleTGFD {
             e.printStackTrace();
         }
         System.out.println("Total number of changes: " + allChanges.size());
-        System.out.println("insertChangeEdge: " + insertChangeEdge);
-        System.out.println("insertChangeVertex: " + insertChangeVertex);
-        System.out.println("insertChangeAttribute: " + insertChangeAttribute);
-        System.out.println("deleteChangeEdge: " + deleteChangeEdge);
-        System.out.println("deleteChangeVertex: " + deleteChangeVertex);
-        System.out.println("deleteChangeAttribute: " + deleteChangeAttribute);
-        System.out.println("changeAttributeValue: " + changeAttributeValue);
+        System.out.println("Edges: +" + insertChangeEdge + " ** -" + deleteChangeEdge);
+        System.out.println("Vertices: +" + insertChangeVertex + " ** -" + deleteChangeVertex);
+        System.out.println("Attributes: +" + insertChangeAttribute + " ** -" + deleteChangeAttribute +" ** updates: "+ changeAttributeValue);
+    }
+
+    private static void printWithTime(String message, long runTimeInMS)
+    {
+        System.out.println(message + " time: " + runTimeInMS + "(ms) ** " +
+                TimeUnit.MILLISECONDS.toSeconds(runTimeInMS) + "(sec) ** " +
+                TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
     }
 }

@@ -28,6 +28,8 @@ public class TGFDGenerator {
 
     private void loadGraphPattern(String path) throws FileNotFoundException {
 
+        if(path.equals(""))
+            return;
         HashMap<String, PatternVertex> allVertices=new HashMap<>();
         VF2PatternGraph currentPattern=null;
         TGFD currentTGFD=new TGFD();

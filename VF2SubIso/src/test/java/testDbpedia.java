@@ -5,7 +5,6 @@ import VF2Runner.VF2SubgraphIsomorphism;
 import graphLoader.DBPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
-import util.myConsole;
 import util.properties;
 
 import java.io.File;
@@ -15,6 +14,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class testDbpedia
 {
@@ -141,7 +141,7 @@ public class testDbpedia
             DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,typePathsById.get((int)ids[i]),
                     dataPathsById.get((int)ids[i]));
 
-            myConsole.print("Load graph ("+ids[i] + ")", System.currentTimeMillis()-startTime);
+            printWithTime("Load graph ("+ids[i] + ")", System.currentTimeMillis()-startTime);
 
             // Now, we need to find the matches for each snapshot.
             // Finding the matches...
@@ -161,7 +161,7 @@ public class testDbpedia
 
                 allMatchCollections.get(tgfd).addMatches(currentSnapshotDate,results);
 
-                myConsole.print("Match retrieval", System.currentTimeMillis()-startTime);
+                printWithTime("Match retrieval", System.currentTimeMillis()-startTime);
             }
         }
 
@@ -176,7 +176,7 @@ public class testDbpedia
             Set<Violation> allViolationsNaiveBatchTED=naive.findViolations();
             System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
 
-            myConsole.print("Naive Batch TED", System.currentTimeMillis()-startTime);
+            printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
 
             saveViolations("naive",allViolationsNaiveBatchTED,tgfd);
 
@@ -189,15 +189,19 @@ public class testDbpedia
             Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
             System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
 
-            myConsole.print("Optimized Batch TED", System.currentTimeMillis()-startTime);
+            printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
 
             if(properties.myProperties.saveViolations)
                 saveViolations("optimized",allViolationsOptBatchTED,tgfd);
         }
+        printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
+    }
 
-        myConsole.print("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
-
-        myConsole.saveLogs("run_"+ LocalDateTime.now().toString() + ".txt");
+    private static void printWithTime(String message, long runTimeInMS)
+    {
+        System.out.println(message + " time: " + runTimeInMS + "(ms) ** " +
+                TimeUnit.MILLISECONDS.toSeconds(runTimeInMS) + "(sec) ** " +
+                TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
     }
 
     private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd)

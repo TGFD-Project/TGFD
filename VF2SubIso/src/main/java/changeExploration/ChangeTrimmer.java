@@ -77,6 +77,20 @@ public class ChangeTrimmer {
 
     private Change getAChange()
     {
+        // If TGFDCount is empty, then we have no specific TGFD,
+        // We just have to return the changes in order.
+        if(TGFDCounts.keySet().isEmpty()) {
+            for (Change change : changes) {
+                if (!changeIDs[change.getId()]) {
+                    changeIDs[change.getId()] = true;
+                    return change;
+                }
+            }
+            return null;
+        }
+
+        // If we have a set of TGFDs as input and
+        // we want to distribute the changes evenly between all TGFDs
         String tgfdName="";
         int min=Integer.MAX_VALUE;
         for (String name:TGFDCounts.keySet()) {

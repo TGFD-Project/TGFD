@@ -3,12 +3,13 @@ import graphLoader.IMDBLoader;
 import infra.TGFD;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class testIMDBLoader {
 
     public static void main(String []args)
     {
-        GraphLoader imdbLoader=new IMDBLoader(new ArrayList <TGFD>(),"C:\\Users\\admin\\Downloads\\actors-1894.nt");
+        GraphLoader imdbLoader=new IMDBLoader(new ArrayList <TGFD>(), Collections.singletonList("F:\\MorteZa\\Datasets\\IMDB\\rdf\\alaki.nt"));
     }
 
 }

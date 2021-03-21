@@ -17,6 +17,9 @@ public class GraphLoader {
 
     //region --[Fields: Protected]---------------------------------------
 
+    /** size of the graph: #edges + #attributes */
+    protected int graphSize=0;
+
     // Graph instance
     protected VF2DataGraph graph;
 
@@ -52,6 +55,13 @@ public class GraphLoader {
 
     public VF2DataGraph getGraph() {
         return graph;
+    }
+
+    /**
+     * @return Size of the graph
+     */
+    public int getGraphSize() {
+        return graphSize;
     }
 
     //endregion

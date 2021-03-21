@@ -1,14 +1,14 @@
 package VF2Runner;
 
+import infra.RelationshipEdge;
 import infra.VF2DataGraph;
 import infra.VF2PatternGraph;
-import infra.RelationshipEdge;
 import infra.Vertex;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
 import org.jgrapht.alg.isomorphism.VF2SubgraphIsomorphismInspector;
-import util.myConsole;
+import util.properties;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -38,80 +38,80 @@ public class VF2SubgraphIsomorphism {
         };
     }
 
-    public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean print)
+    public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean cacheEdges)
     {
         //System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
 
         long startTime = System.currentTimeMillis();
         inspector = new VF2SubgraphIsomorphismInspector<>(
                 dataGraph.getGraph(), pattern.getGraph(),
-                myVertexComparator, myEdgeComparator, false);
+                myVertexComparator, myEdgeComparator, cacheEdges);
 
-        myConsole.print("Search Cost ", (System.currentTimeMillis() - startTime));
+        System.out.println("Search Cost: " + (System.currentTimeMillis() - startTime));
         int size=0;
         if (inspector.isomorphismExists()) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
-            if(print)
+            if(properties.myProperties.printDetailedMatchingResults)
             {
                 while (iterator.hasNext()) {
-                    myConsole.print("---------- Match found ---------- ");
+                    System.out.println("---------- Match found ---------- ");
                     GraphMapping<Vertex, RelationshipEdge> mappings = iterator.next();
 
                     for (Vertex v : pattern.getGraph().vertexSet()) {
                         Vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
                         if (currentMatchedVertex != null) {
-                            myConsole.print(v + " --> " + currentMatchedVertex);
+                            System.out.println(v + " --> " + currentMatchedVertex);
                         }
                     }
                     size++;
                 }
-                myConsole.print("Number of matches: " + size);
+                System.out.println("Number of matches: " + size);
             }
             return iterator;
         }
         else
         {
-            myConsole.print("No Matches for the query!");
+            System.out.println("No Matches for the query!");
             return null;
         }
     }
 
-    public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(Graph<Vertex, RelationshipEdge> dataGraph, VF2PatternGraph pattern, boolean print)
+    public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(Graph<Vertex, RelationshipEdge> dataGraph, VF2PatternGraph pattern, boolean cacheEdges)
     {
         //System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
 
         long startTime = System.currentTimeMillis();
         inspector = new VF2SubgraphIsomorphismInspector<>(
                 dataGraph, pattern.getGraph(),
-                myVertexComparator, myEdgeComparator, false);
+                myVertexComparator, myEdgeComparator, cacheEdges);
 
-        if(print)
-            myConsole.print("Search Cost ", (System.currentTimeMillis() - startTime));
+        if(properties.myProperties.printDetailedMatchingResults)
+            System.out.println("Search Cost: "+ (System.currentTimeMillis() - startTime));
         int size=0;
         if (inspector.isomorphismExists()) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
-            if(print)
+            if(properties.myProperties.printDetailedMatchingResults)
             {
                 while (iterator.hasNext()) {
-                    myConsole.print("---------- Match found ---------- ");
+                    System.out.println("---------- Match found ---------- ");
                     GraphMapping<Vertex, RelationshipEdge> mappings = iterator.next();
 
                     for (Vertex v : pattern.getGraph().vertexSet()) {
                         Vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
                         if (currentMatchedVertex != null) {
-                            myConsole.print(v + " --> " + currentMatchedVertex);
+                            System.out.println(v + " --> " + currentMatchedVertex);
                         }
                     }
                     size++;
                 }
-                myConsole.print("Number of matches: " + size);
+                System.out.println("Number of matches: " + size);
             }
             return iterator;
         }
         else
         {
-            if(print)
-                myConsole.print("No Matches for the query!");
+            if(properties.myProperties.printDetailedMatchingResults)
+                System.out.println("No Matches for the query!");
             return null;
         }
     }

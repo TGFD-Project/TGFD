@@ -7,7 +7,6 @@ import graphLoader.ChangeLoader;
 import graphLoader.IMDBLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
-import util.myConsole;
 import util.properties;
 
 import java.io.File;
@@ -15,8 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class testIMDBBatch
 {
@@ -87,32 +86,33 @@ public class testIMDBBatch
         }
 
         //Load the first timestamp
-        myConsole.print("-----------Snapshot (1)-----------");
+        System.out.println("-----------Snapshot (1)-----------");
 
         long startTime=System.currentTimeMillis();
         LocalDate currentSnapshotDate=timestamps.get(1);
         // load first snapshot of the dbpedia graph
-        IMDBLoader dbpedia = new IMDBLoader(allTGFDs,snapshots[0]);
-        myConsole.print("Load graph (1)", System.currentTimeMillis()-startTime);
+        //TODO: Fix this error, no null
+        IMDBLoader imdb = new IMDBLoader(allTGFDs,null);
+        printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
         // Finding the matches of the first snapshot for each TGFD
         for (TGFD tgfd:allTGFDs) {
             VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
-            myConsole.print("\n###########"+tgfd.getName()+"###########");
-            Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(dbpedia.getGraph(), tgfd.getPattern(),false);
+            System.out.println("\n###########"+tgfd.getName()+"###########");
+            Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(imdb.getGraph(), tgfd.getPattern(),false);
 
             //Retrieving and storing the matches of each timestamp.
-            myConsole.print("Retrieving the matches");
+            System.out.println("Retrieving the matches");
             startTime=System.currentTimeMillis();
             matchCollectionHashMap.get(tgfd.getName()).addMatches(currentSnapshotDate,results);
-            myConsole.print("Match retrieval", System.currentTimeMillis()-startTime);
+            printWithTime("Match retrieval", System.currentTimeMillis()-startTime);
         }
 
         //Load the change files
         Object[] ids=changeFiles.keySet().toArray();
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++) {
-            myConsole.print("-----------Snapshot (" + ids[i] + ")-----------");
+            System.out.println("-----------Snapshot (" + ids[i] + ")-----------");
 
             startTime = System.currentTimeMillis();
             currentSnapshotDate = timestamps.get((int) ids[i]);
@@ -120,20 +120,20 @@ public class testIMDBBatch
             List <Change> changes = changeLoader.getAllChanges();
 
             //update the dbpedia graph with the changes.
-            dbpedia.updateGraphWithChanges(changes);
-            myConsole.print("Load changes (" + ids[i] + ")", System.currentTimeMillis() - startTime);
-            myConsole.print("Total number of changes: " + changes.size());
+            imdb.updateGraphWithChanges(changes);
+            printWithTime("Load changes (" + ids[i] + ")", System.currentTimeMillis() - startTime);
+            System.out.println("Total number of changes: " + changes.size());
 
             for (TGFD tgfd:allTGFDs) {
                 VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
-                myConsole.print("\n###########"+tgfd.getName()+"###########");
-                Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(dbpedia.getGraph(), tgfd.getPattern(),false);
+                System.out.println("\n###########"+tgfd.getName()+"###########");
+                Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(imdb.getGraph(), tgfd.getPattern(),false);
 
                 //Retrieving and storing the matches of each timestamp.
-                myConsole.print("Retrieving the matches");
+                System.out.println("Retrieving the matches");
                 startTime=System.currentTimeMillis();
                 matchCollectionHashMap.get(tgfd.getName()).addMatches(currentSnapshotDate,results);
-                myConsole.print("Match retrieval", System.currentTimeMillis()-startTime);
+                printWithTime("Match retrieval", System.currentTimeMillis()-startTime);
             }
 
         }
@@ -141,31 +141,37 @@ public class testIMDBBatch
         for (TGFD tgfd:allTGFDs) {
             // Now, we need to find all the violations
             //First, we run the Naive Batch TED
-            myConsole.print("==========="+tgfd.getName()+"===========");
-            myConsole.print("Running the naive TED");
+            System.out.println("==========="+tgfd.getName()+"===========");
+            System.out.println("Running the naive TED");
             startTime=System.currentTimeMillis();
 
             NaiveBatchTED naive=new NaiveBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
             Set<Violation> allViolationsNaiveBatchTED=naive.findViolations();
             System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
-            myConsole.print("Naive Batch TED", System.currentTimeMillis()-startTime);
+            printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
             if(properties.myProperties.saveViolations)
                 saveViolations("naive",allViolationsNaiveBatchTED,tgfd);
 
             // Next, we need to find all the violations using the optimize method
-            myConsole.print("Running the optimized TED");
+            System.out.println("Running the optimized TED");
             startTime=System.currentTimeMillis();
             OptBatchTED optimize=new OptBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
             Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
             System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
-            myConsole.print("Optimized Batch TED", System.currentTimeMillis()-startTime);
+            printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
 
             if(properties.myProperties.saveViolations)
                 saveViolations("optimized",allViolationsOptBatchTED,tgfd);
         }
 
-        myConsole.print("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
-        myConsole.saveLogs("run_"+ LocalDateTime.now().toString() + ".txt");
+        printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
+    }
+
+    private static void printWithTime(String message, long runTimeInMS)
+    {
+        System.out.println(message + " time: " + runTimeInMS + "(ms) ** " +
+                TimeUnit.MILLISECONDS.toSeconds(runTimeInMS) + "(sec) ** " +
+                TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
     }
 
     private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd)

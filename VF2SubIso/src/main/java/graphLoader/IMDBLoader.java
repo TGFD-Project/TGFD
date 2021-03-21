@@ -4,30 +4,31 @@ import infra.Attribute;
 import infra.DataVertex;
 import infra.RelationshipEdge;
 import infra.TGFD;
-import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.*;
-import util.myConsole;
 import util.properties;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class IMDBLoader extends GraphLoader{
 
-    public IMDBLoader(List <TGFD> alltgfd, String path) {
+    public IMDBLoader(List <TGFD> alltgfd, List<String> paths) {
 
         super(alltgfd);
-        loadIMDBGraph(path);
+        for (String path:paths) {
+            loadIMDBGraph(path);
+        }
     }
 
     private void loadIMDBGraph(String dataGraphFilePath) {
 
         if (dataGraphFilePath == null || dataGraphFilePath.length() == 0) {
-            myConsole.print("No Input Graph Data File Path!");
+            System.out.println("No Input Graph Data File Path!");
             return;
         }
-        myConsole.print("Loading DBPedia Graph: "+dataGraphFilePath);
+        System.out.println("Loading IMDB Graph: "+dataGraphFilePath);
 
         try
         {
@@ -75,64 +76,62 @@ public class IMDBLoader extends GraphLoader{
                 String predicate = stmt.getPredicate().getLocalName().toLowerCase();
                 RDFNode object = stmt.getObject();
                 String objectNodeURI;
-
-                try
+                if (object.isLiteral())
                 {
-                    if (object.isLiteral())
-                    {
-                        objectNodeURI = object.asLiteral().getString().toLowerCase();
-                        if(properties.myProperties.optimizedLoadingBasedOnTGFD && validAttributes.contains(predicate))
-                            subjectVertex.addAttribute(new Attribute(predicate,objectNodeURI));
+                    objectNodeURI = object.asLiteral().getString().toLowerCase();
+                    if(properties.myProperties.optimizedLoadingBasedOnTGFD && validAttributes.contains(predicate)) {
+                        subjectVertex.addAttribute(new Attribute(predicate, objectNodeURI));
+                        graphSize++;
                     }
-                    else
-                    {
-                        objectNodeURI = object.toString().toLowerCase();
-                        if (objectNodeURI.length() > 16)
-                            objectNodeURI = objectNodeURI.substring(16);
-
-                        temp=objectNodeURI.split("/");
-                        if(temp.length!=2)
-                        {
-                            // Error!
-                            continue;
-                        }
-
-                        String objectType=temp[0];
-                        String objectID=temp[1];
-
-                        // ignore the node if the type is not in the validTypes and
-                        // optimizedLoadingBasedOnTGFD is true
-                        if(properties.myProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(objectType))
-                            continue;
-                        //int nodeId = subject.hashCode();
-                        DataVertex objectVertex= (DataVertex) graph.getNode(objectID);
-
-                        if (objectVertex==null) {
-                            objectVertex=new DataVertex(objectID,objectType);
-                            graph.addVertex(objectVertex);
-                        }
-                        else {
-                            objectVertex.addTypes(objectType);
-                        }
-                        graph.addEdge(subjectVertex, objectVertex, new RelationshipEdge(predicate));
-                    }
-                } catch (DatatypeFormatException e) {
-                    //System.out.println("Invalid DataType Skipped!");
-                    e.printStackTrace();
                 }
-                catch (Exception e)
+                else
                 {
-                    System.out.println(e.getMessage());
+                    objectNodeURI = object.toString().toLowerCase();
+                    if (objectNodeURI.length() > 16)
+                        objectNodeURI = objectNodeURI.substring(16);
+
+                    temp=objectNodeURI.split("/");
+                    if(temp.length!=2)
+                    {
+                        // Error!
+                        continue;
+                    }
+
+                    String objectType=temp[0];
+                    String objectID=temp[1];
+
+                    // ignore the node if the type is not in the validTypes and
+                    // optimizedLoadingBasedOnTGFD is true
+                    if(properties.myProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(objectType))
+                        continue;
+
+                    DataVertex objectVertex= (DataVertex) graph.getNode(objectID);
+                    if (objectVertex==null) {
+                        objectVertex=new DataVertex(objectID,objectType);
+                        graph.addVertex(objectVertex);
+                    }
+                    else {
+                        objectVertex.addTypes(objectType);
+                    }
+                    graph.addEdge(subjectVertex, objectVertex, new RelationshipEdge(predicate));
+                    graphSize++;
                 }
             }
-            myConsole.print("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());
+            System.out.println("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());
             //System.out.println("Done Loading DBPedia Graph.");
             //System.out.println("Number of subjects not found: " + numberOfSubjectsNotFound);
             //System.out.println("Number of loops found: " + numberOfLoops);
         }
         catch (Exception e)
         {
-            myConsole.print(e.getMessage());
+            System.out.println(e.getMessage());
         }
+    }
+
+    private static void printWithTime(String message, long runTimeInMS)
+    {
+        System.out.println(message + " time: " + runTimeInMS + "(ms) ** " +
+                TimeUnit.MILLISECONDS.toSeconds(runTimeInMS) + "(sec) ** " +
+                TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
     }
 }

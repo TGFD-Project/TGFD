@@ -6,6 +6,7 @@ public class properties {
     {
         public static boolean optimizedLoadingBasedOnTGFD=false;
         public static boolean saveViolations=false;
+        public static boolean printDetailedMatchingResults=false;
     }
 
 }

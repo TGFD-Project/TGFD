@@ -3,11 +3,11 @@ import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphLoader.DBPediaLoader;
 import infra.TGFD;
-import util.myConsole;
 import util.properties;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class testChangesForTGFDs {
 
@@ -60,7 +60,11 @@ public class testChangesForTGFDs {
         String name="";
         for (TGFD tgfd:allTGFDs)
             name+=tgfd.getName() + "_";
-        name=name.substring(0, name.length() - 1);
+
+        if(!name.equals(""))
+            name=name.substring(0, name.length() - 1);
+        else
+            name="noSpecificTGFDs";
 
         System.out.println("Generating the change files for the TGFD: " + name);
         Object[] ids=dataPathsById.keySet().toArray();
@@ -77,7 +81,7 @@ public class testChangesForTGFDs {
             first = new DBPediaLoader(allTGFDs,typePathsById.get((int) ids[i]),
                     dataPathsById.get((int) ids[i]));
 
-            myConsole.print("Load graph (" + ids[i] + ")", System.currentTimeMillis() - startTime);
+            printWithTime("Load graph (" + ids[i] + ")", System.currentTimeMillis() - startTime);
 
             //
             if(second!=null)
@@ -98,7 +102,7 @@ public class testChangesForTGFDs {
             second = new DBPediaLoader(allTGFDs,typePathsById.get((int) ids[i+1]),
                     dataPathsById.get((int) ids[i+1]));
 
-            myConsole.print("Load graph (" + ids[i+1] + ")", System.currentTimeMillis() - startTime);
+            printWithTime("Load graph (" + ids[i+1] + ")", System.currentTimeMillis() - startTime);
 
             //
             ChangeFinder cFinder=new ChangeFinder(first,second,allTGFDs);
@@ -142,6 +146,13 @@ public class testChangesForTGFDs {
                 return;
             }
         }
+    }
+
+    private static void printWithTime(String message, long runTimeInMS)
+    {
+        System.out.println(message + " time: " + runTimeInMS + "(ms) ** " +
+                TimeUnit.MILLISECONDS.toSeconds(runTimeInMS) + "(sec) ** " +
+                TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
     }
 
     private static void saveChanges(List<Change> allChanges, int t1, int t2, String tgfdName)
