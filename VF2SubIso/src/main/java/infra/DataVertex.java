@@ -37,14 +37,19 @@ public class DataVertex extends Vertex {
     public boolean isMapped(Vertex v) {
         if(v instanceof DataVertex)
             return false;
-        if (!super.getTypes().containsAll(v.getTypes()))
-            return false;
-        if(!super.getAllAttributesNames().containsAll(v.getAllAttributesNames()))
-            return false;
-        for (Attribute attr:v.getAllAttributesList())
-            if(!attr.isNULL() && !super.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
+        if (super.getTypes().containsAll(v.getTypes())) {
+            if (super.getAllAttributesNames().containsAll(v.getAllAttributesNames())) {
+                for (Attribute attr : v.getAllAttributesList())
+                    if (!attr.isNULL() && !super.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue())) {
+                        return false;
+                    }
+                return true;
+            } else {
                 return false;
-        return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     @Override

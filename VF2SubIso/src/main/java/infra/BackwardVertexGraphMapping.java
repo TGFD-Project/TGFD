@@ -54,7 +54,7 @@ public class BackwardVertexGraphMapping<V, E> implements GraphMapping<V, E>
     //region --[GraphMapping]------------------------------------------
     @Override
     public V getVertexCorrespondence(V v, boolean forward) {
-        if (forward == true)
+        if (forward)
             throw new UnsupportedOperationException("BackwardVertexGraphMapping does not support forward getVertexCorrespondence");
 
         return temporalGraph.getVertex(

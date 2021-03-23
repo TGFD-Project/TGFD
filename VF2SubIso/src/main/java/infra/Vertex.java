@@ -35,7 +35,7 @@ public abstract class Vertex implements Comparable<Vertex>{
 
     public String getAttributeValueByName(String name)
     {
-        return attributes.get(name.toLowerCase()).getAttrValue();
+        return attributes.get(name).getAttrValue();
     }
 
     public Collection<String> getAllAttributesNames() {
@@ -69,8 +69,7 @@ public abstract class Vertex implements Comparable<Vertex>{
 
     public void deleteAttribute(Attribute attr)
     {
-        if(attributes.containsKey(attr.getAttrName()))
-            attributes.remove(attr.getAttrName());
+        attributes.remove(attr.getAttrName());
     }
 
     public void addAttribute(Attribute attr)
