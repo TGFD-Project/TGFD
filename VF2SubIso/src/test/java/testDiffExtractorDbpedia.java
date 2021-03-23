@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class testDiffExtractorDBPedia {
+public class testDiffExtractorDbpedia {
 
     public static void main(String []args) throws FileNotFoundException {
 

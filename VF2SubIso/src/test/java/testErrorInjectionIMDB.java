@@ -5,7 +5,8 @@ import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import graphLoader.ChangeLoader;
-import graphLoader.DBPediaLoader;
+import graphLoader.GraphLoader;
+import graphLoader.IMDBLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
 import util.configParser;
@@ -17,7 +18,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class testErrorInjection {
+public class testErrorInjectionIMDB {
 
     public static void main(String []args) throws FileNotFoundException {
 
@@ -25,9 +26,9 @@ public class testErrorInjection {
 
         configParser conf=new configParser(args[0]);
 
-        System.out.println("Test Error Injection over DBPedia");
+        System.out.println("Test Error Injection over IMDB");
 
-        System.out.println(Arrays.toString(conf.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(conf.getFirstDataFilePath().toArray()));
+        System.out.println(Arrays.toString(conf.getFirstDataFilePath().toArray()));
         System.out.println(conf.getDiffFilesPath().keySet() + " *** " + conf.getDiffFilesPath().values());
 
         //Load the TGFDs.
@@ -44,7 +45,7 @@ public class testErrorInjection {
         System.out.println("-----------Snapshot (1)-----------");
         long startTime=System.currentTimeMillis();
         LocalDate currentSnapshotDate=conf.getTimestamps().get(1);
-        DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,conf.getFirstTypesFilePath(),conf.getFirstDataFilePath());
+        GraphLoader imdb = new IMDBLoader(allTGFDs,conf.getFirstDataFilePath());
 
         printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
@@ -54,7 +55,7 @@ public class testErrorInjection {
         for (TGFD tgfd:allTGFDs) {
             VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
             System.out.println("\n###########"+tgfd.getName()+"###########");
-            Iterator <GraphMapping <Vertex, RelationshipEdge>> results= VF2.execute(dbpedia.getGraph(), tgfd.getPattern(),false);
+            Iterator <GraphMapping <Vertex, RelationshipEdge>> results= VF2.execute(imdb.getGraph(), tgfd.getPattern(),false);
 
             //Retrieving and storing the matches of each timestamp.
             System.out.println("Retrieving the matches");
@@ -82,8 +83,8 @@ public class testErrorInjection {
             // Finding the matches...
 
             startTime=System.currentTimeMillis();
-            System.out.println("Updating the graph");
-            IncUpdates incUpdatesOnDBpedia=new IncUpdates(dbpedia.getGraph());
+            System.out.println("Updating the imdb graph");
+            IncUpdates incUpdatesOnDBpedia=new IncUpdates(imdb.getGraph());
             incUpdatesOnDBpedia.AddNewVertices(changes);
 
             HashMap<String, ArrayList <String>> newMatchesSignaturesByTGFD=new HashMap <>();

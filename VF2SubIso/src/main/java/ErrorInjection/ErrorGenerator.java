@@ -25,13 +25,9 @@ public class ErrorGenerator {
     public void evaluate(double errorRate)
     {
         this.errorRate=errorRate;
-        System.out.println("Finding the pairs.");
         List<PairsOfMatches> pairs=findpairs();
-        System.out.println("Extracting the domain");
         findDomain(pairs);
-        System.out.println("Injecting the errors");
         injectError(pairs,tgfd.getName().hashCode());
-        System.out.println("Evaluating the results.");
         findViolations(pairs);
     }
 
@@ -177,8 +173,24 @@ public class ErrorGenerator {
                 }
             }
         }
-        System.out.println("TGFD Error Detection: " + TGFDPositiveErrors + " ** " + TGFDNegativeErrors);
-        System.out.println("GFD Error Detection: " + GFDPositiveErrors + " ** " + GFDNegativeErrors);
+        int TGFDTotal=TGFDPositiveErrors+TGFDNegativeErrors;
+        int GFDTotal=GFDPositiveErrors+GFDNegativeErrors;
+        ////////////////////////////////
+
+        double TGFDPrecision=(double)TGFDPositiveErrors/(double)TGFDTotal;
+        double TGFDRecall=(double)TGFDPositiveErrors/(double)positiveErrors.size();
+        double TGFDFP=(double)TGFDNegativeErrors/(double)negativeErrors.size();
+        double TGFDF1Score=2*((TGFDPrecision*TGFDRecall)/(TGFDPrecision+TGFDRecall));
+
+        ////////////////////////////////
+
+        double GFDPrecision=(double)GFDPositiveErrors/(double)GFDTotal;
+        double GFDRecall=(double)GFDPositiveErrors/(double)positiveErrors.size();
+        double GFDFP=(double)GFDNegativeErrors/(double)negativeErrors.size();
+        double GFDF1Score=2*((GFDPrecision*GFDRecall)/(GFDPrecision+GFDRecall));
+
+        System.out.println("TGFD precision: " + TGFDPrecision + " ** TGFD recall:" + TGFDRecall+ " ** TGFD F.P.:" + TGFDFP+ " ** TGFD F1:" + TGFDF1Score);
+        System.out.println("GFD precision: " + GFDPrecision + " ** GFD recall:" + GFDRecall+ " ** GFD F.P.:" + GFDFP+ " ** GFD F1:" + GFDF1Score);
     }
 
     private class PairsOfMatches

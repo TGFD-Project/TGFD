@@ -77,7 +77,7 @@ public class configParser {
             {
                 properties.myProperties.printDetailedMatchingResults=Boolean.parseBoolean(conf[1]);
             }
-            else if(conf[0].startsWith("-diffcap"))
+            else if(conf[0].startsWith("-logcap"))
             {
                 String []temp=conf[1].split(",");
                 for (String diffCap:temp)
