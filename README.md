@@ -8,7 +8,7 @@
 
 The **T**emporal **G**raph **F**unctional **D**ependencies (TGFD) project detects errors in TGFDs. A TGFD is a new class of temporal dependencies over graphs that specify topological and attribute requirements over a time interval.
 
-This page provides supplementary experimental details, TGFD samples, dataset characteristics, and a link to the source code.
+This page provides supplementary experimental details, dataset characteristics, TGFD samples, and a link to the source code.
 
 * [1. Overview](#1-overview)
 * [2. Datasets](#2-datasets)
@@ -24,16 +24,19 @@ This page provides supplementary experimental details, TGFD samples, dataset cha
 * [3. Getting started](#3-getting-started)
 * [4. Comparative Baselines](#4-comparative-baselines)
 * [5. Source Code](#5-source-code)
+* [6. References](#6-references)
 
 <h2 id="2-datasets">2. Datasets</h2>
 
 <h3 id="21-dbpedia">2.1 DBpedia</h3>
 
-**Source:** https://wiki.dbpedia.org/
+[DBpedia](https://databus.dbpedia.org/dbpedia/collections/latest-core) is a dataset containing structured content of Wikimedia projects, such as Wikipedia [1].
+
+This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges with 584 distinct labels [2].
 
 ```diff
 ! TODO: add stats of the DBpedia dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
-! TODO: check if stats listed in paper match the actual experimental stats listed here [2021-03-21] [@mortez28]
+! TODO: check if stats listed in paper match the actual experimental stats listed for DBpedia [2021-03-21] [@mortez28]
 ```
 
 <h4 id="211-dbpedia-schema">2.1.1 DBpedia Schema</h4>
@@ -135,8 +138,8 @@ delta#0#210#1
 Source: https://www.imdb.com/interfaces/.
 
 ```diff
-! TODO: add stats of the DBpedia dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
-! TODO: check if stats listed in paper match the actual experimental stats listed here [2021-03-21] [@mortez28]
+! TODO: add stats of the IMDB dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
+! TODO: check if stats listed in paper match the actual experimental stats listed for IMDB [2021-03-21] [@mortez28]
 ```
 
 ```diff
@@ -248,3 +251,9 @@ delta#0#365#1
 <h2 id="5-source-code">5. Source Code</h2>
 
 Source code is available at https://github.com/TGFD-Project/TGFD.
+
+<h2 id="#6-references">6. References</h2>
+
+[1] https://www.dbpedia.org/about/
+
+[2] Jens Lehmann, Robert Isele, Max Jakob, Anja Jentzsch, Dimitris Kontokostas,Pablo N Mendes, Sebastian Hellmann, Mohamed Morsey, Patrick Van Kleef, SörenAuer, et al.2015. DBpedia–a large-scale, multilingual knowledge base extractedfrom Wikipedia. Semantic Web (2015)
