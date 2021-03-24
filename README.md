@@ -48,8 +48,6 @@ This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges
 <h4 id="212-dbpedia-tgfds">2.1.2 DBpedia TGFDs</h4>
 
 ```diff
-! TODO: add rest of the attributes we are using for the TGFDs [2021-03-21] [@adammansfield]
-! TODO: list attributes a sets (e.g. {airline, airport, etc}) if we do not have different attributes per type [2021-03-21] [@adammansfield]
 ! TODO: explain that the schema below is a subset of the overall schema that we use for TGFDs [2021-03-21] [@adammansfield]
 
 ! TODO: add description of approach of generating TGFDs [2021-03-21] [@adammansfield]
@@ -57,61 +55,63 @@ This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges
 # This needs more explanation of how you generated TGFDs, what is the process?  How do you vary |Q|, \Delta and X->Y?    Give some samples after this explanation.
 ```
 
+We used a subset of the vertices and edges in the DBpedia dataset to form TGFDs.
+
 **Vertices:**
 
-| Type             | Attributes |
-| :--------------- | :--------- |
-| academicjournal  | publisher  |
-| airline          | name       |
-| airport          | name       |
-| album            | name       |
-| artwork          | name       |
-| band             | name       |
-| bank             | name       |
-| basketballplayer | name       |
-| basketballteam   | name       |
-| book             | name       |
-| city             | name       |
-| company          | name       |
-| country          | name       |
-| currency         | name       |
-| hospital         | name       |
-| judge            | name       |
-| murderer         | name       |
-| museum           | name       |
-| musicalartist    | name       |
-| musicgenre       | name       |
-| politicalparty   | name       |
-| primeminister    | name       |
-| publisher        | name       |
-| recordlabel      | name       |
-| university       | name       |
-
+| Type             | Attributes                |
+| :--------------- | :------------------------ |
+| academicjournal  | publisher                 |
+| airline          | name, airlinecode         |
+| airport          | name                      |
+| album            | name, runtime             |
+| artwork          | name                      |
+| band             | name, activeyearstartyear |
+| bank             | name, foundingyear        |
+| basketballplayer | name, birthdate           |
+| basketballteam   | name                      |
+| book             | name, isbn                |
+| city             | name                      |
+| company          | name, foundingyear        |
+| country          | name                      |
+| currency         | name                      |
+| hospital         | name, openingyear         |
+| judge            | name, birthdate           |
+| murderer         | name                      |
+| museum           | name                      |
+| musicalartist    | name                      |
+| musicgenre       | name                      |
+| politicalparty   | name                      |
+| primeminister    | name, birthdate           |
+| publisher        | name                      |
+| recordlabel      | name, foundingyear        |
+| university       | name                      |
 
 **Edges:**
 
-| Type       | Source           | Destination      |
-| :--------- | :--------------- | :--------------- |
-| almamater  | judge            | university       |
-| capital    | country          | city             |
-| country    | book             | country          |
-| country    | hospital         | country          |
-| country    | murderer         | country          |
-| currency   | country          | currency         |
-| draftteam  | basketballplayer | basketballteam   |
-| genre      | album            | musicgenre       |
-| genre      | recordlabel      | musicgenre       |
-| hometown   | band             | city             |
-| hubairport | airline          | airport          |
-| league     | basketballplayer | basketballleague |
-| location   | bank             | country          |
-| location   | company          | country          |
-| museum     | artwork          | museum           |
-| party      | primeminister    | politicalparty   |
-| producer   | album            | musicalartist    |
-| publisher  | academicjournal  | publisher        |
-| publisher  | book             | publisher        |
-| team       | basketballplayer | basketballteam   |
+| Type          | Source           | Destination      |
+| :------------ | :--------------- | :--------------- |
+| almamater     | judge            | university       |
+| capital       | country          | city             |
+| country       | book             | country          |
+| country       | hospital         | country          |
+| country       | murderer         | country          |
+| currency      | country          | currency         |
+| currentmember | sportsteammember | soccerplayer     |
+| draftteam     | basketballplayer | basketballteam   |
+| genre         | album            | musicgenre       |
+| genre         | recordlabel      | musicgenre       |
+| hometown      | band             | city             |
+| hubairport    | airline          | airport          |
+| league        | basketballplayer | basketballleague |
+| location      | bank             | country          |
+| location      | company          | country          |
+| museum        | artwork          | museum           |
+| party         | primeminister    | politicalparty   |
+| producer      | album            | musicalartist    |
+| publisher     | academicjournal  | publisher        |
+| publisher     | book             | publisher        |
+| team          | basketballplayer | basketballteam   |
 
 ```diff
 ! TODO: define 5 human friendly TGFDs (picture of pattern, delta, depednency) [2021-03-21] [@adammansfield]
