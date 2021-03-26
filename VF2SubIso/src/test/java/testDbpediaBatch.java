@@ -7,7 +7,7 @@ import graphLoader.ChangeLoader;
 import graphLoader.DBPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
-import util.configParser;
+import util.ConfigParser;
 import util.properties;
 
 import java.io.FileNotFoundException;
@@ -26,7 +26,7 @@ public class testDbpediaBatch
 
         System.out.println("Test DBPedia batch");
 
-        configParser conf=new configParser(args[0]);
+        ConfigParser conf=new ConfigParser(args[0]);
 
 
         System.out.println(Arrays.toString(conf.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(conf.getFirstDataFilePath().toArray()));

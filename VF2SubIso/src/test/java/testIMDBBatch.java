@@ -7,9 +7,9 @@ import graphLoader.ChangeLoader;
 import graphLoader.IMDBLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
+import util.ConfigParser;
 import util.properties;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,64 +19,19 @@ import java.util.concurrent.TimeUnit;
 
 public class testIMDBBatch
 {
-    /**
-     * Arguments: -p <patternFile> [-t<snapshotId> <typeFile>] [-d<snapshotId> <dataFile>]
-     *
-     * Example:
-     *   TestIMDB \
-     *     -p "D:\\Java\\TGFD-Project\\TGFD\\VF2SubIso\\src\\test\\java\\samplePatterns\\pattern1.txt" \
-     *     -d1 "imdb\\2000.nt" \
-     *     -d2 "imdb\\2001.nt" \
-     */
     public static void main(String []args) throws FileNotFoundException {
 
         long wallClockStart=System.currentTimeMillis();
 
-        var snapshots = new ArrayList<String>();
-        String patternPath = "";
-        HashMap<Integer,LocalDate> timestamps=new HashMap<>();
-        HashMap<Integer, String> changeFiles=new HashMap<>();
+        ConfigParser conf=new ConfigParser(args[0]);
 
         System.out.println("Test IMDB subgraph isomorphism");
 
-        Scanner scanner = new Scanner(new File(args[0]));
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            String []conf=line.split(" ");
-            if(conf.length!=2)
-                continue;
-            if (conf[0].toLowerCase().startsWith("-d"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                snapshots.add(conf[1]);
-            }
-            else if (conf[0].toLowerCase().startsWith("-p"))
-            {
-                patternPath = conf[1];
-            }
-            else if (conf[0].toLowerCase().startsWith("-s"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                timestamps.put(snapshotId,LocalDate.parse(conf[1]));
-            }
-            else if (conf[0].toLowerCase().startsWith("-c"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if(snapshotId!=1)
-                    changeFiles.put(snapshotId, conf[1]);
-            }
-            else if(conf[0].toLowerCase().startsWith("-optgraphload"))
-            {
-                properties.myProperties.optimizedLoadingBasedOnTGFD=Boolean.parseBoolean(conf[1]);
-            }
-        }
-        // TODO: check that typesPaths.keySet == dataPaths.keySet [2021-02-14]
-
-        //System.out.println(Arrays.toString(firstTypesPath.toArray()) + " *** " + Arrays.toString(firstDataPath.toArray()));
-        System.out.println(changeFiles.keySet() + " *** " + changeFiles.values());
+        System.out.println(Arrays.toString(conf.getFirstDataFilePath().toArray()));
+        System.out.println(conf.getDiffFilesPath().keySet() + " *** " + conf.getDiffFilesPath().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(patternPath);
+        TGFDGenerator generator = new TGFDGenerator(conf.getPatternPath());
         List<TGFD> allTGFDs=generator.getTGFDs();
 
         //Create the match collection for all the TGFDs in the list
@@ -89,10 +44,10 @@ public class testIMDBBatch
         System.out.println("-----------Snapshot (1)-----------");
 
         long startTime=System.currentTimeMillis();
-        LocalDate currentSnapshotDate=timestamps.get(1);
+        LocalDate currentSnapshotDate=conf.getTimestamps().get(1);
         // load first snapshot of the dbpedia graph
         //TODO: Fix this error, no null
-        IMDBLoader imdb = new IMDBLoader(allTGFDs,null);
+        IMDBLoader imdb = new IMDBLoader(allTGFDs,conf.getFirstDataFilePath());
         printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
         // Finding the matches of the first snapshot for each TGFD
@@ -109,14 +64,14 @@ public class testIMDBBatch
         }
 
         //Load the change files
-        Object[] ids=changeFiles.keySet().toArray();
+        Object[] ids=conf.getDiffFilesPath().keySet().toArray();
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++) {
             System.out.println("-----------Snapshot (" + ids[i] + ")-----------");
 
             startTime = System.currentTimeMillis();
-            currentSnapshotDate = timestamps.get((int) ids[i]);
-            ChangeLoader changeLoader = new ChangeLoader(changeFiles.get(ids[i]));
+            currentSnapshotDate = conf.getTimestamps().get((int) ids[i]);
+            ChangeLoader changeLoader = new ChangeLoader(conf.getDiffFilesPath().get(ids[i]));
             List <Change> changes = changeLoader.getAllChanges();
 
             //update the dbpedia graph with the changes.

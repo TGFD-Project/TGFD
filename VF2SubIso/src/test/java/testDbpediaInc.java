@@ -8,7 +8,7 @@ import graphLoader.ChangeLoader;
 import graphLoader.DBPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
-import util.configParser;
+import util.ConfigParser;
 import util.properties;
 
 import java.io.FileNotFoundException;
@@ -24,7 +24,7 @@ public class testDbpediaInc
 
         long wallClockStart=System.currentTimeMillis();
 
-        configParser conf=new configParser(args[0]);
+        ConfigParser conf=new ConfigParser(args[0]);
 
         System.out.println("Test DBPedia incremental");
 
@@ -112,6 +112,8 @@ public class testDbpediaInc
             for (TGFD tgfd:allTGFDs) {
                 matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,
                         newMatchesSignaturesByTGFD.get(tgfd.getName()),removedMatchesSignaturesByTGFD.get(tgfd.getName()));
+                System.out.println("New matches ("+tgfd.getName()+"): " +
+                        newMatchesSignaturesByTGFD.get(tgfd.getName()).size() + " ** " + removedMatchesSignaturesByTGFD.get(tgfd.getName()).size());
             }
             printWithTime("Update and retrieve matches ", System.currentTimeMillis()-startTime);
             //myConsole.print("#new matches: " + newMatchesSignatures.size()  + " - #removed matches: " + removedMatchesSignatures.size());

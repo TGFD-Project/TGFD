@@ -9,7 +9,7 @@ import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
-import util.configParser;
+import util.ConfigParser;
 import util.properties;
 
 import java.io.FileNotFoundException;
@@ -28,7 +28,7 @@ public class testIMDBInc
 
         System.out.println("Test Incremental algorithm for the IMDB dataset");
 
-        configParser conf=new configParser(args[0]);
+        ConfigParser conf=new ConfigParser(args[0]);
 
         // Test whether we loaded all the files correctly
         System.out.println(Arrays.toString(conf.getFirstDataFilePath().toArray()));
@@ -110,6 +110,8 @@ public class testIMDBInc
             for (TGFD tgfd:allTGFDs) {
                 matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,
                         newMatchesSignaturesByTGFD.get(tgfd.getName()),removedMatchesSignaturesByTGFD.get(tgfd.getName()));
+                System.out.println("New matches ("+tgfd.getName()+"): " +
+                        newMatchesSignaturesByTGFD.get(tgfd.getName()).size() + " ** " + removedMatchesSignaturesByTGFD.get(tgfd.getName()).size());
             }
             printWithTime("Update and retrieve matches ", System.currentTimeMillis()-startTime);
             //myConsole.print("#new matches: " + newMatchesSignatures.size()  + " - #removed matches: " + removedMatchesSignatures.size());

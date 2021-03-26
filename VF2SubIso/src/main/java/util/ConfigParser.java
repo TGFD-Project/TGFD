@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class configParser {
+public class ConfigParser {
 
     private HashMap<Integer, ArrayList<String>> typesPaths = new HashMap<>();
     private HashMap<Integer, ArrayList<String>> dataPaths = new HashMap<>();
@@ -16,7 +16,7 @@ public class configParser {
     private HashMap<Integer,LocalDate> timestamps=new HashMap<>();
     private ArrayList<Double> diffCaps=new ArrayList <>();
 
-    public configParser(String pathToConfigFile) throws FileNotFoundException {
+    public ConfigParser(String pathToConfigFile) throws FileNotFoundException {
         parseInputParams(pathToConfigFile);
     }
 

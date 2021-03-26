@@ -3,7 +3,7 @@ import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphLoader.DBPediaLoader;
 import infra.TGFD;
-import util.configParser;
+import util.ConfigParser;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -20,7 +20,7 @@ public class testDiffExtractorDbpedia {
 
         System.out.println("Test extract diffs over DBPedia graph");
 
-        configParser conf=new configParser(args[0]);
+        ConfigParser conf=new ConfigParser(args[0]);
 
         System.out.println(conf.getAllDataPaths().keySet() + " *** " + conf.getAllDataPaths().values());
         System.out.println(conf.getAllTypesPaths().keySet() + " *** " + conf.getAllTypesPaths().values());

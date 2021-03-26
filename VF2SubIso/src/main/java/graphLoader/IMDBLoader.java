@@ -9,6 +9,7 @@ import util.properties;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +33,7 @@ public class IMDBLoader extends GraphLoader{
 
         try
         {
+            HashSet<String> types=new HashSet <>();
             Model model = ModelFactory.createDefaultModel();
 
             //model.read(dataGraphFilePath);
@@ -57,6 +59,8 @@ public class IMDBLoader extends GraphLoader{
 
                 String subjectType=temp[0];
                 String subjectID=temp[1];
+
+                types.add(subjectType);
 
                 // ignore the node if the type is not in the validTypes and
                 // optimizedLoadingBasedOnTGFD is true
@@ -98,6 +102,7 @@ public class IMDBLoader extends GraphLoader{
                     }
 
                     String objectType=temp[0];
+                    types.add(objectType);
                     String objectID=temp[1];
 
                     // ignore the node if the type is not in the validTypes and
@@ -118,6 +123,8 @@ public class IMDBLoader extends GraphLoader{
                 }
             }
             System.out.println("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());
+            System.out.println("Number of types: " + types.size() + "\n");
+            types.forEach(type -> System.out.print(type + " - "));
             //System.out.println("Done Loading DBPedia Graph.");
             //System.out.println("Number of subjects not found: " + numberOfSubjectsNotFound);
             //System.out.println("Number of loops found: " + numberOfLoops);

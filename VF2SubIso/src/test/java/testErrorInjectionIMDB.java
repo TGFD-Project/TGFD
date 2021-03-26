@@ -9,7 +9,7 @@ import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
-import util.configParser;
+import util.ConfigParser;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -24,7 +24,7 @@ public class testErrorInjectionIMDB {
 
         long wallClockStart=System.currentTimeMillis();
 
-        configParser conf=new configParser(args[0]);
+        ConfigParser conf=new ConfigParser(args[0]);
 
         System.out.println("Test Error Injection over IMDB");
 
