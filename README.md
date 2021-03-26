@@ -117,12 +117,17 @@ We used a subset of the vertices and edges in the DBpedia dataset to form TGFDs.
 ! TODO: define 5 human friendly TGFDs (picture of pattern, delta, depednency) [2021-03-21] [@adammansfield]
 ```
 
-**DBpedia TGFD 1**
-![DBpedia TGFD 1 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/1.png "DBpedia TGFD 1 Pattern")
+**DBpedia TGFD 1**  
+![DBpedia TGFD 1 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/1.png "DBpedia TGFD 1 Pattern")  
+Δ: (0 days,  1000 days)  
+X: album.name  
+Y: musicalartist.name  
 
-**DBpedia TGFD 2**
-![DBpedia TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/2.png "DBpedia TGFD 2 Pattern")
-
+**DBpedia TGFD 2**  
+![DBpedia TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/2.png "DBpedia TGFD 2 Pattern")  
+Δ: (0 days, 30 days)  
+X: basketballplayer.name, basketballteam.name  
+Y: basketballleague.name  
 
 ```
 tgfd#p0100
