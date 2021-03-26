@@ -117,6 +117,10 @@ We used a subset of the vertices and edges in the DBpedia dataset to form TGFDs.
 ! TODO: define 5 human friendly TGFDs (picture of pattern, delta, depednency) [2021-03-21] [@adammansfield]
 ```
 
+**TGFD 1**
+
+![DBpedia TGFD 1 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/tfgd-pattern-dbpedia-1.png "DBpedia TGFD 1 Pattern")
+
 ```
 tgfd#p0100
 vertex#v1#album#name#uri
