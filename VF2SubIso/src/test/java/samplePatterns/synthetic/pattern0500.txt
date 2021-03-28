@@ -1,0 +1,9 @@
+tgfd#syntheticp0500
+vertex#v1#message
+vertex#v2#person
+edge#v1#v2#hasCreator
+diameter#1
+literal#x#message$browserUsed$message$browserUsed
+literal#x#message$uri$message$uri
+literal#y#person$browserUsed$person$browserUsed
+delta#0#365#1

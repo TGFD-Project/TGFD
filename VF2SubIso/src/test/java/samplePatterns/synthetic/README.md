@@ -131,21 +131,21 @@ Message    | hasTag       | Tag
 Pattern format:
 <vertexType> --<edgeType>--> <vertexType>
 
-**Pattern 0100**
+## Pattern 0100
 
 City --isPartOf--> Country
 X: City.name
 Y: Country.name
 delta: 0, 365
 
-**Pattern 0200**
+## Pattern 0200
 
 Person  --worksAt------> Company
 X: Person.name
 Y: Company.name
 delta: 0, 365
 
-**Pattern 0201**
+## Pattern 0201
 
 Person  --worksAt------> Company
 Company --isLocatedIn--> Country
@@ -153,9 +153,30 @@ X: Person.name, Company.name
 Y: Country.name
 delta: 0, 365
 
-**Pattern 0300**
+## Pattern 0300
 
 Person --hasInterest--> Tag
 X: Person.name
 Y: Tag.name
 delta: 0, 30
+
+## Pattern 0400
+
+TagClass --isSubClassOf--> TagClass
+X: TagClass.name
+Y: TagClass.name
+delta: 0, 30
+
+## Pattern 0500
+
+Message --hasCreator--> Person
+X: Message.browserUsed
+Y: Person.browserUsed
+delta: 0, 365
+
+## Pattern 0600
+
+University --isLocatedIn--> City
+X: University.name
+Y: City.name
+delta: 0, 1825

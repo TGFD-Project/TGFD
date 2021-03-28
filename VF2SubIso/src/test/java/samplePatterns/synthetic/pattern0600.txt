@@ -1,0 +1,9 @@
+tgfd#syntheticp0600
+vertex#v1#university
+vertex#v2#city
+edge#v1#v2#isLocatedIn
+diameter#1
+literal#x#university$name$university$name
+literal#x#university$uri$university$uri
+literal#y#city$name$city$name
+delta#0#1825#1

@@ -1,0 +1,9 @@
+tgfd#syntheticp0400
+vertex#v1#tagClass
+vertex#v2#tagClass
+edge#v1#v2#isSubclassOf
+diameter#1
+literal#x#tagClass$name$tagClass$name
+literal#x#tagClass$uri$tagClass$uri
+literal#y#tagClass$name$tagClass$name
+delta#0#30#1
