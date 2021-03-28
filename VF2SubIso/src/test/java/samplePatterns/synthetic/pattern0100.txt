@@ -1,0 +1,9 @@
+tgfd#syntheticp0100
+vertex#v1#city
+vertex#v2#country
+edge#v1#v2#isPartOf
+diameter#1
+literal#x#city$name$city$name
+literal#x#city$uri$city$uri
+literal#y#country$name$country$name
+delta#0#365#1
