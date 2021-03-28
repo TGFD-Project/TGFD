@@ -1,0 +1,13 @@
+tgfd#syntheticp0700
+vertex#v1#forum
+vertex#v2#person
+vertex#v3#tag
+edge#v1#v2#hasMember
+edge#v1#v3#hasTag
+edge#v2#v3#hasInterest
+diameter#2
+literal#x#forum$uri$forum$uri
+literal#x#person$name$person$name
+literal#x#person$uri$person$uri
+literal#y#tag$name$tag$name
+delta#0#30#1

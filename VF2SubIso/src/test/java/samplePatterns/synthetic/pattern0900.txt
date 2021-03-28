@@ -1,0 +1,11 @@
+tgfd#syntheticp0900
+vertex#v1#post
+vertex#v2#comment
+vertex#v3#message
+edge#v1#v3#isSubclassOf
+edge#v2#v3#isSubclassOf
+diameter#1
+literal#x#post$language$post$language
+literal#x#post$uri$post$uri
+literal#y#comment$language$comment$language
+delta#0#365#1

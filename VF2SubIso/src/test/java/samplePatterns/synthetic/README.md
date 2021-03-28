@@ -162,7 +162,7 @@ delta: 0, 30
 
 ## Pattern 0400
 
-TagClass --isSubClassOf--> TagClass
+TagClass --isSubclassOf--> TagClass
 X: TagClass.name
 Y: TagClass.name
 delta: 0, 30
@@ -180,3 +180,33 @@ University --isLocatedIn--> City
 X: University.name
 Y: City.name
 delta: 0, 1825
+
+## Pattern 0700
+Forum  --hasMember----> Person
+Forum  --hasTag-------> Tag
+Person --hasInterest--> Tag
+X: Person.name
+Y: Tag.name
+delta: 0, 30
+
+## Pattern 0800
+
+Message --isLocatedIn--> Country
+X: Message.locationIP
+Y: Country.name
+delta: 0,365
+
+## Pattern 0900
+
+Post    --isSubclassOf--> Message
+Comment --isSubclassOf--> Message
+X: Post.language
+Y: Comment.language
+delta: 0,365
+
+## Pattern 1000
+
+Person --studyAt--> University
+X: Person.name
+Y: University.name
+delta: 0,1460

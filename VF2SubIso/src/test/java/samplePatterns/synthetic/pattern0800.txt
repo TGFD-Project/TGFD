@@ -1,0 +1,9 @@
+tgfd#syntheticp0800
+vertex#v1#message
+vertex#v2#country
+edge#v1#v2#isLocatedIn
+diameter#1
+literal#x#message$locationIP$message$locationIP
+literal#x#message$uri$message$uri
+literal#y#country$name$country$name
+delta#0#365#1

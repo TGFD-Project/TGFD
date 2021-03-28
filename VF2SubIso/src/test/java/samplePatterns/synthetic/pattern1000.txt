@@ -1,0 +1,9 @@
+tgfd#syntheticp1000
+vertex#v1#person
+vertex#v2#university
+edge#v1#v2#studyAt
+diameter#1
+literal#x#person$name$person$name
+literal#x#person$uri$person$uri
+literal#y#university$name$university$name
+delta#0#365#1
