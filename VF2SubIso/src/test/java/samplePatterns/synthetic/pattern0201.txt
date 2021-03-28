@@ -1,0 +1,13 @@
+tgfd#syntheticp0201
+vertex#v1#person
+vertex#v2#company
+vertex#v3#country
+edge#v1#v2#worksAt
+edge#v2#v3#isLocatedIn
+diameter#2
+literal#x#person$name$person$name
+literal#x#person$uri$person$uri
+literal#x#company$name$company$name
+literal#x#company$uri$company$uri
+literal#y#country$name$country$name
+delta#0#365#1

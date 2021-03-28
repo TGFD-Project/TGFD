@@ -140,8 +140,22 @@ delta: 0, 365
 
 **Pattern 0200**
 
-Person  ----worksAt----> Company
+Person  --worksAt------> Company
+X: Person.name
+Y: Company.name
+delta: 0, 365
+
+**Pattern 0201**
+
+Person  --worksAt------> Company
 Company --isLocatedIn--> Country
 X: Person.name, Company.name
 Y: Country.name
 delta: 0, 365
+
+**Pattern 0300**
+
+Person --hasInterest--> Tag
+X: Person.name
+Y: Tag.name
+delta: 0, 30

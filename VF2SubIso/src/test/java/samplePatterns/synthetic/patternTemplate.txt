@@ -1,12 +1,12 @@
 Template of a TGFD for V1->V2
-s/{P}/synthetic####
+s/{P}/syntheticp####
 s/{V1}/vertex1Type
 s/{V2}/vertex2Type
 s/{E1}/edge1Type
 s/{V1A1}/vertex1Attr
 s/{V2A1}/vertex2Attr
 
-tgfd#imdbp{P}
+tgfd#syntheticp{P}
 vertex#v1#{V1}
 vertex#v2#{V2}
 edge#v1#v2#{E1}

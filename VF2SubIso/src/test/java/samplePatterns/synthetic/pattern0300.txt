@@ -1,0 +1,9 @@
+tgfd#syntheticp0300
+vertex#v1#person
+vertex#v2#tag
+edge#v1#v2#hasInterest
+diameter#1
+literal#x#person$name$person$name
+literal#x#person$uri$person$uri
+literal#y#tag$name$tag$name
+delta#0#30#1
