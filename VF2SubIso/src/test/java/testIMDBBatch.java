@@ -3,7 +3,7 @@ import BatchViolation.OptBatchTED;
 import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
-import graphLoader.ChangeLoader;
+import changeExploration.ChangeLoader;
 import graphLoader.IMDBLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
@@ -41,14 +41,14 @@ public class testIMDBBatch
         }
 
         //Load the first timestamp
-        System.out.println("-----------Snapshot (1)-----------");
+        System.out.println("===========Snapshot 1 (" + conf.getTimestamps().get(1) + ")===========");
 
         long startTime=System.currentTimeMillis();
         LocalDate currentSnapshotDate=conf.getTimestamps().get(1);
         // load first snapshot of the dbpedia graph
         //TODO: Fix this error, no null
         IMDBLoader imdb = new IMDBLoader(allTGFDs,conf.getFirstDataFilePath());
-        printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
+        printWithTime("Load graph 1 (" + conf.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
 
         // Finding the matches of the first snapshot for each TGFD
         for (TGFD tgfd:allTGFDs) {

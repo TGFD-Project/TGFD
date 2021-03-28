@@ -4,7 +4,7 @@ import IncrementalRunner.IncrementalChange;
 import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
-import graphLoader.ChangeLoader;
+import changeExploration.ChangeLoader;
 import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
 import infra.*;
@@ -49,7 +49,7 @@ public class testIMDBInc
         long startTime=System.currentTimeMillis();
         LocalDate currentSnapshotDate=conf.getTimestamps().get(1);
         GraphLoader imdb = new IMDBLoader(allTGFDs,conf.getFirstDataFilePath());
-        printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
+        printWithTime("Load graph 1 (" + conf.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
 
         // Now, we need to find the matches for the first snapshot.
         for (TGFD tgfd:allTGFDs) {

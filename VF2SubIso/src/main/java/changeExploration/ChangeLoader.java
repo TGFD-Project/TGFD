@@ -1,6 +1,5 @@
-package graphLoader;
+package changeExploration;
 
-import changeExploration.*;
 import infra.Attribute;
 import infra.DataVertex;
 import org.json.simple.JSONObject;

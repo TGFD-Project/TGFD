@@ -1,4 +1,4 @@
-import graphLoader.ChangeLoader;
+import changeExploration.ChangeLoader;
 
 public class testJsonLoader {
 

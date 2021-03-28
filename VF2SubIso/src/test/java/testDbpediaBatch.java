@@ -3,7 +3,7 @@ import BatchViolation.OptBatchTED;
 import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
-import graphLoader.ChangeLoader;
+import changeExploration.ChangeLoader;
 import graphLoader.DBPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
@@ -43,13 +43,13 @@ public class testDbpediaBatch
         }
 
         //Load the first timestamp
-        System.out.println("-----------Snapshot (1)-----------");
+        System.out.println("===========Snapshot 1 (" + conf.getTimestamps().get(1) + ")===========");
 
         long startTime=System.currentTimeMillis();
         LocalDate currentSnapshotDate=conf.getTimestamps().get(1);
         // load first snapshot of the dbpedia graph
         DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,conf.getFirstTypesFilePath(),conf.getFirstDataFilePath());
-        printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
+        printWithTime("Load graph 1 (" + conf.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
 
         // Finding the matches of the first snapshot for each TGFD
         for (TGFD tgfd:allTGFDs) {
@@ -68,7 +68,7 @@ public class testDbpediaBatch
         Object[] ids=conf.getDiffFilesPath().keySet().toArray();
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++) {
-            System.out.println("-----------Snapshot (" + ids[i] + ")-----------");
+            System.out.println("===========Snapshot "+ids[i]+" (" + conf.getTimestamps().get(ids[i]) + ")===========");
 
             startTime = System.currentTimeMillis();
             currentSnapshotDate = conf.getTimestamps().get((int) ids[i]);
@@ -77,7 +77,7 @@ public class testDbpediaBatch
 
             //update the dbpedia graph with the changes.
             dbpedia.updateGraphWithChanges(changes);
-            printWithTime("Load changes (" + ids[i] + ")", System.currentTimeMillis() - startTime);
+            printWithTime("Load changes "+ids[i]+" (" + conf.getTimestamps().get(ids[i]) + ")", System.currentTimeMillis() - startTime);
             System.out.println("Total number of changes: " + changes.size());
 
             for (TGFD tgfd:allTGFDs) {
