@@ -129,11 +129,19 @@ Message    | hasTag       | Tag
 # 3. Patterns
 
 Pattern format:
-<vertexType> <edegeType> <vertexType>
+<vertexType> --<edgeType>--> <vertexType>
 
 **Pattern 0100**
 
-city isPartOf country
-X: city.name
-Y: country.name
+City --isPartOf--> Country
+X: City.name
+Y: Country.name
+delta: 0, 365
+
+**Pattern 0200**
+
+Person  ----worksAt----> Company
+Company --isLocatedIn--> Country
+X: Person.name, Company.name
+Y: Country.name
 delta: 0, 365
