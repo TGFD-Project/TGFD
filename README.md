@@ -180,12 +180,52 @@ Source: https://www.imdb.com/interfaces/.
 
 <h3 id="23-synthetic">2.3 Synthetic</h3>
 
-```diff
-! TODO: explain synthetic data generator tool [2021-03-21] [@levin-noro]
-! TODO: describe how data is generated (parameters configured) [2021-03-21]  [@levin-noro]
-! TODO: give link to dataset download [2021-03-21]  [@levin-noro]
-! TODO: define synthetic schema [2021-03-21] [@levin-noro]
-```
+[gMark](https://github.com/gbagan/gmark) is a synthetic graph data generation tool.
+
+It takes as input a configuration file. The configuration file lists the number of nodes, the node labels and their proportions, the edge labels and their proportions, and a schema that defines the triples in the graph and also the distributions of the in-degrees and out-degrees of each triple. It outputs a synthetic graph that is represented as a list of triples (e.g "Person_123 isLocatedIn City_123"). 
+
+Dataset can be downloaded at https://drive.google.com/drive/u/1/folders/1UudvphkZvU3H5u4mCEBLzaohZdMzCMFO
+
+**Nodes:**
+| Type        | Attributes                                                                    |
+| :---------- | :---------------------------------------------------------------------------  |	
+| Person      | creationDate, name, gender, birthday, email, speaks, browserUsed, locationIP  |
+| University  | name                                                                          |
+| Company     | name                                                                          |
+| City        | name                                                                          |
+| Country     | name                                                                          |
+| Continent   | name                                                                          |
+| Forum       | creationDate, length                                                          |
+| Tag         | name                                                                          |
+| TagClass    | name                                                                          |
+| Post        | content, language, imageFile                                                  |
+| Comment     | content, language                                                             |
+| Message     | creationDate                                                                  |
+
+**Edges:**
+| Type           | Source     | Destination |
+| :------------- | :-------   | :---------- |
+| knows          | Person     | Person      |
+| hasInterest    | Person     | Tag         |
+| hasModerator   | Forum      | Person      |
+| hasMember      | Forum      | Person      |
+| studyAt        | Person     | University  |
+| worksAt        | Person     | Company     |
+| isLocatedIn    | Person     | City        |
+| isLocatedIn    | University | City        |
+| isLocatedIn    | Company    | City        |
+| isLocatedIn    | Message    | City        |
+| isPartOf       | City       | Country     |
+| likes          | Person     | Message     |
+| hasCreator     | Message    | Creator     |
+| containerOf    | Forum      | Post        |
+| hasTag         | Forum      | Tag         |
+| hasTag         | Message    | Tag         |
+| hasType        | Tag        | TagClass    |
+| isSubclassOf   | TagClass   | TagClass    |
+| isSubclassOf   | Post       | Message     |
+| isSubclassOf   | Comment    | Message     |
+| replyOf        | Comment    | Message     |
 
 <h4 id="232-synthetic-tgfds">2.3.1 Synthetic TGFDs</h4>
 
