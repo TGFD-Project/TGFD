@@ -13,11 +13,18 @@ public class IncUpdates {
     private VF2DataGraph baseGraph;
     private VF2SubgraphIsomorphism VF2;
 
+    /** Map of the relevant TGFDs for each entity type */
+    private HashMap<String, HashSet<String>> relaventTGFDs=new HashMap <>();
 
-    public IncUpdates(VF2DataGraph baseGraph)
+
+    public IncUpdates(VF2DataGraph baseGraph, List<TGFD> tgfds)
     {
         this.baseGraph=baseGraph;
         this.VF2= new VF2SubgraphIsomorphism();
+
+        for (TGFD tgfd:tgfds) {
+            extractValidTypesFromTGFD(tgfd);
+        }
     }
 
     public HashMap<String,IncrementalChange> updateGraph(Change change, HashMap<String,TGFD> tgfdsByName)
@@ -36,6 +43,14 @@ public class IncUpdates {
                 // We keep the number of these ignored edges in a variable
                 return null;
             }
+            // If TGFD list in the change is empty (specifically for synthetic graph),
+            // we need to find the relevant TGFDs and add to the TGFD list
+            if(change.getTGFDs().size()==0)
+            {
+                findRelevantTGFDs(edgeChange,v1);
+                findRelevantTGFDs(edgeChange,v2);
+            }
+
             if(edgeChange.getTypeOfChange()== ChangeType.insertEdge)
                 return updateGraphByAddingNewEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()),change.getTGFDs(),tgfdsByName);
             else if(edgeChange.getTypeOfChange()== ChangeType.deleteEdge)
@@ -52,6 +67,12 @@ public class IncUpdates {
                 // Node doesn't exist in the base graph, we need to igonre the change
                 // We store the number of these ignored changes
                 return null;
+            }
+            // If TGFD list in the change is empty (specifically for synthetic graph),
+            // we need to find the relevant TGFDs and add to the TGFD list
+            if(change.getTGFDs().size()==0)
+            {
+                findRelevantTGFDs(attributeChange,v1);
             }
             if(attributeChange.getTypeOfChange()==ChangeType.changeAttr || attributeChange.getTypeOfChange()==ChangeType.insertAttr)
             {
@@ -200,6 +221,58 @@ public class IncUpdates {
             return tgfdsByName.get(tgfdName).getPattern().getDiameter();
         }
         return maxDiameter;
+    }
+
+    private void findRelevantTGFDs(Change change,DataVertex v)
+    {
+        for (String type:v.getTypes())
+            if(relaventTGFDs.containsKey(type))
+                change.addTGFD(relaventTGFDs.get(type));
+    }
+
+    /**
+     * Extracts all the types being used in a TGFD from from X->Y dependency and the graph pattern
+     * For each type, add the TGFD name to the HashMap so we know
+     * what TGFDs are affected if a an entity of a specific type had a change
+     * @param tgfd input TGFD
+     */
+    private void extractValidTypesFromTGFD(TGFD tgfd)
+    {
+        for (Literal x:tgfd.getDependency().getX()) {
+            if(x instanceof ConstantLiteral)
+                addRelevantType(((ConstantLiteral) x).getVertexType(),tgfd.getName());
+            else if(x instanceof VariableLiteral)
+            {
+                addRelevantType(((VariableLiteral) x).getVertexType_1(),tgfd.getName());
+                addRelevantType(((VariableLiteral) x).getVertexType_2(),tgfd.getName());
+            }
+        }
+        for (Literal y:tgfd.getDependency().getY()) {
+            if(y instanceof ConstantLiteral)
+                addRelevantType(((ConstantLiteral) y).getVertexType(),tgfd.getName());
+            else if(y instanceof VariableLiteral)
+            {
+                addRelevantType(((VariableLiteral) y).getVertexType_1(),tgfd.getName());
+                addRelevantType(((VariableLiteral) y).getVertexType_2(),tgfd.getName());
+            }
+        }
+        for (Vertex v:tgfd.getPattern().getGraph().vertexSet()) {
+            if(v instanceof PatternVertex)
+                for (String type:v.getTypes())
+                    addRelevantType(type,tgfd.getName());
+        }
+    }
+
+    /**
+     * This method adds the TGFD name to the HashSet of the input type
+     * @param type input type
+     * @param TGFDName input TGFD name
+     */
+    private void addRelevantType(String type, String TGFDName)
+    {
+        if(!relaventTGFDs.containsKey(type))
+            relaventTGFDs.put(type,new HashSet <>());
+        relaventTGFDs.get(type).add(TGFDName);
     }
 
 }
