@@ -86,7 +86,7 @@ public class testDbpediaInc
 
             startTime=System.currentTimeMillis();
             System.out.println("Updating the graph");
-            IncUpdates incUpdatesOnDBpedia=new IncUpdates(dbpedia.getGraph());
+            IncUpdates incUpdatesOnDBpedia=new IncUpdates(dbpedia.getGraph(),allTGFDs);
             incUpdatesOnDBpedia.AddNewVertices(changes);
 
             HashMap<String,ArrayList<String>> newMatchesSignaturesByTGFD=new HashMap <>();

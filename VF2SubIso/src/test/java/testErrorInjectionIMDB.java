@@ -84,7 +84,7 @@ public class testErrorInjectionIMDB {
 
             startTime=System.currentTimeMillis();
             System.out.println("Updating the imdb graph");
-            IncUpdates incUpdatesOnDBpedia=new IncUpdates(imdb.getGraph());
+            IncUpdates incUpdatesOnDBpedia=new IncUpdates(imdb.getGraph(),allTGFDs);
             incUpdatesOnDBpedia.AddNewVertices(changes);
 
             HashMap<String, ArrayList <String>> newMatchesSignaturesByTGFD=new HashMap <>();

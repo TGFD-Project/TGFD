@@ -84,7 +84,7 @@ public class testIMDBInc
 
             startTime=System.currentTimeMillis();
             System.out.println("Updating the graph");
-            IncUpdates incUpdatesOnDBpedia=new IncUpdates(imdb.getGraph());
+            IncUpdates incUpdatesOnDBpedia=new IncUpdates(imdb.getGraph(),allTGFDs);
             incUpdatesOnDBpedia.AddNewVertices(changes);
 
             HashMap<String,ArrayList<String>> newMatchesSignaturesByTGFD=new HashMap <>();
