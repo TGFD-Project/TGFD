@@ -33,56 +33,46 @@ public class ConfigParser {
      *
      * TODO: We need to check correctness of the input
      */
-    private void parseInputParams(String pathToConfigFile) throws FileNotFoundException {
-        Scanner scanner = new Scanner(new File(pathToConfigFile));
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            String []conf=line.toLowerCase().split(" ");
-            if(conf.length!=2)
-                continue;
-            if (conf[0].startsWith("-t"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if (!typesPaths.containsKey(snapshotId))
-                    typesPaths.put(snapshotId, new ArrayList <>());
-                typesPaths.get(snapshotId).add(conf[1]);
+    private void parseInputParams(String pathToConfigFile) {
+        Scanner scanner = null;
+        try {
+            scanner = new Scanner(new File(pathToConfigFile));
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] conf = line.toLowerCase().split(" ");
+                if (conf.length != 2)
+                    continue;
+                if (conf[0].startsWith("-t")) {
+                    var snapshotId = Integer.parseInt(conf[0].substring(2));
+                    if (!typesPaths.containsKey(snapshotId))
+                        typesPaths.put(snapshotId, new ArrayList <>());
+                    typesPaths.get(snapshotId).add(conf[1]);
+                } else if (conf[0].startsWith("-d")) {
+                    var snapshotId = Integer.parseInt(conf[0].substring(2));
+                    if (!dataPaths.containsKey(snapshotId))
+                        dataPaths.put(snapshotId, new ArrayList <>());
+                    dataPaths.get(snapshotId).add(conf[1]);
+                } else if (conf[0].startsWith("-c")) {
+                    var snapshotId = Integer.parseInt(conf[0].substring(2));
+                    if (snapshotId != 1)
+                        diffFilesPath.put(snapshotId, conf[1]);
+                } else if (conf[0].startsWith("-p")) {
+                    patternPath = conf[1];
+                } else if (conf[0].startsWith("-s")) {
+                    var snapshotId = Integer.parseInt(conf[0].substring(2));
+                    timestamps.put(snapshotId, LocalDate.parse(conf[1]));
+                } else if (conf[0].startsWith("-optgraphload")) {
+                    properties.myProperties.optimizedLoadingBasedOnTGFD = Boolean.parseBoolean(conf[1]);
+                } else if (conf[0].startsWith("-debug")) {
+                    properties.myProperties.printDetailedMatchingResults = Boolean.parseBoolean(conf[1]);
+                } else if (conf[0].startsWith("-logcap")) {
+                    String[] temp = conf[1].split(",");
+                    for (String diffCap : temp)
+                        diffCaps.add(Double.parseDouble(diffCap));
+                }
             }
-            else if (conf[0].startsWith("-d"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if (!dataPaths.containsKey(snapshotId))
-                    dataPaths.put(snapshotId, new ArrayList <>());
-                dataPaths.get(snapshotId).add(conf[1]);
-            }
-            else if (conf[0].startsWith("-c"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                if(snapshotId!=1)
-                    diffFilesPath.put(snapshotId, conf[1]);
-            }
-            else if (conf[0].startsWith("-p"))
-            {
-                patternPath = conf[1];
-            }
-            else if (conf[0].startsWith("-s"))
-            {
-                var snapshotId = Integer.parseInt(conf[0].substring(2));
-                timestamps.put(snapshotId, LocalDate.parse(conf[1]));
-            }
-            else if(conf[0].startsWith("-optgraphload"))
-            {
-                properties.myProperties.optimizedLoadingBasedOnTGFD=Boolean.parseBoolean(conf[1]);
-            }
-            else if(conf[0].startsWith("-debug"))
-            {
-                properties.myProperties.printDetailedMatchingResults=Boolean.parseBoolean(conf[1]);
-            }
-            else if(conf[0].startsWith("-logcap"))
-            {
-                String []temp=conf[1].split(",");
-                for (String diffCap:temp)
-                    diffCaps.add(Double.parseDouble(diffCap));
-            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
