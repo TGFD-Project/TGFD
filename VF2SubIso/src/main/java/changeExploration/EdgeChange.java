@@ -1,5 +1,8 @@
 package changeExploration;
 
+import infra.DataVertex;
+import infra.RelationshipEdge;
+
 public class EdgeChange extends Change {
 
     String src,dst;
@@ -10,6 +13,13 @@ public class EdgeChange extends Change {
         src=srcURI;
         dst=dstURI;
         this.label=label;
+    }
+
+    public EdgeChange(ChangeType cType, int id, RelationshipEdge edge) {
+        super(cType,id);
+        src=((DataVertex)edge.getSource()).getVertexURI();
+        dst=((DataVertex)edge.getTarget()).getVertexURI();
+        this.label=edge.getLabel();
     }
 
     @Override
