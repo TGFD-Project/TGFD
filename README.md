@@ -180,17 +180,19 @@ Source: https://www.imdb.com/interfaces/.
 
 <h3 id="23-synthetic">2.3 Synthetic</h3>
 
+gMark is a framework that provides generation of graph instances based on user-defined schemas. [3]
+
 ```diff
-! TODO: explain synthetic data generator tool [2021-03-21] [@levin-noro]
-! TODO: describe how data is generated (parameters configured) [2021-03-21]  [@levin-noro]
-! TODO: give link to dataset download [2021-03-21]  [@levin-noro]
-! TODO: define synthetic schema [2021-03-21] [@levin-noro]
+! TODO: explain synthetic data generator tool [2021-03-21] [@adammansfield]
+! TODO: describe how data is generated (parameters configured) [2021-03-21] [@adammansfield]
+! TODO: give link to dataset download [2021-03-21]  [@adammansfield]
+! TODO: define synthetic schema [2021-03-21] [@adammansfield]
 ```
 
 <h4 id="232-synthetic-tgfds">2.3.1 Synthetic TGFDs</h4>
 
 ```diff
-! TODO: define synthetic TGFDs [2021-03-21] [@levin-noro]
+! TODO: define synthetic TGFDs [2021-03-29] [@adammansfield]
 ```
 
 <h2 id="3-getting-started">3. Getting started</h2>
@@ -235,4 +237,6 @@ Source code is available at https://github.com/TGFD-Project/TGFD.
 
 [1] https://www.dbpedia.org/about/
 
-[2] Jens Lehmann, Robert Isele, Max Jakob, Anja Jentzsch, Dimitris Kontokostas,Pablo N Mendes, Sebastian Hellmann, Mohamed Morsey, Patrick Van Kleef, SörenAuer, et al.2015. DBpedia–a large-scale, multilingual knowledge base extractedfrom Wikipedia. Semantic Web (2015)
+[2] Jens Lehmann, Robert Isele, Max Jakob, Anja Jentzsch, Dimitris Kontokostas, Pablo N Mendes, Sebastian Hellmann, Mohamed Morsey, Patrick Van Kleef, SörenAuer, et al. 2015. DBpedia–a large-scale, multilingual knowledge base extractedfrom Wikipedia. Semantic Web (2015)
+
+[3] Guillaume Bagan, Angela Bonifati, Radu Ciucanu, George HL Fletcher, AurélienLemay, and Nicky Advokaat. 2016. Generating flexible workloads for graphdatabases.Proceedings of the VLDB Endowment 9, 13 (2016), 1457–1460
