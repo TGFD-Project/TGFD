@@ -9,9 +9,17 @@ import util.properties;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.HashMap;
 import java.util.List;
 
 public class SyntheticLoader extends GraphLoader {
+
+    //region --[Fields: Private]---------------------------------------
+
+    private HashMap <String,Integer> typesDistribution =new HashMap <>();
+    private HashMap <String, HashMap<String,String>> schema =new HashMap <>();
+
+    //endregion
 
     //region --[Methods: Private]---------------------------------------
 
@@ -67,10 +75,14 @@ public class SyntheticLoader extends GraphLoader {
                         if (subjectVertex==null) {
                             subjectVertex=new DataVertex(subject[1],subject[0]);
                             graph.addVertex(subjectVertex);
+                            if(typesDistribution.containsKey(subject[0]))
+                                typesDistribution.put(subject[0], typesDistribution.get(subject[0])+1);
+                            else
+                                typesDistribution.put(subject[0],1);
                         }
 
                         // check if we have an attribute
-                        if (object[0].equals("string"))
+                        if (object[0].equals("string") || object[0].equals("integer") || object[0].equals("datetime"))
                         {
                             subjectVertex.addAttribute(new Attribute(rdf[1], object[1]));
                             graphSize++;
@@ -81,10 +93,18 @@ public class SyntheticLoader extends GraphLoader {
                             if (objectVertex==null) {
                                 objectVertex=new DataVertex(object[1],object[0]);
                                 graph.addVertex(objectVertex);
+                                if(typesDistribution.containsKey(object[0]))
+                                    typesDistribution.put(object[0], typesDistribution.get(object[0])+1);
+                                else
+                                    typesDistribution.put(object[0],1);
                             }
 
                             graph.addEdge(subjectVertex, objectVertex, new RelationshipEdge(rdf[1]));
                             graphSize++;
+
+                            if(!schema.containsKey(subject[0]))
+                                schema.put(subject[0],new HashMap <>());
+                            schema.get(subject[0]).put(object[0],rdf[1]);
                         }
                     }
                 }
@@ -92,6 +112,8 @@ public class SyntheticLoader extends GraphLoader {
             fr.close();    //close the stream and release the resources
 
             System.out.println("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());
+            System.out.println("Number of types: " + typesDistribution.size() + "\n");
+            typesDistribution.keySet().forEach(type -> System.out.print(type + ": " + typesDistribution.get(type) + " - "));
         }
         catch (Exception e)
         {
@@ -101,4 +123,15 @@ public class SyntheticLoader extends GraphLoader {
 
     //endregion
 
+    //region --[Properties: Public]------------------------------------
+
+    public HashMap <String, Integer> getTypesDistribution() {
+        return typesDistribution;
+    }
+
+    public HashMap <String, HashMap<String,String>> getSchema() {
+        return schema;
+    }
+
+    //endregion
 }
