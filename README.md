@@ -40,13 +40,9 @@ This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges
 
 <h4 id="211-dbpedia-tgfds">2.1.1 DBpedia TGFDs</h4>
 
-We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary |Q| (adding attribute), expanding delta, and increasing the number of attributes.
+We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary |Q| (adding attributes), and varying delta.
 
-```diff
-! TODO: expand description of approach of generating TGFDs [2021-03-21] [@adammansfield]
-```
-
-We used a subset of the vertices and edges in the DBpedia dataset to form TGFDs.
+We used the following subset of the vertices, edges, and attributes in the DBpedia dataset to form TGFDs.
 
 **Vertices:**
 
@@ -116,9 +112,11 @@ Y: musicalartist.name
 X: basketballplayer.name, basketballteam.name  
 Y: basketballleague.name  
 
-```diff
-! TODO: define 3 more human friendly TGFDs (picture of pattern, delta, depednency) [2021-03-21] [@adammansfield]
-```
+**DBpedia TGFD 3**  
+![DBpedia TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/3.png "DBpedia TGFD 3 Pattern")  
+Δ: (0 days, 30 days)  
+X: book.name, book.isbn, country.name  
+Y: publisher.name  
 
 <h3 id="22-imdb">2.2 IMDB</h3>
 
@@ -155,20 +153,7 @@ ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/.
 
 **Vertices:**
 
-```diff
-! TODO: explain why the limited number of attributes (that is what is available) [2021-03-21] [@adammansfield]
-! TODO: replace IMDB vertices table with a sentence (You can list these as part of a set, and then add a sentence at the end saying for movie, you have additional attributes) [2021-03-21] [@adammansfield]
-```
-
-| Type        | Attributes                                   |
-| :---------- | :------------------------------------------- |
-| actor       | name                                         |
-| actress     | name                                         |
-| country     | name                                         |
-| director    | name                                         |
-| distributor | name                                         |
-| genre       | name                                         |
-| movie       | name, episode, year, rating, votes, language |
+Vertices of types {actor, actress, country, director, distributor, genre} have a single attribute `name`. Vertex of type `movie` has more attributes {name, episode, year, rating, votes, language}. There are a limited number of attributes because that is what is available in the IMDB data.
 
 **Edges:**
 
@@ -182,13 +167,30 @@ ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/.
 | language_of    | movie    | language    |
 | genre_of       | genre    | movie       |
 
-```diff
-! TODO: define 5 human friendly TGFDs (picture of pattern, delta, depednency) [2021-03-21] [@adammansfield]
-```
+**IMDB TGFD 1**  
+![IMDB TGFD 1 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/1.png "IMDB TGFD 1 Pattern")  
+Δ: (0 days, 1000 days)  
+X: actor.name  
+Y: movie.name  
+
+**IMDB TGFD 2**  
+![IMDB TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/2.png "IMDB TGFD 2 Pattern")  
+Δ: (0 days, 365 days)  
+X: genre.name  
+Y: movie.name  
+
+**IMDB TGFD 3**  
+![IMDB TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/3.png "IMDB TGFD 3 Pattern")  
+Δ: (0 days, 365 days)  
+X: language.name  
+Y: language.name  
 
 <h3 id="23-synthetic">2.3 Synthetic</h3>
 
-gMark is a framework that provides generation of static domain independent synthetic graphs that supports user-defined schemas and queries. [3]
+[gMark](https://github.com/gbagan/gmark) is a synthetic graph data generation tool that provides generation of static domain independent synthetic graphs that supports user-defined schemas and queries. [3]
+
+It takes as input a configuration file. The configuration file lists the number of nodes, the node labels and their proportions, the edge labels and their proportions, and a schema that defines the triples in the graph and also the distributions of the in-degrees and out-degrees of each triple. It outputs a synthetic graph that is represented as a list of triples (e.g "Person_123 isLocatedIn City_123")
+
 We generated 4 synthetic static graphs (|V|,|E|) of sizes (5M,10M), (10M,20M), (15M,30M) and (20M,40M).
 We then transform the static graph to a temporal graph with 10 timestamps. 
 To this end, we performed updates by 4% of the size of the graph and 
@@ -196,18 +198,71 @@ generate the next timestamp.
 These changes are injected equally as structural updates 
 (node/edge deletion and insertion) and attribute updates 
 (attribute deletion/insertion) between any two consecutive timestamps.
-```diff
-! TODO: explain synthetic data generator tool [2021-03-21] [@adammansfield]
-! TODO: describe how data is generated (parameters configured) [2021-03-21] [@adammansfield]
-! TODO: give link to dataset download [2021-03-21]  [@adammansfield]
-! TODO: define synthetic schema [2021-03-21] [@adammansfield]
-```
+
+We used `Dataset/synthetic/social-network.xml` as parameters to gMark.
 
 <h4 id="232-synthetic-tgfds">2.3.1 Synthetic TGFDs</h4>
 
-```diff
-! TODO: define synthetic TGFDs [2021-03-29] [@adammansfield]
-```
+**Vertices:**
+
+| Type        | Attributes                                                                    |
+| :---------- | :--------------------------------------------------------------------------- |
+| Person      | creationDate, name, gender, birthday, email, speaks, browserUsed, locationIP  |
+| University  | name                                                                          |
+| Company     | name                                                                          |
+| City        | name                                                                          |
+| Country     | name                                                                          |
+| Continent   | name                                                                          |
+| Forum       | creationDate, length                                                          |
+| Tag         | name                                                                          |
+| TagClass    | name                                                                          |
+| Post        | content, language, imageFile                                                  |
+| Comment     | content, language                                                             |
+| Message     | creationDate                                                                  |
+
+**Edges:**
+
+| Type           | Source     | Destination |
+| :------------- | :-------   | :---------- |
+| knows          | Person     | Person      |
+| hasInterest    | Person     | Tag         |
+| hasModerator   | Forum      | Person      |
+| hasMember      | Forum      | Person      |
+| studyAt        | Person     | University  |
+| worksAt        | Person     | Company     |
+| isLocatedIn    | Person     | City        |
+| isLocatedIn    | University | City        |
+| isLocatedIn    | Company    | City        |
+| isLocatedIn    | Message    | City        |
+| isPartOf       | City       | Country     |
+| likes          | Person     | Message     |
+| hasCreator     | Message    | Creator     |
+| containerOf    | Forum      | Post        |
+| hasTag         | Forum      | Tag         |
+| hasTag         | Message    | Tag         |
+| hasType        | Tag        | TagClass    |
+| isSubclassOf   | TagClass   | TagClass    |
+| isSubclassOf   | Post       | Message     |
+| isSubclassOf   | Comment    | Message     |
+| replyOf        | Comment    | Message     |
+
+**Synthetic TGFD 1**  
+![Synthetic TGFD 1 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/1.png "Synthetic TGFD 1 Pattern")  
+Δ: (0 days, 365 days)  
+X: person.name  
+Y: company.name  
+
+**Synthetic TGFD 2**  
+![Synthetic TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/2.png "Synthetic TGFD 2 Pattern")  
+Δ: (0 days, 365 days)  
+X: person.name  
+Y: university.name  
+
+**Synthetic TGFD 3**  
+![Synthetic TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/3.png "Synthetic TGFD 3 Pattern")  
+Δ: (0 days, 365 days)  
+X: person.name  
+Y: tag.name  
 
 <h2 id="3-getting-started">3. Getting started</h2>
 
