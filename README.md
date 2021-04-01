@@ -135,21 +135,13 @@ ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/.
 ! TODO: check if stats listed in paper match the actual experimental stats listed for IMDB [2021-03-21] [@mortez28]
 ```
 
-```diff
-! TODO: write description of IMDB schema [2021-03-21] [@adammansfield]
-! TODO: write explanation of IMDB timerange (explain extracted subset of types) [2021-03-21] [@adammansfield]
-! TODO: write explanation of IMDB subset of types (did not use all available types) [2021-03-21] [@adammansfield]
-```
+The IMDB database generated diff files weekly from 1998 to 2017. They can be found at ftp://ftp.fu-berlin.de/misc/movies/database/frozendata/. The original file on which the diffs are generated was lost, but the final result of all the diffs are stored with the data. We can reverse patch the diffs, but there are two missing diff files at 2014-01-31 and 2014-02-07
 
 <h4 id="221-imdb-tgfds">2.2.1 IMDB TGFDs</h4>
 
-```diff
-! TODO: explain that the schema below is a subset of the overall schema that we use for TGFDs [2021-03-21] [@adammansfield]
+We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary |Q| (adding attributes), and varying delta.
 
-! TODO: add description of approach of generating TGFDs [2021-03-21] [@adammansfield]
-# We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary Q (adding attribute), expanding delta, increasing the number attributes.
-# This needs more explanation of how you generated TGFDs, what is the process?  How do you vary |Q|, \Delta and X->Y?    Give some samples after this explanation.
-```
+We used the following subset of the vertices, edges, and attributes in the DBpedia dataset to form TGFDs.
 
 **Vertices:**
 
