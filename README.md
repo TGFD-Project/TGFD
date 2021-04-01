@@ -122,7 +122,15 @@ Y: basketballleague.name
 
 <h3 id="22-imdb">2.2 IMDB</h3>
 
-Source: https://www.imdb.com/interfaces/.
+The Internet Movie Database (IMDB) provides weekly updates in the form of 
+diff files until 2017. We extracted 38 monthly timestamps from October 2014 to 
+November 2017, including total 4.8M entities of 8 types and 16.7M edges with 
+X changes over all timestamps.
+
+Sources: 
+
+https://www.imdb.com/interfaces/.
+ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/.
 
 ```diff
 ! TODO: add stats of the IMDB dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
@@ -180,8 +188,14 @@ Source: https://www.imdb.com/interfaces/.
 
 <h3 id="23-synthetic">2.3 Synthetic</h3>
 
-gMark is a framework that provides generation of graph instances based on user-defined schemas. [3]
-
+gMark is a framework that provides generation of static domain independent synthetic graphs that supports user-defined schemas and queries. [3]
+We generated 4 synthetic static graphs (|V|,|E|) of sizes (5M,10M), (10M,20M), (15M,30M) and (20M,40M).
+We then transform the static graph to a temporal graph with 10 timestamps. 
+To this end, we performed updates by 4% of the size of the graph and 
+generate the next timestamp. 
+These changes are injected equally as structural updates 
+(node/edge deletion and insertion) and attribute updates 
+(attribute deletion/insertion) between any two consecutive timestamps.
 ```diff
 ! TODO: explain synthetic data generator tool [2021-03-21] [@adammansfield]
 ! TODO: describe how data is generated (parameters configured) [2021-03-21] [@adammansfield]
