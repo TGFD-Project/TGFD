@@ -343,8 +343,8 @@ Example of a conf.txt:
 <h2 id="4-comparative-baselines">4. Comparative Baselines</h2>
 
 ```diff
-! TODO: describe other algorithms that we evaluated, how they were implemented and configured [2021-03-21] [@adammansfield]
-! TODO: provide the source code link of their implementation [2021-03-21] [@adammansfield]
+! TODO: describe other algorithms that we evaluated, how they were implemented and configured [2021-03-21] [@mortez28]
+! TODO: provide the source code link of their implementation [2021-03-21] [@mortez28]
 ```
 
 <h2 id="5-source-code">5. Source Code</h2>
