@@ -292,6 +292,30 @@ TGFD detection input a configuration file in the form of
 -s...
 ```
 
+Format of the pattern file is
+```
+tgfd#<name>
+vertex#v1#<vertex1Type>
+vertex#v2#<vertex2Type>
+edge#v1#v2#<edgeType>
+diameter#<diameterOfPattern>
+literal#x#<vertex1Type>$<vertex1Attribute>$<vertex1Type>$<vertex1Attribute>
+literal#x#<vertex1Type>$uri$<vertex1Type>$uri
+literal#y#<vertex2Type>$<vertex2Attribute>$<vertex2Type>$<vertex2Attribute>
+delta#<start>#<end>#<step>
+```
+
+Refer to `VF2SubIso/src/test/java/samplePatterns/` for examples.
+
+```
+TODO change TGFD TODO to morteza ! TODO: define synthetic TGFDs [2021-03-21] [@levin-noro]
+```
+
+```diff
+! TODO: explain how to generate diffs [2021-03-30] [@adammansfield]
+```
+
+To detect TGFD errors, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpedia ./conf.txt`
 
 Example of a conf.txt:
