@@ -279,8 +279,65 @@ This script will:
 
 <h3 id="#32-detecting-tgfd-errors">3.2 Detecting TGFD errors</h3>
 
-```diff
-! TODO: add example of detecting IMDB TGFD errors [2021-03-19] [@adammansfield]
+TGFD detection input a configuration file in the form of
+```
+-p <path/to/pattern>
+-d <path/to/stating/snapshot>
+-c2 <path/to/timestamp/2/diff>
+-c3 <path/to/timestamp/3/diff>
+-c...
+-s1 <timestamp of 1st snapshot>
+-s2 <timestamp of 2nd snapshot>
+-s3 <timestamp of 3rd snapshot>
+-s...
+```
+
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpedia ./conf.txt`
+
+Example of a conf.txt:
+```
+-p ./pattern0800.txt
+-d1 ./rdf/imdb-141031.nt
+-c2 ./diffs/pattern0100/diff_2014-10-31_2014-11-28_imdbp0100_full.json
+-c3 ./diffs/pattern0100/diff_2014-11-28_2014-12-26_imdbp0100_full.json
+-c4 ./diffs/pattern0100/diff_2014-12-26_2015-01-23_imdbp0100_full.json
+-c5 ./diffs/pattern0100/diff_2015-01-23_2015-02-20_imdbp0100_full.json
+-c6 ./diffs/pattern0100/diff_2015-02-20_2015-03-20_imdbp0100_full.json
+-c7 ./diffs/pattern0100/diff_2015-03-20_2015-04-17_imdbp0100_full.json
+-c8 ./diffs/pattern0100/diff_2015-04-17_2015-05-15_imdbp0100_full.json
+-c9 ./diffs/pattern0100/diff_2015-05-15_2015-06-12_imdbp0100_full.json
+-c10 ./diffs/pattern0100/diff_2015-06-12_2015-07-10_imdbp0100_full.json
+-c11 ./diffs/pattern0100/diff_2015-07-10_2015-08-07_imdbp0100_full.json
+-c12 ./diffs/pattern0100/diff_2015-08-07_2015-09-04_imdbp0100_full.json
+-c13 ./diffs/pattern0100/diff_2015-09-04_2015-10-02_imdbp0100_full.json
+-c14 ./diffs/pattern0100/diff_2015-10-02_2015-10-30_imdbp0100_full.json
+-c15 ./diffs/pattern0100/diff_2015-10-30_2015-11-27_imdbp0100_full.json
+-c16 ./diffs/pattern0100/diff_2015-11-27_2015-12-25_imdbp0100_full.json
+-c17 ./diffs/pattern0100/diff_2015-12-25_2016-01-22_imdbp0100_full.json
+-c18 ./diffs/pattern0100/diff_2016-01-22_2016-02-19_imdbp0100_full.json
+-c19 ./diffs/pattern0100/diff_2016-02-19_2016-03-18_imdbp0100_full.json
+-c20 ./diffs/pattern0100/diff_2016-03-18_2016-04-15_imdbp0100_full.json
+-s1 2014-10-31
+-s2 2014-11-28
+-s3 2014-12-26
+-s4 2015-01-23
+-s5 2015-02-20
+-s6 2015-03-20
+-s7 2015-04-17
+-s8 2015-05-15
+-s9 2015-06-12
+-s10 2015-07-10
+-s11 2015-08-07
+-s12 2015-09-04
+-s13 2015-10-02
+-s14 2015-10-30
+-s15 2015-11-27
+-s16 2015-12-25
+-s17 2016-01-22
+-s18 2016-02-19
+-s19 2016-03-18
+-s20 2016-04-15
+-optgraphload true
 ```
 
 <h2 id="4-comparative-baselines">4. Comparative Baselines</h2>
