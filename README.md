@@ -193,7 +193,7 @@ These changes are injected equally as structural updates
 
 We used `Dataset/synthetic/social-network.xml` as parameters to gMark.
 
-<h4 id="232-synthetic-tgfds">2.3.1 Synthetic TGFDs</h4>
+<h4 id="231-synthetic-tgfds">2.3.1 Synthetic TGFDs</h4>
 
 **Vertices:**
 
@@ -277,7 +277,7 @@ This script will:
   2. Reverse patch diffs to generate snapshots in IMDB list txt format.
   3. Process the IMDB lists into a single RDF snapshot per timepoint.
 
-<h3 id="#32-detecting-tgfd-errors">3.2 Detecting TGFD errors</h3>
+<h3 id="32-detecting-tgfd-errors">3.2 Detecting TGFD errors</h3>
 
 TGFD detection input a configuration file in the form of
 ```
@@ -375,7 +375,7 @@ Example of a conf.txt:
 
 Source code is available at https://github.com/TGFD-Project/TGFD.
 
-<h2 id="#6-references">6. References</h2>
+<h2 id="6-references">6. References</h2>
 
 [1] https://www.dbpedia.org/about/
 
