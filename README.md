@@ -364,6 +364,8 @@ Example of a conf.txt:
 -optgraphload true
 ```
 
+Link to sample snapshots: https://drive.google.com/drive/u/1/folders/1_WQ2BburfzwvkdJIhAkhe2XrK05efdSC
+
 <h2 id="4-comparative-baselines">4. Comparative Baselines</h2>
 
 ```diff
