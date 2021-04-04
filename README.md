@@ -19,8 +19,13 @@ This page provides supplementary experimental details, dataset characteristics, 
   + [2.3 Synthetic](#23-synthetic)
     - [2.3.1 Synthetic TGFDs](#231-synthetic-tgfds)
 * [3. Getting started](#3-getting-started)
-  + [3.1 Generating IMDB Snapshots](#31-generating-imdb-snapshots)
-  + [3.2 Detecting TGFD errors](#32-detecting-tgfd-errors)
+  + [3.1 With Sample](#31-with-sample)
+  + [3.2 From Scratch](#32-from-scratch)
+    - [3.2.1 Datasets](#321-datasets)
+    - [3.2.2 Defining TGFDs](#322-defining-tgfds)
+    - [3.2.3 Creating conf](#323-creating-conf)
+    - [3.2.4 Generating diffs](#324-generating-diffs)
+    - [3.2.5 Detecting errors](#325-detecting-errors)
 * [4. Comparative Baselines](#4-comparative-baselines)
 * [5. Source Code](#5-source-code)
 * [6. References](#6-references)
@@ -259,25 +264,72 @@ Y: tag.name
 <h2 id="3-getting-started">3. Getting started</h2>
 
 Prerequisites:
-  - maven
   - Java 15
+  - maven
+
+<h3 id="31-with-sample">3.1 With Sample</h3>
+
+1. Build the VF2SubIso project.
+2. Download the initial IMDB snapshot and diffs here: https://drive.google.com/drive/u/1/folders/1oVevnjwKfsDyjw_nFSXsw1WzdUHbihyU
+3. Move VF2SubIso.jar, imdb-141031.nt, and diffs into the same directory.
+
+```diff
+! TODO: write step on to explain how to generate DBpedia snapshots [2021-04-04] [@adammansfield]
+```
+
+<h3 id="32-from-scratch">3.2 From Scratch</h3>
+
+<h4 id="321-datasets">3.2.1 Datasets </h4>
+
+For DBpedia dataset,
+
+```diff
+! TODO: explain how to generate DBpedia snapshots [2021-04-04] [@adammansfield]
+```
+
+For IMDB dataset, you need the additional prerequisites:
   - Python 3
   - rdflib
 
-<h3 id="31-generating-imdb-snapshots">3.1 Generating IMDB Snapshots</h3>
-
-To generate the IMDB RDF snapshots, run:
+Download the original IMDB text diffs, convert them into RDF format by running:
 ```
 cd Dataset/imdb
 ./batch.sh
 ```
 
-This script will:
-  1. Download IMDB diffs from 1998-10-09 to 2017-12-22.
-  2. Reverse patch diffs to generate snapshots in IMDB list txt format.
-  3. Process the IMDB lists into a single RDF snapshot per timepoint.
+For Synthetic dataset, you need the additional prerequisites:
+  - [gMark](https://github.com/gbagan/gmark)
 
-<h3 id="32-detecting-tgfd-errors">3.2 Detecting TGFD errors</h3>
+<h4 id="322-defining-tgfds">3.2.2 Defining TGFDs</h4>
+
+Format of the pattern file is line-based with a `#` delimiter:
+```
+tgfd#{name}
+vertex#v1#{vertex1Type}
+vertex#v2#{vertex2Type}
+edge#v1#v2#{edgeType}
+diameter#{diameterOfPattern}
+literal#x#{vertex1Type}${vertex1Attribute}${vertex1Type}${vertex1Attribute}
+literal#y#{vertex2Type}${vertex2Attribute}${vertex2Type}${vertex2Attribute}
+delta#{start}#{end}#{step}
+```
+
+For example, DBpedia TGFD 1 is defined as:
+```
+tgfd#p0100
+vertex#v1#album#name#uri
+vertex#v2#musicalartist#name
+edge#v1#v2#producer
+diameter#1
+literal#x#album$name$album$name
+literal#x#album$uri$album$uri
+literal#y#musicalartist$name$musicalartist$name
+delta#0#210#1
+```
+
+Refer to `VF2SubIso/src/test/java/samplePatterns/` for more examples.
+
+<h4 id="323-creating-conf">3.2.3 Creating conf</h4>
 
 TGFD detection input a configuration file in the form of
 ```
@@ -291,32 +343,6 @@ TGFD detection input a configuration file in the form of
 -s3 <timestamp of 3rd snapshot>
 -s...
 ```
-
-Format of the pattern file is
-```
-tgfd#<name>
-vertex#v1#<vertex1Type>
-vertex#v2#<vertex2Type>
-edge#v1#v2#<edgeType>
-diameter#<diameterOfPattern>
-literal#x#<vertex1Type>$<vertex1Attribute>$<vertex1Type>$<vertex1Attribute>
-literal#x#<vertex1Type>$uri$<vertex1Type>$uri
-literal#y#<vertex2Type>$<vertex2Attribute>$<vertex2Type>$<vertex2Attribute>
-delta#<start>#<end>#<step>
-```
-
-Refer to `VF2SubIso/src/test/java/samplePatterns/` for examples.
-
-```
-TODO change TGFD TODO to morteza ! TODO: define synthetic TGFDs [2021-03-21] [@levin-noro]
-```
-
-```diff
-! TODO: explain how to generate diffs [2021-03-30] [@adammansfield]
-```
-
-To detect TGFD errors, run:  
-`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpedia ./conf.txt`
 
 Example of a conf.txt:
 ```
@@ -364,7 +390,16 @@ Example of a conf.txt:
 -optgraphload true
 ```
 
-Link to sample snapshots: https://drive.google.com/drive/u/1/folders/1_WQ2BburfzwvkdJIhAkhe2XrK05efdSC
+<h4 id="324-generating-diffs">3.2.4 Generating diffs</h4>
+
+```diff
+! TODO: explain how to generate diffs [2021-03-30] [@adammansfield]
+```
+
+<h4 id="325-detecting-errors">3.2.5 Detecting errors</h4>
+
+To detect TGFD errors, run:  
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpediaInc ./conf.txt`
 
 <h2 id="4-comparative-baselines">4. Comparative Baselines</h2>
 
