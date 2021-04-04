@@ -45,7 +45,7 @@ This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges
 
 <h4 id="211-dbpedia-tgfds">2.1.1 DBpedia TGFDs</h4>
 
-We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary |Q| (adding attributes), and varying delta.
+We manually defined a core set of TGFDs that were curated according to real life domain knowledge. From these core set of TGFDs, we modified them to generate additional TGFDs. With the existing vertices, we added attributes to X. We expanded the pattern by adding additonal vertices and edges. We varied delta.
 
 We used the following subset of the vertices, edges, and attributes in the DBpedia dataset to form TGFDs.
 
@@ -144,7 +144,7 @@ The IMDB database generated diff files weekly from 1998 to 2017. They can be fou
 
 <h4 id="221-imdb-tgfds">2.2.1 IMDB TGFDs</h4>
 
-We manually defined a core set of TGFDs that were curated according to real life domain knowledge. We then used a systematic approach to vary |Q| (adding attributes), and varying delta.
+We manually defined a core set of TGFDs that were curated according to real life domain knowledge. From these core set of TGFDs, we modified them to generate additional TGFDs. With the existing vertices, we added attributes to X. We expanded the pattern by adding additonal vertices and edges. We varied delta.
 
 We used the following subset of the vertices, edges, and attributes in the DBpedia dataset to form TGFDs.
 
@@ -274,7 +274,7 @@ Prerequisites:
 3. Move VF2SubIso.jar, imdb-141031.nt, and diffs into the same directory.
 
 ```diff
-! TODO: write step on to explain how to generate DBpedia snapshots [2021-04-04] [@adammansfield]
+! TODO: write step to run IMDB TGFD error detection [2021-04-04] [@adammansfield]
 ```
 
 <h3 id="32-from-scratch">3.2 From Scratch</h3>
