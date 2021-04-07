@@ -1,6 +1,6 @@
 tgfd#syntheticp0200
-vertex#v1#person
-vertex#v2#company
+vertex#v1#person#name
+vertex#v2#company#name
 edge#v1#v2#worksAt
 diameter#1
 literal#x#person$name$person$name

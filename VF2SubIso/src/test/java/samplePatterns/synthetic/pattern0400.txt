@@ -1,6 +1,6 @@
 tgfd#syntheticp0400
-vertex#v1#tagClass
-vertex#v2#tagClass
+vertex#v1#tagClass#name
+vertex#v2#tagClass#name
 edge#v1#v2#isSubclassOf
 diameter#1
 literal#x#tagClass$name$tagClass$name

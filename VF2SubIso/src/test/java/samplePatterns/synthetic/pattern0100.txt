@@ -1,6 +1,6 @@
 tgfd#syntheticp0100
-vertex#v1#city
-vertex#v2#country
+vertex#v1#city#name
+vertex#v2#country#name
 edge#v1#v2#isPartOf
 diameter#1
 literal#x#city$name$city$name

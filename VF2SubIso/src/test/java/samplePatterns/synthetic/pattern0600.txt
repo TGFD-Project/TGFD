@@ -1,6 +1,6 @@
 tgfd#syntheticp0600
-vertex#v1#university
-vertex#v2#city
+vertex#v1#university#name
+vertex#v2#city#name
 edge#v1#v2#isLocatedIn
 diameter#1
 literal#x#university$name$university$name

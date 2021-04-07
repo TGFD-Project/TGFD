@@ -1,6 +1,6 @@
 tgfd#syntheticp1000
-vertex#v1#person
-vertex#v2#university
+vertex#v1#person#name
+vertex#v2#university#name
 edge#v1#v2#studyAt
 diameter#1
 literal#x#person$name$person$name

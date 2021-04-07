@@ -1,7 +1,7 @@
 tgfd#syntheticp0700
 vertex#v1#forum
-vertex#v2#person
-vertex#v3#tag
+vertex#v2#person#name
+vertex#v3#tag#name
 edge#v1#v2#hasMember
 edge#v1#v3#hasTag
 edge#v2#v3#hasInterest
