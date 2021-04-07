@@ -52,9 +52,9 @@ public class IncUpdates {
             }
 
             if(edgeChange.getTypeOfChange()== ChangeType.insertEdge)
-                return updateGraphByAddingNewEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()),change.getTGFDs(),tgfdsByName);
+                return updateGraphByEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()),change.getTGFDs(),tgfdsByName,true);
             else if(edgeChange.getTypeOfChange()== ChangeType.deleteEdge)
-                return updateGraphByDeletingAnEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()),change.getTGFDs(),tgfdsByName);
+                return updateGraphByEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()),change.getTGFDs(),tgfdsByName,false);
             else
                 throw new IllegalArgumentException("The change is instnace of EdgeChange, but type of change is: " + edgeChange.getTypeOfChange());
         }
@@ -76,11 +76,11 @@ public class IncUpdates {
             }
             if(attributeChange.getTypeOfChange()==ChangeType.changeAttr || attributeChange.getTypeOfChange()==ChangeType.insertAttr)
             {
-                return updateGraphByUpdatingAnAttribute(v1,attributeChange.getAttribute(),change.getTGFDs(),tgfdsByName);
+                return updateGraphByAttribute(v1,attributeChange.getAttribute(),change.getTGFDs(),tgfdsByName,false);
             }
             else if(attributeChange.getTypeOfChange()==ChangeType.deleteAttr)
             {
-                return updateGraphByDeletingAnAttribute(v1,attributeChange.getAttribute(),change.getTGFDs(),tgfdsByName);
+                return updateGraphByAttribute(v1,attributeChange.getAttribute(),change.getTGFDs(),tgfdsByName,true);
             }
             else
                 throw new IllegalArgumentException("The change is instnace of AttributeChange, but type of change is: " + attributeChange.getTypeOfChange());
@@ -99,8 +99,8 @@ public class IncUpdates {
         }
     }
 
-    private HashMap<String,IncrementalChange> updateGraphByAddingNewEdge(
-            DataVertex v1, DataVertex v2, RelationshipEdge edge,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName)
+    private HashMap<String,IncrementalChange> updateGraphByEdge(
+            DataVertex v1, DataVertex v2, RelationshipEdge edge,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName, boolean addEdge)
     {
         //long runtime=System.currentTimeMillis();
         HashMap<String,IncrementalChange> incrementalChangeHashMap=new HashMap <>();
@@ -117,65 +117,43 @@ public class IncUpdates {
             incrementalChangeHashMap.put(tgfdsByName.get(tgfdName).getName(),incrementalChange);
         }
         //perform the change...
-        if(!subgraph.containsVertex(v2))
+        if(addEdge) // Update the graph by adding the edge
         {
-            subgraph.addVertex(v2);
+            if(!subgraph.containsVertex(v2))
+            {
+                subgraph.addVertex(v2);
+            }
+            subgraph.addEdge(v1,v2,edge);
+            baseGraph.addEdge(v1, v2,edge);
         }
-        subgraph.addEdge(v1,v2,edge);
-        baseGraph.addEdge(v1, v2,edge);
+        else // update the graph by removing the edge
+        {
+            // Now, perform the change and remove the edge from the subgraph
+            for (RelationshipEdge e:subgraph.outgoingEdgesOf(v1)) {
+                DataVertex target=(DataVertex) e.getTarget();
+                if(target.getVertexURI().equals(v2.getVertexURI()) && edge.getLabel().equals(e.getLabel()))
+                {
+                    subgraph.removeEdge(e);
+                    break;
+                }
+            }
+            //remove from the base graph.
+            baseGraph.removeEdge(v1,v2,edge);
+        }
+
 
         // Run VF2 again...
         for (String tgfdName:affectedTGFDNames) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
-            //String res = incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
+            String res = incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
 
             //System.out.print("  ** Add: " + (System.currentTimeMillis()-runtime) + " - " + res + " \n");
         }
         return incrementalChangeHashMap;
     }
 
-    private HashMap<String,IncrementalChange> updateGraphByDeletingAnEdge(
-            DataVertex v1, DataVertex v2, RelationshipEdge edge,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName)
-    {
-        //long runtime=System.currentTimeMillis();
-        HashMap<String,IncrementalChange> incrementalChangeHashMap=new HashMap <>();
-        Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
-
-        //System.out.print("Load: " + (System.currentTimeMillis()-runtime));
-        //runtime=System.currentTimeMillis();
-
-        // run VF2
-        for (String tgfdName:affectedTGFDNames) {
-            Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
-            IncrementalChange incrementalChange=new IncrementalChange(beforeChange,tgfdsByName.get(tgfdName).getPattern());
-            incrementalChangeHashMap.put(tgfdsByName.get(tgfdName).getName(),incrementalChange);
-        }
-
-        // Now, perform the change and remove the edge from the subgraph
-        for (RelationshipEdge e:subgraph.outgoingEdgesOf(v1)) {
-            DataVertex target=(DataVertex) e.getTarget();
-            if(target.getVertexURI().equals(v2.getVertexURI()) && edge.getLabel().equals(e.getLabel()))
-            {
-                subgraph.removeEdge(e);
-                break;
-            }
-        }
-        //remove from the base graph.
-        baseGraph.removeEdge(v1,v2,edge);
-
-
-        // Run VF2 again...
-        for (String tgfdName:affectedTGFDNames) {
-            Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
-            //String res = incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
-
-            //System.out.print("  ** Del: " + (System.currentTimeMillis()-runtime) + " - " + res + " \n");
-        }
-        return incrementalChangeHashMap;
-    }
-
-    private HashMap<String,IncrementalChange> updateGraphByUpdatingAnAttribute(
-            DataVertex v1, Attribute attribute,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName)
+    private HashMap<String,IncrementalChange> updateGraphByAttribute(
+            DataVertex v1, Attribute attribute,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName, boolean deleteAttribute)
     {
         //long runtime=System.currentTimeMillis();
 
@@ -193,41 +171,23 @@ public class IncUpdates {
 
         }
 
-        //Now, perform the change...
-        v1.setOrAddAttribute(attribute);
+        if(!deleteAttribute) // We need to update the attribute or insert it
+        {
+            v1.setOrAddAttribute(attribute);
+        }
+        else // we need to delete the attribute
+        {
+            v1.deleteAttribute(attribute);
+        }
+
 
         // Run VF2 again...
         for (String tgfdName:affectedTGFDNames) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
-            //String res = incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
+            String res = incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
 
             //System.out.print("  ** Upd: " + (System.currentTimeMillis()-runtime) + " - " + res + " \n");
         }
-        return incrementalChangeHashMap;
-    }
-
-    private HashMap<String,IncrementalChange> updateGraphByDeletingAnAttribute(
-            DataVertex v1, Attribute attribute,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName)
-    {
-        HashMap<String,IncrementalChange> incrementalChangeHashMap=new HashMap <>();
-        Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
-
-        // run VF2
-        for (String tgfdName:affectedTGFDNames) {
-            Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
-            IncrementalChange incrementalChange=new IncrementalChange(beforeChange,tgfdsByName.get(tgfdName).getPattern());
-            incrementalChangeHashMap.put(tgfdsByName.get(tgfdName).getName(),incrementalChange);
-        }
-
-        //Now, perform the change...
-        v1.deleteAttribute(attribute);
-
-        // Run VF2 again...
-        for (String tgfdName:affectedTGFDNames) {
-            Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
-            incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
-        }
-
         return incrementalChangeHashMap;
     }
 
