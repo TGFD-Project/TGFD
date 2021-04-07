@@ -16,14 +16,23 @@ public class testSyntheticGenerator {
 
     public static void main(String []args)
     {
-        SyntheticLoader syntheticLoader=new SyntheticLoader(new ArrayList <TGFD>(), Collections.singletonList("C:\\Users\\admin\\Downloads\\social-a-graph.txt0.txt"));
+        if(args.length!=3)
+        {
+            System.out.println("""
+                    Input argument is missing:
+                    1. Path to the first snapshot of the synthetic graph
+                    2. Number of snapshots
+                    3. Name of the graph""");
+            return;
+        }
+        SyntheticLoader syntheticLoader=new SyntheticLoader(new ArrayList <TGFD>(), Collections.singletonList(args[0]));
 
         SyntheticGenerator generator=new SyntheticGenerator(syntheticLoader);
-        HashMap <Integer, List <Change>> changeLogs = generator.generateSnapshot(3,0.04);
+        HashMap <Integer, List <Change>> changeLogs = generator.generateSnapshot(Integer.parseInt(args[1]),0.04);
 
         int t1=1;
         for (int t2:changeLogs.keySet()) {
-            saveChanges(changeLogs.get(t2),t1,t2,"general");
+            saveChanges(changeLogs.get(t2),t1,t2,args[2]);
             t1=t2;
         }
     }

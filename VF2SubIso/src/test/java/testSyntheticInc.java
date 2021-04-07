@@ -30,7 +30,7 @@ public class testSyntheticInc
 
         // Test whether we loaded all the files correctly
 
-        System.out.println(Arrays.toString(conf.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(conf.getFirstDataFilePath().toArray()));
+        System.out.println(Arrays.toString(conf.getFirstDataFilePath().toArray()));
         System.out.println(conf.getDiffFilesPath().keySet() + " *** " + conf.getDiffFilesPath().values());
 
         //Load the TGFDs.
@@ -112,8 +112,8 @@ public class testSyntheticInc
             for (TGFD tgfd:allTGFDs) {
                 matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,
                         newMatchesSignaturesByTGFD.get(tgfd.getName()),removedMatchesSignaturesByTGFD.get(tgfd.getName()));
-                System.out.println("New matches ("+tgfd.getName()+"): " +
-                        newMatchesSignaturesByTGFD.get(tgfd.getName()).size() + " ** " + removedMatchesSignaturesByTGFD.get(tgfd.getName()).size());
+                System.out.println("# matches ("+tgfd.getName()+"): New matches: " +
+                        newMatchesSignaturesByTGFD.get(tgfd.getName()).size() + " ** Removed matches: " + removedMatchesSignaturesByTGFD.get(tgfd.getName()).size());
             }
             printWithTime("Update and retrieve matches ", System.currentTimeMillis()-startTime);
             //myConsole.print("#new matches: " + newMatchesSignatures.size()  + " - #removed matches: " + removedMatchesSignatures.size());
