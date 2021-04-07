@@ -16,8 +16,21 @@ public class ConfigParser {
     private HashMap<Integer,LocalDate> timestamps=new HashMap<>();
     private ArrayList<Double> diffCaps=new ArrayList <>();
 
-    public ConfigParser(String pathToConfigFile) throws FileNotFoundException {
-        parseInputParams(pathToConfigFile);
+    public ConfigParser(String input) throws FileNotFoundException {
+        if(input.equals("--help"))
+            System.out.println("""
+                    * Expected arguments to parse:
+                    * -p <patternFile>
+                    * [-t<snapshotId> <typeFile>]
+                    * [-d<snapshotId> <dataFile>]
+                    * [-c<snapshotId> <diff file>]
+                    * [-s<snapshotId> <snapshot timestamp>]
+                    * -diffCap List<double> // example: -diffCap 0.02,0.04,0.06,1
+                    * -optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
+                    * -debug <true-false> // print details of matching
+                    *""".indent(5));
+        else
+            parseInputParams(input);
     }
 
     /**
@@ -34,7 +47,7 @@ public class ConfigParser {
      * TODO: We need to check correctness of the input
      */
     private void parseInputParams(String pathToConfigFile) {
-        Scanner scanner = null;
+        Scanner scanner;
         try {
             scanner = new Scanner(new File(pathToConfigFile));
             while (scanner.hasNextLine()) {
