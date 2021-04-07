@@ -4,6 +4,8 @@ package changeExploration;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /** This is a base class for the changes  */
 public class Change {
@@ -52,6 +54,14 @@ public class Change {
         if(TGFDNames!=null) {
             this.TGFDs.addAll(TGFDNames);
         }
+    }
+
+    /**
+     * @param TGFDNames Set of TGFD names to be added for a change
+     */
+    public void addTGFD(Stream <String> TGFDNames)
+    {
+        this.TGFDs.addAll(TGFDNames.collect(Collectors.toSet()));
     }
 
     //endregion

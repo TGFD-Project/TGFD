@@ -1,10 +1,8 @@
 package SyntheticGraph;
 
-import changeExploration.Change;
-import changeExploration.ChangeType;
-import changeExploration.EdgeChange;
-import changeExploration.VertexChange;
+import changeExploration.*;
 import graphLoader.SyntheticLoader;
+import infra.Attribute;
 import infra.DataVertex;
 import infra.RelationshipEdge;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -38,13 +36,15 @@ public class SyntheticGenerator {
         int numberOfChanges= (int) (graph.getGraphSize() *changeRate);
         HashMap <String, HashMap<String,String>> schema= graph.getSchema();
 
-        RelationshipEdge[] arrayEdges = graph.getGraph().getGraph().edgeSet().
-                toArray(new RelationshipEdge[graph.getGraph().getGraph().edgeSet().size()]);
+
 
         Random random = new Random();
 
+        // Random edges are picked to be deleted!
+        RelationshipEdge[] arrayEdges = graph.getGraph().getGraph().edgeSet().
+                toArray(new RelationshipEdge[graph.getGraph().getGraph().edgeSet().size()]);
         HashSet<Integer> alreadyPicked=new HashSet <>();
-        for (int i=0;i<numberOfChanges/4;i++)
+        for (int i=0;i<numberOfChanges/8;i++)
         {
             int rndmNumber = random.nextInt(arrayEdges.length);
             while (alreadyPicked.contains(rndmNumber))
@@ -53,6 +53,7 @@ public class SyntheticGenerator {
             alreadyPicked.add(rndmNumber);
         }
 
+        // Random new edges are inserted
         String []sourceTypes=schema.keySet().toArray(new String[schema.keySet().size()]);
         for (int i=0;i<(3*numberOfChanges)/4;i+=3)
         {
@@ -74,6 +75,20 @@ public class SyntheticGenerator {
             changes.add(c1);
             changes.add(c2);
             changes.add(c3);
+        }
+
+        // Random nodes are picked to change their attribute
+        DataVertex[] vertices = graph.getGraph().getGraph().vertexSet().
+                toArray(new DataVertex[graph.getGraph().getGraph().vertexSet().size()]);
+        alreadyPicked=new HashSet <>();
+        for (int i=0;i<numberOfChanges/8;i++)
+        {
+            int rndmNumber = random.nextInt(vertices.length);
+            while (alreadyPicked.contains(rndmNumber))
+                rndmNumber = random.nextInt(vertices.length);
+            changes.add(new AttributeChange(ChangeType.changeAttr,changeID++,
+                    vertices[rndmNumber].getVertexURI(),new Attribute("name",RandomStringUtils.randomAlphabetic(10))));
+            alreadyPicked.add(rndmNumber);
         }
         return changes;
     }

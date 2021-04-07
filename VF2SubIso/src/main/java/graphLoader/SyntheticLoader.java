@@ -4,6 +4,7 @@ import infra.Attribute;
 import infra.DataVertex;
 import infra.RelationshipEdge;
 import infra.TGFD;
+import org.apache.commons.lang3.RandomStringUtils;
 import util.properties;
 
 import java.io.BufferedReader;
@@ -74,6 +75,7 @@ public class SyntheticLoader extends GraphLoader {
                         DataVertex subjectVertex= (DataVertex) graph.getNode(subject[1]);
                         if (subjectVertex==null) {
                             subjectVertex=new DataVertex(subject[1],subject[0]);
+                            subjectVertex.addAttribute(new Attribute("name", RandomStringUtils.randomAlphabetic(10)));
                             graph.addVertex(subjectVertex);
                             if(typesDistribution.containsKey(subject[0]))
                                 typesDistribution.put(subject[0], typesDistribution.get(subject[0])+1);
@@ -92,6 +94,7 @@ public class SyntheticLoader extends GraphLoader {
                             DataVertex objectVertex= (DataVertex) graph.getNode(object[1]);
                             if (objectVertex==null) {
                                 objectVertex=new DataVertex(object[1],object[0]);
+                                objectVertex.addAttribute(new Attribute("name", RandomStringUtils.randomAlphabetic(10)));
                                 graph.addVertex(objectVertex);
                                 if(typesDistribution.containsKey(object[0]))
                                     typesDistribution.put(object[0], typesDistribution.get(object[0])+1);

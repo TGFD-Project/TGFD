@@ -30,7 +30,7 @@ public class IncrementalChange {
 
     //region Public Functions
 
-    public void addAfterMatches(Iterator<GraphMapping<Vertex, RelationshipEdge>> afterMatchIterator)
+    public String addAfterMatches(Iterator<GraphMapping<Vertex, RelationshipEdge>> afterMatchIterator)
     {
         afterMatches=new HashMap<>();
         if(afterMatchIterator!=null) {
@@ -50,6 +50,7 @@ public class IncrementalChange {
             if(!afterMatches.containsKey(key))
                 removedMatchesSignatures.add(key);
         }
+        return beforeMatchesSignatures.size() + " - " +afterMatches.size();
         //System.out.print(beforeMatchesSignatures.size() + " -- " + newMatches.size() + " -- " + removedMatchesSignatures.size());
     }
     //endregion

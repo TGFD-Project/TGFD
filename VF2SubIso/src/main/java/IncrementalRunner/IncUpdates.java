@@ -102,8 +102,12 @@ public class IncUpdates {
     private HashMap<String,IncrementalChange> updateGraphByAddingNewEdge(
             DataVertex v1, DataVertex v2, RelationshipEdge edge,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName)
     {
+        //long runtime=System.currentTimeMillis();
         HashMap<String,IncrementalChange> incrementalChangeHashMap=new HashMap <>();
         Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
+
+        //System.out.print("Load: " + (System.currentTimeMillis()-runtime));
+        //runtime=System.currentTimeMillis();
 
         // run VF2
         for (String tgfdName:affectedTGFDNames) {
@@ -123,18 +127,22 @@ public class IncUpdates {
         // Run VF2 again...
         for (String tgfdName:affectedTGFDNames) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
-            incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
-        }
+            //String res = incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
 
+            //System.out.print("  ** Add: " + (System.currentTimeMillis()-runtime) + " - " + res + " \n");
+        }
         return incrementalChangeHashMap;
     }
 
     private HashMap<String,IncrementalChange> updateGraphByDeletingAnEdge(
             DataVertex v1, DataVertex v2, RelationshipEdge edge,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName)
     {
-
+        //long runtime=System.currentTimeMillis();
         HashMap<String,IncrementalChange> incrementalChangeHashMap=new HashMap <>();
         Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
+
+        //System.out.print("Load: " + (System.currentTimeMillis()-runtime));
+        //runtime=System.currentTimeMillis();
 
         // run VF2
         for (String tgfdName:affectedTGFDNames) {
@@ -159,7 +167,9 @@ public class IncUpdates {
         // Run VF2 again...
         for (String tgfdName:affectedTGFDNames) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
-            incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
+            //String res = incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
+
+            //System.out.print("  ** Del: " + (System.currentTimeMillis()-runtime) + " - " + res + " \n");
         }
         return incrementalChangeHashMap;
     }
@@ -167,8 +177,13 @@ public class IncUpdates {
     private HashMap<String,IncrementalChange> updateGraphByUpdatingAnAttribute(
             DataVertex v1, Attribute attribute,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName)
     {
+        //long runtime=System.currentTimeMillis();
+
         HashMap<String,IncrementalChange> incrementalChangeHashMap=new HashMap <>();
         Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
+
+        //System.out.print("Load: " + (System.currentTimeMillis()-runtime));
+        //runtime=System.currentTimeMillis();
 
         // run VF2
         for (String tgfdName:affectedTGFDNames) {
@@ -184,7 +199,9 @@ public class IncUpdates {
         // Run VF2 again...
         for (String tgfdName:affectedTGFDNames) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
-            incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
+            //String res = incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
+
+            //System.out.print("  ** Upd: " + (System.currentTimeMillis()-runtime) + " - " + res + " \n");
         }
         return incrementalChangeHashMap;
     }
@@ -216,6 +233,7 @@ public class IncUpdates {
 
     private int getDiameter(Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName)
     {
+        //TODO: Need to get the max diameter
         int maxDiameter=0;
         for (String tgfdName:affectedTGFDNames) {
             return tgfdsByName.get(tgfdName).getPattern().getDiameter();
@@ -225,6 +243,7 @@ public class IncUpdates {
 
     private void findRelevantTGFDs(Change change,DataVertex v)
     {
+        //change.addTGFD(v.getTypes().stream().filter(type -> relaventTGFDs.containsKey(type)));
         for (String type:v.getTypes())
             if(relaventTGFDs.containsKey(type))
                 change.addTGFD(relaventTGFDs.get(type));
