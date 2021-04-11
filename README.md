@@ -184,7 +184,7 @@ Source: https://www.imdb.com/interfaces/.
 
 It takes as input a configuration file. The configuration file lists the number of nodes, the node labels and their proportions, the edge labels and their proportions, and a schema that defines the triples in the graph and also the distributions of the in-degrees and out-degrees of each triple. It outputs a synthetic graph that is represented as a list of triples (e.g "Person_123 isLocatedIn City_123"). 
 
-Dataset can be downloaded at https://drive.google.com/drive/u/1/folders/1UudvphkZvU3H5u4mCEBLzaohZdMzCMFO
+Dataset can be downloaded at https://drive.google.com/drive/folders/1UudvphkZvU3H5u4mCEBLzaohZdMzCMFO?usp=sharing
 
 **Nodes:**
 | Type        | Attributes                                                                    |
