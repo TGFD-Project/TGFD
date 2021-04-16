@@ -45,7 +45,7 @@ This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges
 
 <h4 id="211-dbpedia-tgfds">2.1.1 DBpedia TGFDs</h4>
 
-We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/dbpedia`. We do not have a TGFD discovery algorithm so the schema was reviewed using real life domain knowledge to determine sutiable patterns and deltas for possible TGFDs.
+We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/dbpedia`. We do not have a TGFD discovery algorithm so the schema was reviewed using real life domain knowledge to determine suitable patterns and deltas for possible TGFDs.
 
 Since there are many possible TGFDs for DBpedia, we considered the total number of vertices per vertex type. We wanted to be fair by not choosing vertices with very low instances (e.g. mousegene with only 1 vertex) or only vertices with very high instances (e.g. careerstation with 976,963 vertices). The DBpedia dataset number of vertices per vertex type averaged 13,053 with a median of 1,870. We considered vertices within this range with several above it (including album with 139,058 instances).
 
@@ -147,15 +147,15 @@ Sources:
 
 While IMDB supposedly provides weekly data from 1998 to 2017, there were three issues that prevented us from using the full range. Changes are provided in text diff files starting with a snapshot at 1998-10-02. To re-create the snapshots, you need to apply the diff files sequentially to the starting 1998-10-02 snapshot. The starting snapshot is not available in either of the two mirrors still hosting the IMDB data (as of 2021-03-01). What is available in the mirrors is the final snapshot, which is the result of all the diffs applied in order.
 
-From the final snaphot and the diffs, we wrote a custom tool to automatically download the dataset, and apply the diffs in reverse. This would have given us all snapshots from 1998-2017, but there are two missing diff files at 2014-01-31 and 2014-02-07. So we cannot go back any further than that.
+From the final snapshot and the diffs, we wrote a custom tool to automatically download the dataset, and apply the diffs in reverse. This would have given us all snapshots from 1998-2017, but there are two missing diff files at 2014-01-31 and 2014-02-07. So we cannot go back any further than that.
 
-The final issue is that the everse patch of 2014-10-24 diff to the actors list fails. Since we want the entire dataset, this further restricted us to 2014-10-31.
+The final issue is that the reverse patch of 2014-10-24 diff to the actors list fails. Since we want the entire dataset, this further restricted us to 2014-10-31.
 
 From these weekly snapshots, we took every 4th snapshot to approximate a monthly snapshot (~4weeks). We wrote an additional tool that will parse IMDB semi-structured list format into RDF format.
 
 <h4 id="221-imdb-tgfds">2.2.1 IMDB TGFDs</h4>
 
-We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/imdb`. We do not have a TGFD discovery algorithm so the schema was reviewed using real life domain knowledge to determine sutiable patterns and deltas for possible TGFDs.
+We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/imdb`. We do not have a TGFD discovery algorithm so the schema was reviewed using real life domain knowledge to determine suitable patterns and deltas for possible TGFDs.
 
 From these core set of TGFDs, we modified them in several ways to generate additional TGFDs. We added additional attributes to the pattern and/or X. We expanded patterns by including additional edges and vertices that connect to the existing pattern. These modifications were not random, but in a similar manner to defining the core TGFDs, by using domain knowledge to form further suitable TGFDs. We varied delta based on the number of estimated matches, which correlates to the number of center nodes for each pattern. We also ensured that when modifying delta that we do not have a large number of matches dropped at certain timestamps.
 
@@ -215,7 +215,7 @@ We used `Dataset/synthetic/social-network.xml` as parameters to gMark.
 
 <h4 id="231-synthetic-tgfds">2.3.1 Synthetic TGFDs</h4>
 
-We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/synthetic`. We do not have a TGFD discovery algorithm so the schema was reviewed using real life domain knowledge to determine sutiable patterns and deltas for possible TGFDs.
+We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/synthetic`. We do not have a TGFD discovery algorithm so the schema was reviewed using real life domain knowledge to determine suitable patterns and deltas for possible TGFDs.
 
 From these core set of TGFDs, we modified them in several ways to generate additional TGFDs. We added additional attributes to the pattern and/or X. We expanded patterns by including additional edges and vertices that connect to the existing pattern. These modifications were not random, but in a similar manner to defining the core TGFDs, by using domain knowledge to form further suitable TGFDs. We varied delta based on the number of estimated matches, which correlates to the number of center nodes for each pattern. We also ensured that when modifying delta that we do not have a large number of matches dropped at certain timestamps.
 
