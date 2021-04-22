@@ -18,6 +18,7 @@ public class ConfigParser {
     private static String patternPath = "";
     private static HashMap<Integer,LocalDate> timestamps=new HashMap<>();
     private static ArrayList<Double> diffCaps=new ArrayList <>();
+    public static ArrayList<String> workers=new ArrayList <>();
     public static String ActiveMQBrokerURL= ActiveMQConnection.DEFAULT_BROKER_URL;
     public static String ActiveMQNodeName="";
     public static boolean Amazon=false;
@@ -41,7 +42,8 @@ public class ConfigParser {
                      -optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
                      -debug <true-false> // print details of matching
                      -mqurl <URL> // URL of the ActiveMQ Broker
-                     -node <node name> // Unique node name for the workers
+                     -nodename <node name> // Unique node name for the workers
+                     -workers List<names> // List of workers name. example: worker1,worker2,worker3
                      -amazon <true-false> // run on Amazon EC2
                      -region <region name> // Name of the region in Amazon EC2
                      -language <language name> // Names like "N-Triples", "TURTLE", "RDF/XML"
@@ -50,19 +52,6 @@ public class ConfigParser {
             parseInputParams(input);
     }
 
-    /**
-     * Expected arguments to parse:
-     * -p <patternFile>
-     * [-t<snapshotId> <typeFile>]
-     * [-d<snapshotId> <dataFile>]
-     * [-c<snapshotId> <diff file>]
-     * [-s<snapshotId> <snapshot timestamp>]
-     * -diffCap List<double> // example: -diffCap 0.02,0.04,0.06,1
-     * -optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
-     * -debug <true-false> // print details of matching
-     *
-     * TODO: We need to check correctness of the input
-     */
     private static void parseInputParams(String pathToConfigFile) {
         Scanner scanner;
         try {
@@ -82,8 +71,12 @@ public class ConfigParser {
                         diffCaps.add(Double.parseDouble(diffCap));
                 } else if(conf[0].equals("-mqurl")) {
                     ActiveMQBrokerURL=conf[1];
-                } else if(conf[0].equals("-node")) {
+                } else if(conf[0].equals("-nodename")) {
                     ActiveMQNodeName=conf[1];
+                } else if (conf[0].equals("-workers")) {
+                    String[] temp = conf[1].split(",");
+                    for (String worker : temp)
+                        workers.add(worker);
                 } else if(conf[0].equals("-amazon")) {
                     region=Regions.fromName(conf[1]);
                 } else if(conf[0].equals("-region")) {

@@ -89,7 +89,7 @@ public class ChangeFinder {
                 addRelevantType(((VariableLiteral) y).getVertexType_2(),tgfd.getName());
             }
         }
-        for (Vertex v:tgfd.getPattern().getGraph().vertexSet()) {
+        for (Vertex v:tgfd.getPattern().getPattern().vertexSet()) {
             if(v instanceof PatternVertex)
                 for (String type:v.getTypes())
                     addRelevantType(type,tgfd.getName());
