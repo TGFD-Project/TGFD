@@ -6,7 +6,7 @@ import infra.RelationshipEdge;
 import infra.TGFD;
 import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.*;
-import util.properties;
+import util.ConfigParser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,7 +71,7 @@ public class DBPediaLoader extends GraphLoader {
 
                 // ignore the node if the type is not in the validTypes and
                 // optimizedLoadingBasedOnTGFD is true
-                if(properties.myProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(nodeType))
+                if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(nodeType))
                     continue;
                 //int nodeId = subject.hashCode();
                 DataVertex v= (DataVertex) graph.getNode(nodeURI);
@@ -172,7 +172,7 @@ public class DBPediaLoader extends GraphLoader {
                 }
                 else
                 {
-                    if(properties.myProperties.optimizedLoadingBasedOnTGFD && validAttributes.contains(predicate))
+                    if(ConfigParser.optimizedLoadingBasedOnTGFD && validAttributes.contains(predicate))
                     {
                         subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
                         graphSize++;

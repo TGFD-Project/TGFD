@@ -5,7 +5,7 @@ import infra.DataVertex;
 import infra.RelationshipEdge;
 import infra.TGFD;
 import org.apache.commons.lang3.RandomStringUtils;
-import util.properties;
+import util.ConfigParser;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -67,9 +67,9 @@ public class SyntheticLoader extends GraphLoader {
                     String []object=rdf[2].split("_");
                     if(subject.length==2 && object.length==2)
                     {
-                        if(properties.myProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(subject[0]))
+                        if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(subject[0]))
                             continue;
-                        if(properties.myProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(object[0]))
+                        if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(object[0]))
                             continue;
 
                         DataVertex subjectVertex= (DataVertex) graph.getNode(subject[1]);

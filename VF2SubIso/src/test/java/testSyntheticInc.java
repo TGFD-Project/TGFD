@@ -9,7 +9,6 @@ import graphLoader.SyntheticLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
 import util.ConfigParser;
-import util.properties;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -133,7 +132,7 @@ public class testSyntheticInc
             Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
             System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
             printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
-            if(properties.myProperties.saveViolations)
+            if(ConfigParser.saveViolations)
                 saveViolations("optimized",allViolationsOptBatchTED,tgfd);
         }
         printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);

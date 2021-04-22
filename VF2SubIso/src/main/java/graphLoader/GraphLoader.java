@@ -2,7 +2,7 @@ package graphLoader;
 
 import changeExploration.*;
 import infra.*;
-import util.properties;
+import util.ConfigParser;
 
 import java.util.HashSet;
 import java.util.List;
@@ -42,12 +42,20 @@ public class GraphLoader {
         validTypes=new HashSet <>();
         validAttributes=new HashSet<>();
 
-        if(properties.myProperties.optimizedLoadingBasedOnTGFD)
+        if(ConfigParser.optimizedLoadingBasedOnTGFD)
             for (TGFD tgfd:alltgfd) {
                 extractValidTypesFromTGFD(tgfd);
                 extractValidAttributesFromTGFD(tgfd);
             }
     }
+
+    public GraphLoader()
+    {
+        graph=new VF2DataGraph();
+        validTypes=new HashSet <>();
+        validAttributes=new HashSet<>();
+    }
+
 
     //endregion
 
@@ -55,6 +63,10 @@ public class GraphLoader {
 
     public VF2DataGraph getGraph() {
         return graph;
+    }
+
+    public void setGraph(VF2DataGraph graph) {
+        this.graph = graph;
     }
 
     /**
@@ -133,7 +145,7 @@ public class GraphLoader {
             }
 
         }
-        for (Vertex v:tgfd.getPattern().getGraph().vertexSet()) {
+        for (Vertex v:tgfd.getPattern().getPattern().vertexSet()) {
             if(v instanceof PatternVertex)
                 validTypes.addAll(v.getTypes());
         }
@@ -165,7 +177,7 @@ public class GraphLoader {
             }
 
         }
-        for (Vertex v:tgfd.getPattern().getGraph().vertexSet()) {
+        for (Vertex v:tgfd.getPattern().getPattern().vertexSet()) {
             if(v instanceof PatternVertex)
                 validTypes.addAll(v.getAllAttributesNames());
         }

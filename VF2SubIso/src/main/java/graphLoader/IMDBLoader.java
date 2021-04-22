@@ -5,7 +5,7 @@ import infra.DataVertex;
 import infra.RelationshipEdge;
 import infra.TGFD;
 import org.apache.jena.rdf.model.*;
-import util.properties;
+import util.ConfigParser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,7 +61,7 @@ public class IMDBLoader extends GraphLoader{
 
                 // ignore the node if the type is not in the validTypes and
                 // optimizedLoadingBasedOnTGFD is true
-                if(properties.myProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(subjectType))
+                if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(subjectType))
                     continue;
 
                 types.add(subjectType);
@@ -82,7 +82,7 @@ public class IMDBLoader extends GraphLoader{
                 if (object.isLiteral())
                 {
                     objectNodeURI = object.asLiteral().getString().toLowerCase();
-                    if(properties.myProperties.optimizedLoadingBasedOnTGFD && validAttributes.contains(predicate)) {
+                    if(ConfigParser.optimizedLoadingBasedOnTGFD && validAttributes.contains(predicate)) {
                         subjectVertex.addAttribute(new Attribute(predicate, objectNodeURI));
                         graphSize++;
                     }
@@ -105,7 +105,7 @@ public class IMDBLoader extends GraphLoader{
 
                     // ignore the node if the type is not in the validTypes and
                     // optimizedLoadingBasedOnTGFD is true
-                    if(properties.myProperties.optimizedLoadingBasedOnTGFD && !validTypes.contains(objectType))
+                    if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(objectType))
                         continue;
 
                     types.add(objectType);

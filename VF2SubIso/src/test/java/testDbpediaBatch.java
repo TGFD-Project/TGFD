@@ -8,7 +8,6 @@ import graphLoader.DBPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
 import util.ConfigParser;
-import util.properties;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -105,7 +104,7 @@ public class testDbpediaBatch
             Set<Violation> allViolationsNaiveBatchTED=naive.findViolations();
             System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
             printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
-            if(properties.myProperties.saveViolations)
+            if(ConfigParser.saveViolations)
                 saveViolations("naive",allViolationsNaiveBatchTED,tgfd);
 
             // Next, we need to find all the violations using the optimize method
@@ -116,7 +115,7 @@ public class testDbpediaBatch
             System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
             printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
 
-            if(properties.myProperties.saveViolations)
+            if(ConfigParser.saveViolations)
                 saveViolations("optimized",allViolationsOptBatchTED,tgfd);
         }
         printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
