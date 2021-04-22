@@ -23,15 +23,15 @@ public class testErrorInjectionDbpedia {
 
         long wallClockStart=System.currentTimeMillis();
 
-        ConfigParser conf=new ConfigParser(args[0]);
+        ConfigParser.parse(args[0]);
 
         System.out.println("Test Error Injection over DBPedia");
 
-        System.out.println(Arrays.toString(conf.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(conf.getFirstDataFilePath().toArray()));
-        System.out.println(conf.getDiffFilesPath().keySet() + " *** " + conf.getDiffFilesPath().values());
+        System.out.println(Arrays.toString(ConfigParser.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(ConfigParser.getFirstDataFilePath().toArray()));
+        System.out.println(ConfigParser.getDiffFilesPath().keySet() + " *** " + ConfigParser.getDiffFilesPath().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(conf.getPatternPath());
+        TGFDGenerator generator = new TGFDGenerator(ConfigParser.getPatternPath());
         List <TGFD> allTGFDs=generator.getTGFDs();
 
         //Create the match collection for all the TGFDs in the list
@@ -43,8 +43,8 @@ public class testErrorInjectionDbpedia {
         //Load the first timestamp
         System.out.println("-----------Snapshot (1)-----------");
         long startTime=System.currentTimeMillis();
-        LocalDate currentSnapshotDate=conf.getTimestamps().get(1);
-        DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,conf.getFirstTypesFilePath(),conf.getFirstDataFilePath());
+        LocalDate currentSnapshotDate=ConfigParser.getTimestamps().get(1);
+        DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,ConfigParser.getFirstTypesFilePath(),ConfigParser.getFirstDataFilePath());
 
         printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
@@ -64,15 +64,15 @@ public class testErrorInjectionDbpedia {
         }
 
         //Load the change files
-        Object[] ids=conf.getDiffFilesPath().keySet().toArray();
+        Object[] ids=ConfigParser.getDiffFilesPath().keySet().toArray();
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++)
         {
             System.out.println("-----------Snapshot (" + ids[i] + ")-----------");
 
             startTime=System.currentTimeMillis();
-            currentSnapshotDate=conf.getTimestamps().get((int)ids[i]);
-            ChangeLoader changeLoader=new ChangeLoader(conf.getDiffFilesPath().get(ids[i]));
+            currentSnapshotDate=ConfigParser.getTimestamps().get((int)ids[i]);
+            ChangeLoader changeLoader=new ChangeLoader(ConfigParser.getDiffFilesPath().get(ids[i]));
             List<Change> changes=changeLoader.getAllChanges();
 
             printWithTime("Load changes ("+ids[i] + ")", System.currentTimeMillis()-startTime);

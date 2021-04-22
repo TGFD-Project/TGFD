@@ -26,14 +26,14 @@ public class testDbpediaBatch
 
         System.out.println("Test DBPedia batch");
 
-        ConfigParser conf=new ConfigParser(args[0]);
+        ConfigParser.parse(args[0]);
 
 
-        System.out.println(Arrays.toString(conf.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(conf.getFirstDataFilePath().toArray()));
-        System.out.println(conf.getDiffFilesPath().keySet() + " *** " + conf.getDiffFilesPath().values());
+        System.out.println(Arrays.toString(ConfigParser.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(ConfigParser.getFirstDataFilePath().toArray()));
+        System.out.println(ConfigParser.getDiffFilesPath().keySet() + " *** " + ConfigParser.getDiffFilesPath().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(conf.getPatternPath());
+        TGFDGenerator generator = new TGFDGenerator(ConfigParser.getPatternPath());
         List<TGFD> allTGFDs=generator.getTGFDs();
 
         //Create the match collection for all the TGFDs in the list
@@ -43,13 +43,13 @@ public class testDbpediaBatch
         }
 
         //Load the first timestamp
-        System.out.println("===========Snapshot 1 (" + conf.getTimestamps().get(1) + ")===========");
+        System.out.println("===========Snapshot 1 (" + ConfigParser.getTimestamps().get(1) + ")===========");
 
         long startTime=System.currentTimeMillis();
-        LocalDate currentSnapshotDate=conf.getTimestamps().get(1);
+        LocalDate currentSnapshotDate=ConfigParser.getTimestamps().get(1);
         // load first snapshot of the dbpedia graph
-        DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,conf.getFirstTypesFilePath(),conf.getFirstDataFilePath());
-        printWithTime("Load graph 1 (" + conf.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
+        DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs,ConfigParser.getFirstTypesFilePath(),ConfigParser.getFirstDataFilePath());
+        printWithTime("Load graph 1 (" + ConfigParser.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
 
         // Finding the matches of the first snapshot for each TGFD
         for (TGFD tgfd:allTGFDs) {
@@ -65,19 +65,19 @@ public class testDbpediaBatch
         }
 
         //Load the change files
-        Object[] ids=conf.getDiffFilesPath().keySet().toArray();
+        Object[] ids=ConfigParser.getDiffFilesPath().keySet().toArray();
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++) {
-            System.out.println("===========Snapshot "+ids[i]+" (" + conf.getTimestamps().get(ids[i]) + ")===========");
+            System.out.println("===========Snapshot "+ids[i]+" (" + ConfigParser.getTimestamps().get(ids[i]) + ")===========");
 
             startTime = System.currentTimeMillis();
-            currentSnapshotDate = conf.getTimestamps().get((int) ids[i]);
-            ChangeLoader changeLoader = new ChangeLoader(conf.getDiffFilesPath().get(ids[i]));
+            currentSnapshotDate = ConfigParser.getTimestamps().get((int) ids[i]);
+            ChangeLoader changeLoader = new ChangeLoader(ConfigParser.getDiffFilesPath().get(ids[i]));
             List <Change> changes = changeLoader.getAllChanges();
 
             //update the dbpedia graph with the changes.
             dbpedia.updateGraphWithChanges(changes);
-            printWithTime("Load changes "+ids[i]+" (" + conf.getTimestamps().get(ids[i]) + ")", System.currentTimeMillis() - startTime);
+            printWithTime("Load changes "+ids[i]+" (" + ConfigParser.getTimestamps().get(ids[i]) + ")", System.currentTimeMillis() - startTime);
             System.out.println("Total number of changes: " + changes.size());
 
             for (TGFD tgfd:allTGFDs) {
