@@ -4,7 +4,7 @@ import java.util.*;
 
 public abstract class Vertex implements Comparable<Vertex>{
 
-    private Set<String> types;
+    private Set<String> types=new HashSet<>();
 
     // Map of attributes using attribute name as a key
     //TODO: Check the efficiency if we just store the attributes in a set (the attribute retrieval cannot be done in O(1) and takes O(n))
@@ -13,7 +13,6 @@ public abstract class Vertex implements Comparable<Vertex>{
     // TODO: consider adding an id field (e.g. vertexURI from dataVertex) [2021-02-07]
 
     public Vertex(String type) {
-        this.types=new HashSet<>();
         types.add(type);
         attributes= new HashMap<>();
     }

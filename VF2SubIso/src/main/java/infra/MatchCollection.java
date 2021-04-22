@@ -91,7 +91,7 @@ public class MatchCollection
      */
     private void addVertices(LocalDate timestamp, GraphMapping<Vertex, RelationshipEdge> mapping)
     {
-        for (var pattenVertex : pattern.getGraph().vertexSet())
+        for (var pattenVertex : pattern.getPattern().vertexSet())
         {
             var matchVertex = mapping.getVertexCorrespondence(pattenVertex, false);
 

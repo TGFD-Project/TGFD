@@ -206,7 +206,7 @@ public final class Match {
         // TODO: consider collecting (type, name, attr) and sorting at the end [2021-02-14]
 
         // NOTE: Ensure stable sorting of vertices [2021-02-13]
-        var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
+        var sortedPatternVertices = pattern.getPattern().vertexSet().stream().sorted();
         sortedPatternVertices.forEach(patternVertex ->
         {
             var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
@@ -255,7 +255,7 @@ public final class Match {
         var builder = new StringBuilder();
 
         // NOTE: Ensure stable sorting of vertices [2021-02-13]
-        var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
+        var sortedPatternVertices = pattern.getPattern().vertexSet().stream().sorted();
         sortedPatternVertices.forEach(patternVertex ->
         {
             var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
@@ -313,7 +313,7 @@ public final class Match {
         var builder = new StringBuilder();
 
         // NOTE: Ensure stable sorting of vertices [2021-02-13]
-        var sortedPatternVertices = pattern.getGraph().vertexSet().stream().sorted();
+        var sortedPatternVertices = pattern.getPattern().vertexSet().stream().sorted();
         sortedPatternVertices.forEach(patternVertex ->
         {
             var matchVertex = (DataVertex)mapping.getVertexCorrespondence(patternVertex, false);
