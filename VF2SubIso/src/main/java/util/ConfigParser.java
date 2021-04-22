@@ -1,5 +1,6 @@
 package util;
 
+import com.amazonaws.regions.Regions;
 import org.apache.activemq.ActiveMQConnection;
 
 import java.io.File;
@@ -17,8 +18,15 @@ public class ConfigParser {
     private static String patternPath = "";
     private static HashMap<Integer,LocalDate> timestamps=new HashMap<>();
     private static ArrayList<Double> diffCaps=new ArrayList <>();
-    private static String ActiveMQBrokerURL= ActiveMQConnection.DEFAULT_BROKER_URL;
-    private static String ActiveMQNodeName="";
+    public static String ActiveMQBrokerURL= ActiveMQConnection.DEFAULT_BROKER_URL;
+    public static String ActiveMQNodeName="";
+    public static boolean Amazon=false;
+    public static Regions region=Regions.US_EAST_2;
+    public static String language="N-Triples";
+
+    public static boolean optimizedLoadingBasedOnTGFD=false;
+    public static boolean saveViolations=false;
+    public static boolean printDetailedMatchingResults=false;
 
     public static void parse(String input) throws FileNotFoundException {
         if(input.equals("--help")) {
@@ -33,7 +41,10 @@ public class ConfigParser {
                      -optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
                      -debug <true-false> // print details of matching
                      -mqurl <URL> // URL of the ActiveMQ Broker
+                     -node <node name> // Unique node name for the workers
                      -amazon <true-false> // run on Amazon EC2
+                     -region <region name> // Name of the region in Amazon EC2
+                     -language <language name> // Names like "N-Triples", "TURTLE", "RDF/XML"
                     """.indent(5));
         } else
             parseInputParams(input);
@@ -61,7 +72,25 @@ public class ConfigParser {
                 String[] conf = line.toLowerCase().split(" ");
                 if (conf.length != 2)
                     continue;
-                if (conf[0].startsWith("-t")) {
+                if (conf[0].equals("-optgraphload")) {
+                    optimizedLoadingBasedOnTGFD = Boolean.parseBoolean(conf[1]);
+                } else if (conf[0].equals("-debug")) {
+                    printDetailedMatchingResults = Boolean.parseBoolean(conf[1]);
+                } else if (conf[0].equals("-logcap")) {
+                    String[] temp = conf[1].split(",");
+                    for (String diffCap : temp)
+                        diffCaps.add(Double.parseDouble(diffCap));
+                } else if(conf[0].equals("-mqurl")) {
+                    ActiveMQBrokerURL=conf[1];
+                } else if(conf[0].equals("-node")) {
+                    ActiveMQNodeName=conf[1];
+                } else if(conf[0].equals("-amazon")) {
+                    region=Regions.fromName(conf[1]);
+                } else if(conf[0].equals("-region")) {
+                    Amazon=Boolean.parseBoolean(conf[1]);
+                }else if(conf[0].equals("-language")) {
+                    language=String.valueOf(conf[1]);
+                } else if (conf[0].startsWith("-t")) {
                     var snapshotId = Integer.parseInt(conf[0].substring(2));
                     if (!typesPaths.containsKey(snapshotId))
                         typesPaths.put(snapshotId, new ArrayList <>());
@@ -80,21 +109,6 @@ public class ConfigParser {
                 } else if (conf[0].startsWith("-s")) {
                     var snapshotId = Integer.parseInt(conf[0].substring(2));
                     timestamps.put(snapshotId, LocalDate.parse(conf[1]));
-                } else if (conf[0].startsWith("-optgraphload")) {
-                    properties.myProperties.optimizedLoadingBasedOnTGFD = Boolean.parseBoolean(conf[1]);
-                } else if (conf[0].startsWith("-debug")) {
-                    properties.myProperties.printDetailedMatchingResults = Boolean.parseBoolean(conf[1]);
-                } else if (conf[0].startsWith("-logcap")) {
-                    String[] temp = conf[1].split(",");
-                    for (String diffCap : temp)
-                        diffCaps.add(Double.parseDouble(diffCap));
-                } else if(conf[0].startsWith("-mqurl")) {
-                    ActiveMQBrokerURL=conf[1];
-                } else if(conf[0].startsWith("-node")) {
-                    ActiveMQNodeName=conf[1];
-                }
-                else if(conf[0].startsWith("-amazon")) {
-                    ActiveMQNodeName=conf[1];
                 }
             }
         } catch (FileNotFoundException e) {
