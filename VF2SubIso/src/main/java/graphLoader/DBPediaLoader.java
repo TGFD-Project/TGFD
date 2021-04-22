@@ -1,13 +1,18 @@
 package graphLoader;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import infra.Attribute;
 import infra.DataVertex;
 import infra.RelationshipEdge;
 import infra.TGFD;
-import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.*;
 import util.ConfigParser;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -50,13 +55,35 @@ public class DBPediaLoader extends GraphLoader {
             System.out.println("No Input Node Types File Path!");
             return;
         }
+        S3Object fullObject = null;
+        BufferedReader br=null;
         try
         {
             Model model = ModelFactory.createDefaultModel();
             System.out.println("Loading Node Types: " + nodeTypesPath);
 
-            Path input= Paths.get(nodeTypesPath);
-            model.read(input.toUri().toString());
+            if(ConfigParser.Amazon)
+            {
+                AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                        .withRegion(ConfigParser.region)
+                        //.withCredentials(new ProfileCredentialsProvider())
+                        //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                        .build();
+
+                //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
+                String bucketName=nodeTypesPath.substring(0,nodeTypesPath.lastIndexOf("/"));
+                String key=nodeTypesPath.substring(nodeTypesPath.lastIndexOf("/")+1);
+                System.out.println("Downloading the object from Amazon S3 - Bucket name: " + bucketName +" - Key: " + key);
+                fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
+
+                br = new BufferedReader(new InputStreamReader(fullObject.getObjectContent()));
+                model.read(br,null, ConfigParser.language);
+            }
+            else
+            {
+                Path input= Paths.get(nodeTypesPath);
+                model.read(input.toUri().toString());
+            }
 
             StmtIterator typeTriples = model.listStatements();
 
@@ -85,6 +112,13 @@ public class DBPediaLoader extends GraphLoader {
                 }
             }
             System.out.println("Done. Number of Types: " + graph.getSize());
+            if (fullObject != null) {
+                fullObject.close();
+            }
+            if (br != null) {
+                br.close();
+            }
+            model.close();
         }
         catch (Exception e)
         {
@@ -103,15 +137,35 @@ public class DBPediaLoader extends GraphLoader {
             return;
         }
         System.out.println("Loading DBPedia Graph: "+dataGraphFilePath);
-        int numberOfObjectsNotFound=0,numberOfSubjectsNotFound=0, numberOfLoops=0;
+        int numberOfObjectsNotFound=0,numberOfSubjectsNotFound=0;
 
+        S3Object fullObject = null;
+        BufferedReader br=null;
         try
         {
             Model model = ModelFactory.createDefaultModel();
+            if(ConfigParser.Amazon)
+            {
+                AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                        .withRegion(ConfigParser.region)
+                        //.withCredentials(new ProfileCredentialsProvider())
+                        //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                        .build();
 
-            //model.read(dataGraphFilePath);
-            Path input= Paths.get(dataGraphFilePath);
-            model.read(input.toUri().toString());
+                //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
+                String bucketName=dataGraphFilePath.substring(0,dataGraphFilePath.lastIndexOf("/"));
+                String key=dataGraphFilePath.substring(dataGraphFilePath.lastIndexOf("/")+1);
+                System.out.println("Downloading the object from Amazon S3 - Bucket name: " + bucketName +" - Key: " + key);
+                fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
+
+                br = new BufferedReader(new InputStreamReader(fullObject.getObjectContent()));
+                model.read(br,null, ConfigParser.language);
+            }
+            else
+            {
+                Path input= Paths.get(dataGraphFilePath);
+                model.read(input.toUri().toString());
+            }
 
             StmtIterator dataTriples = model.listStatements();
 
@@ -127,21 +181,10 @@ public class DBPediaLoader extends GraphLoader {
                 RDFNode object = stmt.getObject();
                 String objectNodeURI;
 
-                try {
-                    if (object.isLiteral()) {
-                        objectNodeURI = object.asLiteral().getString().toLowerCase();
-                    } else {
-                        objectNodeURI = object.toString().substring(object.toString().lastIndexOf("/")+1).toLowerCase();
-                    }
-                } catch (DatatypeFormatException e) {
-                    //System.out.println("Invalid DataType Skipped!");
-                    e.printStackTrace();
-                    continue;
-                }
-                catch (Exception e)
-                {
-                    System.out.println(e.getMessage());
-                    continue;
+                if (object.isLiteral()) {
+                    objectNodeURI = object.asLiteral().getString().toLowerCase();
+                } else {
+                    objectNodeURI = object.toString().substring(object.toString().lastIndexOf("/")+1).toLowerCase();
                 }
 
                 DataVertex subjVertex= (DataVertex) graph.getNode(subjectNodeURI);
@@ -153,7 +196,6 @@ public class DBPediaLoader extends GraphLoader {
                     continue;
                 }
 
-
                 if (!object.isLiteral()) {
                     DataVertex objVertex= (DataVertex) graph.getNode(objectNodeURI);
                     if(objVertex==null)
@@ -164,7 +206,6 @@ public class DBPediaLoader extends GraphLoader {
                     }
                     else if (subjectNodeURI.equals(objectNodeURI)) {
                         //System.out.println("Loop found: " + subjectNodeURI + " -> " + objectNodeURI);
-                        numberOfLoops++;
                         continue;
                     }
                     graph.addEdge(subjVertex, objVertex, new RelationshipEdge(predicate));
@@ -181,9 +222,16 @@ public class DBPediaLoader extends GraphLoader {
             }
             System.out.println("Subjects and Objects not found: " + numberOfSubjectsNotFound + " ** " + numberOfObjectsNotFound);
             System.out.println("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());
-            //System.out.println("Done Loading DBPedia Graph.");
             //System.out.println("Number of subjects not found: " + numberOfSubjectsNotFound);
             //System.out.println("Number of loops found: " + numberOfLoops);
+
+            if (fullObject != null) {
+                fullObject.close();
+            }
+            if (br != null) {
+                br.close();
+            }
+            model.close();
         }
         catch (Exception e)
         {

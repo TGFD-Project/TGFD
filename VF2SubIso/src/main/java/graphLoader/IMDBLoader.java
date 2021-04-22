@@ -1,5 +1,9 @@
 package graphLoader;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import infra.Attribute;
 import infra.DataVertex;
 import infra.RelationshipEdge;
@@ -7,6 +11,8 @@ import infra.TGFD;
 import org.apache.jena.rdf.model.*;
 import util.ConfigParser;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -31,17 +37,36 @@ public class IMDBLoader extends GraphLoader{
         }
         System.out.println("Loading IMDB Graph: "+dataGraphFilePath);
 
+        S3Object fullObject = null;
+        BufferedReader br=null;
         try
         {
             HashSet<String> types=new HashSet <>();
             Model model = ModelFactory.createDefaultModel();
 
-            //model.read(dataGraphFilePath);
-            Path input= Paths.get(dataGraphFilePath);
-            model.read(input.toUri().toString());
+            if(ConfigParser.Amazon)
+            {
+                AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                        .withRegion(ConfigParser.region)
+                        //.withCredentials(new ProfileCredentialsProvider())
+                        //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                        .build();
+                //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
+                String bucketName=dataGraphFilePath.substring(0,dataGraphFilePath.lastIndexOf("/"));
+                String key=dataGraphFilePath.substring(dataGraphFilePath.lastIndexOf("/")+1);
+                System.out.println("Downloading the object from Amazon S3 - Bucket name: " + bucketName +" - Key: " + key);
+                fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
+
+                br = new BufferedReader(new InputStreamReader(fullObject.getObjectContent()));
+                model.read(br,null, ConfigParser.language);
+            }
+            else
+            {
+                Path input= Paths.get(dataGraphFilePath);
+                model.read(input.toUri().toString());
+            }
 
             StmtIterator dataTriples = model.listStatements();
-
             while (dataTriples.hasNext()) {
 
                 Statement stmt = dataTriples.nextStatement();
@@ -127,6 +152,14 @@ public class IMDBLoader extends GraphLoader{
             //System.out.println("Done Loading DBPedia Graph.");
             //System.out.println("Number of subjects not found: " + numberOfSubjectsNotFound);
             //System.out.println("Number of loops found: " + numberOfLoops);
+
+            if (fullObject != null) {
+                fullObject.close();
+            }
+            if (br != null) {
+                br.close();
+            }
+            model.close();
         }
         catch (Exception e)
         {

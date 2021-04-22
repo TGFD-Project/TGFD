@@ -1,5 +1,9 @@
 package graphLoader;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import infra.Attribute;
 import infra.DataVertex;
 import infra.RelationshipEdge;
@@ -10,6 +14,7 @@ import util.ConfigParser;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 
@@ -52,11 +57,35 @@ public class SyntheticLoader extends GraphLoader {
             return;
         }
         System.out.println("Loading Synthetic Graph: "+dataGraphFilePath);
+        BufferedReader br;
+        FileReader fr=null;
+        S3Object fullObject=null;
         try
         {
-            File file=new File(dataGraphFilePath);
-            FileReader fr=new FileReader(file);
-            BufferedReader br=new BufferedReader(fr);
+            if(ConfigParser.Amazon)
+            {
+                AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                        .withRegion(ConfigParser.region)
+                        //.withCredentials(new ProfileCredentialsProvider())
+                        //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                        .build();
+
+                //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
+                String bucketName=dataGraphFilePath.substring(0,dataGraphFilePath.lastIndexOf("/"));
+                String key=dataGraphFilePath.substring(dataGraphFilePath.lastIndexOf("/")+1);
+                System.out.println("Downloading the object from Amazon S3 - Bucket name: " + bucketName +" - Key: " + key);
+                fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
+
+                br = new BufferedReader(new InputStreamReader(fullObject.getObjectContent()));
+            }
+            else
+            {
+                File file=new File(dataGraphFilePath);
+                fr=new FileReader(file);
+                br=new BufferedReader(fr);
+            }
+
+
             String line;
             while((line=br.readLine())!=null)
             {
@@ -112,7 +141,13 @@ public class SyntheticLoader extends GraphLoader {
                     }
                 }
             }
-            fr.close();    //close the stream and release the resources
+            if (fr != null) {
+                fr.close();    //close the stream and release the resources
+            }
+            if (fullObject != null) {
+                fullObject.close();
+            }
+            br.close();
 
             System.out.println("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());
             System.out.println("Number of types: " + typesDistribution.size() + "\n");
