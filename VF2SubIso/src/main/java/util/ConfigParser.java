@@ -1,5 +1,7 @@
 package util;
 
+import org.apache.activemq.ActiveMQConnection;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
@@ -9,27 +11,31 @@ import java.util.Scanner;
 
 public class ConfigParser {
 
-    private HashMap<Integer, ArrayList<String>> typesPaths = new HashMap<>();
-    private HashMap<Integer, ArrayList<String>> dataPaths = new HashMap<>();
-    private HashMap <Integer, String> diffFilesPath=new HashMap<>();
-    private String patternPath = "";
-    private HashMap<Integer,LocalDate> timestamps=new HashMap<>();
-    private ArrayList<Double> diffCaps=new ArrayList <>();
+    private static HashMap<Integer, ArrayList<String>> typesPaths = new HashMap<>();
+    private static HashMap<Integer, ArrayList<String>> dataPaths = new HashMap<>();
+    private static HashMap <Integer, String> diffFilesPath=new HashMap<>();
+    private static String patternPath = "";
+    private static HashMap<Integer,LocalDate> timestamps=new HashMap<>();
+    private static ArrayList<Double> diffCaps=new ArrayList <>();
+    private static String ActiveMQBrokerURL= ActiveMQConnection.DEFAULT_BROKER_URL;
+    private static String ActiveMQNodeName="";
 
-    public ConfigParser(String input) throws FileNotFoundException {
-        if(input.equals("--help"))
+    public static void parse(String input) throws FileNotFoundException {
+        if(input.equals("--help")) {
             System.out.println("""
-                    * Expected arguments to parse:
-                    * -p <patternFile>
-                    * [-t<snapshotId> <typeFile>]
-                    * [-d<snapshotId> <dataFile>]
-                    * [-c<snapshotId> <diff file>]
-                    * [-s<snapshotId> <snapshot timestamp>]
-                    * -diffCap List<double> // example: -diffCap 0.02,0.04,0.06,1
-                    * -optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
-                    * -debug <true-false> // print details of matching
-                    *""".indent(5));
-        else
+                     Expected arguments to parse:
+                     -p <patternFile>
+                     [-t<snapshotId> <typeFile>]
+                     [-d<snapshotId> <dataFile>]
+                     [-c<snapshotId> <diff file>]
+                     [-s<snapshotId> <snapshot timestamp>]
+                     -diffCap List<double> // example: -diffCap 0.02,0.04,0.06,1
+                     -optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
+                     -debug <true-false> // print details of matching
+                     -mqurl <URL> // URL of the ActiveMQ Broker
+                     -amazon <true-false> // run on Amazon EC2
+                    """.indent(5));
+        } else
             parseInputParams(input);
     }
 
@@ -46,7 +52,7 @@ public class ConfigParser {
      *
      * TODO: We need to check correctness of the input
      */
-    private void parseInputParams(String pathToConfigFile) {
+    private static void parseInputParams(String pathToConfigFile) {
         Scanner scanner;
         try {
             scanner = new Scanner(new File(pathToConfigFile));
@@ -82,6 +88,13 @@ public class ConfigParser {
                     String[] temp = conf[1].split(",");
                     for (String diffCap : temp)
                         diffCaps.add(Double.parseDouble(diffCap));
+                } else if(conf[0].startsWith("-mqurl")) {
+                    ActiveMQBrokerURL=conf[1];
+                } else if(conf[0].startsWith("-node")) {
+                    ActiveMQNodeName=conf[1];
+                }
+                else if(conf[0].startsWith("-amazon")) {
+                    ActiveMQNodeName=conf[1];
                 }
             }
         } catch (FileNotFoundException e) {
@@ -89,35 +102,43 @@ public class ConfigParser {
         }
     }
 
-    public ArrayList <String> getFirstDataFilePath() {
+    public static ArrayList <String> getFirstDataFilePath() {
         return dataPaths.get(1);
     }
 
-    public ArrayList <String> getFirstTypesFilePath() {
+    public static ArrayList <String> getFirstTypesFilePath() {
         return typesPaths.get(1);
     }
 
-    public HashMap <Integer, ArrayList <String>> getAllDataPaths() {
+    public static HashMap <Integer, ArrayList <String>> getAllDataPaths() {
         return dataPaths;
     }
 
-    public HashMap <Integer, ArrayList <String>> getAllTypesPaths() {
+    public static HashMap <Integer, ArrayList <String>> getAllTypesPaths() {
         return typesPaths;
     }
 
-    public HashMap <Integer, LocalDate> getTimestamps() {
+    public static HashMap <Integer, LocalDate> getTimestamps() {
         return timestamps;
     }
 
-    public HashMap <Integer, String> getDiffFilesPath() {
+    public static HashMap <Integer, String> getDiffFilesPath() {
         return diffFilesPath;
     }
 
-    public ArrayList <Double> getDiffCaps() {
+    public static ArrayList <Double> getDiffCaps() {
         return diffCaps;
     }
 
-    public String getPatternPath() {
+    public static String getPatternPath() {
         return patternPath;
+    }
+
+    public static String getActiveMQBrokerURL() {
+        return ActiveMQBrokerURL;
+    }
+
+    public static String getActiveMQNodeName() {
+        return ActiveMQNodeName;
     }
 }
