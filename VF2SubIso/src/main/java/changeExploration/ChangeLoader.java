@@ -1,11 +1,18 @@
 package changeExploration;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import infra.Attribute;
 import infra.DataVertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import util.ConfigParser;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,9 +35,30 @@ public class ChangeLoader {
     private void loadChanges(String path) {
 
         JSONParser parser = new JSONParser();
+        S3Object fullObject = null;
+        BufferedReader br=null;
+        Object json;
         try
         {
-            Object json = parser.parse(new FileReader(path));
+            if(ConfigParser.Amazon)
+            {
+                AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                        .withRegion(ConfigParser.region)
+                        //.withCredentials(new ProfileCredentialsProvider())
+                        //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                        .build();
+                //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
+                String bucketName=path.substring(0,path.lastIndexOf("/"));
+                String key=path.substring(path.lastIndexOf("/")+1);
+                System.out.println("Downloading the object from Amazon S3 - Bucket name: " + bucketName +" - Key: " + key);
+                fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
+                br = new BufferedReader(new InputStreamReader(fullObject.getObjectContent()));
+                json = parser.parse(br);
+            }
+            else
+            {
+                json = parser.parse(new FileReader(path));
+            }
 
             org.json.simple.JSONArray jsonArray = (org.json.simple.JSONArray) json;
             System.out.println("");
@@ -94,6 +122,12 @@ public class ChangeLoader {
                     change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
                 }
+            }
+            if (fullObject != null) {
+                fullObject.close();
+            }
+            if (br != null) {
+                br.close();
             }
 
         } catch(Exception e) {
