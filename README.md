@@ -303,13 +303,16 @@ Prerequisites:
 
 <h3 id="31-with-sample">3.1 With Sample</h3>
 
+```diff
+! TODO: define VF2SubIso/src/test/java/exampleConfig/conf.txt to use with sample [2021-04-23] [@adammansfield]
+```
+
 1. Build the VF2SubIso project.
 2. Download the initial IMDB snapshot and diffs here: https://drive.google.com/drive/u/1/folders/1oVevnjwKfsDyjw_nFSXsw1WzdUHbihyU
-3. Move VF2SubIso.jar, imdb-141031.nt, and diffs into the same directory.
+3. Move VF2SubIso.jar, `VF2SubIso/src/test/java/exampleConfig/conf.txt`, imdb-141031.nt, and diffs into the same directory.
 
-```diff
-! TODO: write step to run IMDB TGFD error detection [2021-04-04] [@adammansfield]
-```
+To detect TGFD errors, run:  
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpediaInc ./conf.txt`
 
 <h3 id="32-from-scratch">3.2 From Scratch</h3>
 
@@ -426,11 +429,12 @@ Example of a conf.txt:
 -optgraphload true
 ```
 
+The same conf.txt can be used to generate the diffs as well as TGFD error detection.
+
 <h4 id="324-generating-diffs">3.2.4 Generating diffs</h4>
 
-```diff
-! TODO: explain how to generate diffs [2021-03-30] [@adammansfield]
-```
+To detect diffs, run:  
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDiffExtractorDbpedia ./conf.txt`
 
 <h4 id="325-detecting-errors">3.2.5 Detecting errors</h4>
 
