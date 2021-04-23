@@ -29,6 +29,7 @@ public class ConfigParser {
     public static Regions region=Regions.US_EAST_2;
     public static String language="N-Triples";
     public static HashMap<String,String> jobs=new HashMap <>();
+    public static String dataset="imdb";
 
     public static boolean optimizedLoadingBasedOnTGFD=false;
     public static boolean saveViolations=false;
@@ -38,7 +39,7 @@ public class ConfigParser {
         if(input.equals("--help")) {
             System.out.println("""
                      Expected arguments to parse:
-                     -p <patternFile>
+                     -p <path to the patternFile> // in case of Amazon S3, it should be in the form of bucket_name/key
                      [-t<snapshotId> <typeFile>]
                      [-d<snapshotId> <dataFile>]
                      [-c<snapshotId> <diff file>]
@@ -54,7 +55,8 @@ public class ConfigParser {
                      -amazon <true-false> // run on Amazon EC2
                      -region <region name> // Name of the region in Amazon EC2
                      -language <language name> // Names like "N-Triples", "TURTLE", "RDF/XML"
-                     -job <worker name> <job>
+                     -job <worker name>,<job> // For example: -job worker1,pattern1.txt
+                     -dataset <dataset name> // Options: imdb (default), dbpedia, synthetic
                     """.indent(5));
         } else
             parseInputParams(input);
@@ -96,8 +98,9 @@ public class ConfigParser {
                     Amazon=Boolean.parseBoolean(conf[1]);
                 }else if(conf[0].equals("-language")) {
                     language=conf[1];
-                }
-                else if(conf[0].equals("-job")) {
+                }else if(conf[0].equals("-dataset")) {
+                    dataset=conf[1];
+                }else if(conf[0].equals("-job")) {
                     String[] temp = conf[1].split(",");
                     if(temp.length !=2)
                         continue;
