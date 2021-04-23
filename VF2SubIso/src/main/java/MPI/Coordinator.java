@@ -27,7 +27,7 @@ public class Coordinator {
         for (String worker:ConfigParser.workers) {
             workersStatus.put(worker,false);
         }
-        this.url= ConfigParser.getActiveMQBrokerURL();
+        this.url= ConfigParser.ActiveMQBrokerURL;
     }
 
     public void start()
@@ -69,9 +69,9 @@ public class Coordinator {
     public Status getStatus()
     {
         if(workersStatusChecker)
-            return Status.Coordinator_Wait_For_Workers_Status;
+            return Status.Coordinator_Waits_For_Workers_Status;
         else if(workersResultsChecker)
-            return Status.Coordinator_Wait_For_Workers_Results;
+            return Status.Coordinator_Waits_For_Workers_Results;
         else if(allDone)
             return Status.Coordinator_Is_Done;
         else
@@ -85,7 +85,9 @@ public class Coordinator {
             Connection connection=null;
             MessageConsumer consumer=null;
             try {
-                ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
+                final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
+                connectionFactory.setUserName(ConfigParser.ActiveMQUsername);
+                connectionFactory.setPassword(ConfigParser.ActiveMQPassword);
                 connection = connectionFactory.createConnection();
                 connection.start();
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -164,15 +166,17 @@ public class Coordinator {
         public void run() {
             System.out.println("Jobs are recieved to be assigned to the workers");
             try {
-                while(getStatus()==Status.Coordinator_Wait_For_Workers_Status) {
-                    System.out.println("Coordinator waits for workers to be online: ");
+                while(getStatus()==Status.Coordinator_Waits_For_Workers_Status) {
+                    System.out.println("Coordinator waits for these workers to be online: ");
                     for (String worker : workersStatus.keySet()) {
                         if (!workersStatus.get(worker))
                             System.out.print(worker + " - ");
                     }
-                    Thread.sleep(1000);
+                    Thread.sleep(3000);
                 }
-                ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
+                final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
+                connectionFactory.setUserName(ConfigParser.ActiveMQUsername);
+                connectionFactory.setPassword(ConfigParser.ActiveMQPassword);
                 Connection connection = connectionFactory.createConnection();
                 connection.start();
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -188,6 +192,7 @@ public class Coordinator {
                 }
                 connection.close();
                 System.out.println("All jobs are assigned.");
+                workersResultsChecker=true;
             } catch (InterruptedException | JMSException e) {
                 e.printStackTrace();
             }
@@ -207,26 +212,28 @@ public class Coordinator {
             Connection connection=null;
             MessageConsumer consumer=null;
             try {
-                while(getStatus()==Status.Coordinator_Wait_For_Workers_Status) {
-                    System.out.println("Coordinator waits for workers to be online: ");
+                while(getStatus()==Status.Coordinator_Waits_For_Workers_Status) {
+                    System.out.print("\nCoordinator waits for workers to be online: ");
                     for (String worker : workersStatus.keySet()) {
                         if (!workersStatus.get(worker))
                             System.out.print(worker + " - ");
                     }
-                    Thread.sleep(1000);
+                    System.out.println("\n");
+                    Thread.sleep(3000);
                 }
                 while(getStatus()==Status.Coordinator_Assigns_jobs_To_Workers) {
                     System.out.println("Coordinator waits to finish assigning the jobs");
-                    Thread.sleep(1000);
+                    Thread.sleep(3000);
                 }
-                ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
+                final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
+                connectionFactory.setUserName(ConfigParser.ActiveMQUsername);
+                connectionFactory.setPassword(ConfigParser.ActiveMQPassword);
                 connection = connectionFactory.createConnection();
                 connection.start();
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
                 Destination destination = session.createQueue("results");
                 consumer = session.createConsumer(destination);
 
-                workersResultsChecker=true;
                 while (workersResultsChecker) {
 
                     System.out.println("Listening for new messages to get the results...");
