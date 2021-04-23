@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -15,15 +16,19 @@ public class ConfigParser {
     private static HashMap<Integer, ArrayList<String>> typesPaths = new HashMap<>();
     private static HashMap<Integer, ArrayList<String>> dataPaths = new HashMap<>();
     private static HashMap <Integer, String> diffFilesPath=new HashMap<>();
-    private static String patternPath = "";
     private static HashMap<Integer,LocalDate> timestamps=new HashMap<>();
     private static ArrayList<Double> diffCaps=new ArrayList <>();
+
+    public static String patternPath = "";
     public static ArrayList<String> workers=new ArrayList <>();
     public static String ActiveMQBrokerURL= ActiveMQConnection.DEFAULT_BROKER_URL;
-    public static String ActiveMQNodeName="";
+    public static String ActiveMQUsername= "";
+    public static String ActiveMQPassword= "";
+    public static String nodeName="";
     public static boolean Amazon=false;
     public static Regions region=Regions.US_EAST_2;
     public static String language="N-Triples";
+    public static HashMap<String,String> jobs=new HashMap <>();
 
     public static boolean optimizedLoadingBasedOnTGFD=false;
     public static boolean saveViolations=false;
@@ -42,11 +47,14 @@ public class ConfigParser {
                      -optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
                      -debug <true-false> // print details of matching
                      -mqurl <URL> // URL of the ActiveMQ Broker
+                     -mqusername <Username> // Username to access ActiveMQ Broker
+                     -mqpassword <Password> // Password of ActiveMQ Broker
                      -nodename <node name> // Unique node name for the workers
                      -workers List<names> // List of workers name. example: worker1,worker2,worker3
                      -amazon <true-false> // run on Amazon EC2
                      -region <region name> // Name of the region in Amazon EC2
                      -language <language name> // Names like "N-Triples", "TURTLE", "RDF/XML"
+                     -job <worker name> <job>
                     """.indent(5));
         } else
             parseInputParams(input);
@@ -71,19 +79,30 @@ public class ConfigParser {
                         diffCaps.add(Double.parseDouble(diffCap));
                 } else if(conf[0].equals("-mqurl")) {
                     ActiveMQBrokerURL=conf[1];
-                } else if(conf[0].equals("-nodename")) {
-                    ActiveMQNodeName=conf[1];
+                }
+                else if(conf[0].equals("-mqusername")) {
+                    ActiveMQUsername=conf[1];
+                }
+                else if(conf[0].equals("-mqpassword")) {
+                    ActiveMQPassword=conf[1];
+                }else if(conf[0].equals("-nodename")) {
+                    nodeName=conf[1];
                 } else if (conf[0].equals("-workers")) {
                     String[] temp = conf[1].split(",");
-                    for (String worker : temp)
-                        workers.add(worker);
-                } else if(conf[0].equals("-amazon")) {
-                    region=Regions.fromName(conf[1]);
+                    workers.addAll(Arrays.asList(temp));
                 } else if(conf[0].equals("-region")) {
+                    region=Regions.fromName(conf[1]);
+                } else if(conf[0].equals("-amazon")) {
                     Amazon=Boolean.parseBoolean(conf[1]);
                 }else if(conf[0].equals("-language")) {
-                    language=String.valueOf(conf[1]);
-                } else if (conf[0].startsWith("-t")) {
+                    language=conf[1];
+                }
+                else if(conf[0].equals("-job")) {
+                    String[] temp = conf[1].split(",");
+                    if(temp.length !=2)
+                        continue;
+                    jobs.put(temp[0],temp[1]);
+                }else if (conf[0].startsWith("-t")) {
                     var snapshotId = Integer.parseInt(conf[0].substring(2));
                     if (!typesPaths.containsKey(snapshotId))
                         typesPaths.put(snapshotId, new ArrayList <>());
@@ -137,15 +156,4 @@ public class ConfigParser {
         return diffCaps;
     }
 
-    public static String getPatternPath() {
-        return patternPath;
-    }
-
-    public static String getActiveMQBrokerURL() {
-        return ActiveMQBrokerURL;
-    }
-
-    public static String getActiveMQNodeName() {
-        return ActiveMQNodeName;
-    }
 }
