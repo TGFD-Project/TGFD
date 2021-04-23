@@ -32,7 +32,7 @@ public class testDbpediaBatch
         System.out.println(ConfigParser.getDiffFilesPath().keySet() + " *** " + ConfigParser.getDiffFilesPath().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(ConfigParser.getPatternPath());
+        TGFDGenerator generator = new TGFDGenerator(ConfigParser.patternPath);
         List<TGFD> allTGFDs=generator.getTGFDs();
 
         //Create the match collection for all the TGFDs in the list

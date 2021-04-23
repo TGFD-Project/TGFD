@@ -28,7 +28,7 @@ public class testDiffExtractorIMDB {
         System.out.println(ConfigParser.getAllTypesPaths().keySet() + " *** " + ConfigParser.getAllTypesPaths().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(ConfigParser.getPatternPath());
+        TGFDGenerator generator = new TGFDGenerator(ConfigParser.patternPath);
         List<TGFD> allTGFDs=generator.getTGFDs();
 
         String name="";
