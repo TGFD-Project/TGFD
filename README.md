@@ -45,11 +45,17 @@ This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges
 
 <h4 id="211-dbpedia-tgfds">2.1.1 DBpedia TGFDs</h4>
 
-We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/dbpedia`. We do not have a TGFD discovery algorithm so the schema was reviewed using real life domain knowledge to determine suitable patterns and deltas for possible TGFDs.
+We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/dbpedia` using real life domain knowledge.
 
-Since there are many possible TGFDs for DBpedia, we considered the total number of vertices per vertex type. We wanted to be fair by not choosing vertices with a very low instance count (e.g. mousegene with only 1 vertex) or only vertices with a very high instance count (e.g. careerstation with 976,963 vertices). The DBpedia dataset number of instances per vertex type averaged 13,053 with a median of 1,870. We considered vertices around this range with several above it (including album with 139,058 instances).
+Since there are many possible TGFDs for DBpedia, we considered the total number of vertices per vertex type. We wanted to be fair by not choosing vertices with a very low instance count (e.g. 'mousegene' type with only 1 vertex) or only vertices with a very high instance count (e.g. 'careerstation' type with 976,963 vertices). The DBpedia dataset number of instances per vertex type averaged 13,053 with a median of 1,870. We considered vertices around this range with several above it (including album with 139,058 instances).
 
-From these core set of TGFDs, we modified them in several ways to generate additional TGFDs. We added additional attributes to the pattern and/or X. We expanded patterns by including additional edges and vertices that connect to the existing pattern. These modifications were not random, but in a similar manner to defining the core TGFDs, by using domain knowledge to form further suitable TGFDs. We varied delta based on the number of estimated matches, which correlates to the number of center nodes for each pattern. We also ensured that when modifying delta that we do not have a large number of matches dropped at certain timestamps.
+**Extending the core TGFD set**
+
+From these core set of TGFDs, we modified them in several ways to generate additional TGFDs. We added additional attributes to the pattern and/or X. We expanded patterns by including additional edges and vertices that connect to the existing pattern. These modifications were not random, but in a similar manner to defining the core TGFDs, by using real life domain knowledge to form further suitable TGFDs.
+
+We varied delta according to the minimual support threshold. We estimate this support for a candidate TGFD by counting the frequency of occurrence of the edges in the pattern. We preferred to pick delta such that it is a minimum width as we do not want long deltas that subsume other deltas.
+
+This same procedure was used to extend the core TGFDs in [2.2.1 IMDB TGFDs](#221-imdb-tgfds) and [2.3.1 Synthetic TGFDs](#231-synthetic-tgfds).
 
 We used the following subset of the vertices, edges, and attributes in the DBpedia dataset to form TGFDs.
 
@@ -151,13 +157,15 @@ From the final snapshot and the diffs, we wrote a custom tool to automatically d
 
 The final issue is that the reverse patch of 2014-10-24 diff to the actors list fails. Since we want the entire dataset, this further restricted us to 2014-10-31.
 
-From these weekly snapshots, we took every 4th snapshot to approximate a monthly snapshot (~4weeks). We wrote an additional tool that will parse IMDB semi-structured list format into RDF format.
+From these weekly snapshots, we took every 4th snapshot to approximate a monthly snapshot (~4weeks). We wrote an additional tool that will parse IMDB semi-structured list format into RDF format. Tool is located in `/Dataset/imdb`.
 
 <h4 id="221-imdb-tgfds">2.2.1 IMDB TGFDs</h4>
 
-We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/imdb`. We do not have a TGFD discovery algorithm so the schema was reviewed using real life domain knowledge to determine suitable patterns and deltas for possible TGFDs.
+We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/imdb` using real life domain knowledge.
 
-From these core set of TGFDs, we modified them in several ways to generate additional TGFDs. We added additional attributes to the pattern and/or X. We expanded patterns by including additional edges and vertices that connect to the existing pattern. These modifications were not random, but in a similar manner to defining the core TGFDs, by using domain knowledge to form further suitable TGFDs. We varied delta based on the number of estimated matches, which correlates to the number of center nodes for each pattern. We also ensured that when modifying delta that we do not have a large number of matches dropped at certain timestamps.
+**Extending the core TGFD set**
+
+The core set of TGFDs were extended in the same manner as described in [2.1.1 DBpedia TGFDs](#211-dbpedia-tgfds).
 
 We used the following subset of the vertices, edges, and attributes in the DBpedia dataset to form TGFDs.
 
@@ -215,9 +223,11 @@ We used `Dataset/synthetic/social-network.xml` as parameters to gMark.
 
 <h4 id="231-synthetic-tgfds">2.3.1 Synthetic TGFDs</h4>
 
-We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/synthetic`. We do not have a TGFD discovery algorithm so the schema was reviewed using real life domain knowledge to determine suitable patterns and deltas for possible TGFDs.
+We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/synthetic` using real life domain knowledge.
 
-From these core set of TGFDs, we modified them in several ways to generate additional TGFDs. We added additional attributes to the pattern and/or X. We expanded patterns by including additional edges and vertices that connect to the existing pattern. These modifications were not random, but in a similar manner to defining the core TGFDs, by using domain knowledge to form further suitable TGFDs. We varied delta based on the number of estimated matches, which correlates to the number of center nodes for each pattern. We also ensured that when modifying delta that we do not have a large number of matches dropped at certain timestamps.
+**Extending the core TGFD set**
+
+The core set of TGFDs were extended in the same manner as described in [2.1.1 DBpedia TGFDs](#211-dbpedia-tgfds).
 
 **Vertices:**
 
