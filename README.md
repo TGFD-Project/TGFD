@@ -359,60 +359,58 @@ Refer to `VF2SubIso/src/test/java/samplePatterns/` for more examples.
 
 TGFD detection input a configuration file in the form of
 ```
--p <path/to/pattern>
--d <path/to/stating/snapshot>
--c2 <path/to/timestamp/2/diff>
--c3 <path/to/timestamp/3/diff>
--c...
--s1 <timestamp of 1st snapshot>
--s2 <timestamp of 2nd snapshot>
--s3 <timestamp of 3rd snapshot>
--s...
+Expected arguments to parse:
+-p <path to the patternFile> // in case of Amazon S3, it should be in the form of bucket_name/key
+-t<snapshotId> <typeFile> // <path/to/timestamp/snapshotID/type file>
+-d<snapshotId> <dataFile> // <path/to/timestamp/snapshotID/data file>
+-c<snapshotId> <diff file> // <path/to/timestamp/snapshotID/diff file>
+-s<snapshotId> <snapshot timestamp> //<timestamp of <snapshotId> snapshot>
+-debug <true-false> // print details of matching
+-mqurl <URL> // URL of the ActiveMQ Broker
+-mqusername <Username> // Username to access ActiveMQ Broker
+-mqpassword <Password> // Password of ActiveMQ Broker
+-nodename <node name> // Unique node name for the workers
+-workers List<names> // List of workers name. example: worker1,worker2,worker3
+-amazon <true-false> // run on Amazon EC2
+-region <region name> // Name of the region in Amazon EC2
+-language <language name> // Names like "N-Triples", "TURTLE", "RDF/XML"
+-job <worker name>,<job> // For example: -job worker1,pattern1.txt
+-dataset <dataset name> // Options: imdb (default), dbpedia, synthetic
+-diffCap List<double> // example: -diffCap 0.02,0.04,0.06,1
+-optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
 ```
 
-Example of a conf.txt:
+Example of a conf.txt (to run on Amazon EC2):
+```
+-d1 imdb-141031/imdb-141031.nt
+-c2 imdb-141031/diff_2014-10-31_2014-11-28_imdbp0800_full.json
+-c3 imdb-141031/diff_2014-11-28_2014-12-26_imdbp0800_full.json
+-s1 2014-10-31
+-s2 2014-11-28
+-s3 2014-12-26
+-optgraphload true
+-amazon true
+-nodename coordinator
+-dataset imdb
+-workers worker1,worker2,worker3,worker4
+-job worker1,imdb-141031/pattern0801.txt
+-job worker2,imdb-141031/pattern0802.txt
+-job worker3,imdb-141031/pattern0803.txt
+-job worker4,imdb-141031/pattern0804.txt
+-mqusername *username*
+-mqpassword *password*
+-mqurl ssl://xxxx.mq.us-east-2.amazonaws.com:61617
+```
+Example of a conf.txt (to run locally):
 ```
 -p ./pattern0800.txt
 -d1 ./rdf/imdb-141031.nt
 -c2 ./diffs/pattern0100/diff_2014-10-31_2014-11-28_imdbp0100_full.json
 -c3 ./diffs/pattern0100/diff_2014-11-28_2014-12-26_imdbp0100_full.json
--c4 ./diffs/pattern0100/diff_2014-12-26_2015-01-23_imdbp0100_full.json
--c5 ./diffs/pattern0100/diff_2015-01-23_2015-02-20_imdbp0100_full.json
--c6 ./diffs/pattern0100/diff_2015-02-20_2015-03-20_imdbp0100_full.json
--c7 ./diffs/pattern0100/diff_2015-03-20_2015-04-17_imdbp0100_full.json
--c8 ./diffs/pattern0100/diff_2015-04-17_2015-05-15_imdbp0100_full.json
--c9 ./diffs/pattern0100/diff_2015-05-15_2015-06-12_imdbp0100_full.json
--c10 ./diffs/pattern0100/diff_2015-06-12_2015-07-10_imdbp0100_full.json
--c11 ./diffs/pattern0100/diff_2015-07-10_2015-08-07_imdbp0100_full.json
--c12 ./diffs/pattern0100/diff_2015-08-07_2015-09-04_imdbp0100_full.json
--c13 ./diffs/pattern0100/diff_2015-09-04_2015-10-02_imdbp0100_full.json
--c14 ./diffs/pattern0100/diff_2015-10-02_2015-10-30_imdbp0100_full.json
--c15 ./diffs/pattern0100/diff_2015-10-30_2015-11-27_imdbp0100_full.json
--c16 ./diffs/pattern0100/diff_2015-11-27_2015-12-25_imdbp0100_full.json
--c17 ./diffs/pattern0100/diff_2015-12-25_2016-01-22_imdbp0100_full.json
--c18 ./diffs/pattern0100/diff_2016-01-22_2016-02-19_imdbp0100_full.json
--c19 ./diffs/pattern0100/diff_2016-02-19_2016-03-18_imdbp0100_full.json
--c20 ./diffs/pattern0100/diff_2016-03-18_2016-04-15_imdbp0100_full.json
 -s1 2014-10-31
 -s2 2014-11-28
 -s3 2014-12-26
--s4 2015-01-23
--s5 2015-02-20
--s6 2015-03-20
--s7 2015-04-17
--s8 2015-05-15
--s9 2015-06-12
--s10 2015-07-10
--s11 2015-08-07
--s12 2015-09-04
--s13 2015-10-02
--s14 2015-10-30
--s15 2015-11-27
--s16 2015-12-25
--s17 2016-01-22
--s18 2016-02-19
--s19 2016-03-18
--s20 2016-04-15
+-dataset imdb
 -optgraphload true
 ```
 
