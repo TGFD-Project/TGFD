@@ -7,8 +7,10 @@ import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;
+import graphLoader.DBPediaLoader;
 import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
+import graphLoader.SyntheticLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
 
@@ -48,14 +50,28 @@ public class testRunner {
         System.out.println("===========Snapshot 1 (" + ConfigParser.getTimestamps().get(1) + ")===========");
         long startTime=System.currentTimeMillis();
         LocalDate currentSnapshotDate=ConfigParser.getTimestamps().get(1);
-        GraphLoader imdb = new IMDBLoader(tgfds,ConfigParser.getFirstDataFilePath());
+
+        GraphLoader loader;
+
+        if(ConfigParser.dataset.equals("dbpedia"))
+        {
+            loader = new DBPediaLoader(tgfds,ConfigParser.getFirstTypesFilePath(),ConfigParser.getFirstDataFilePath());
+        }
+        else if(ConfigParser.dataset.equals("synthetic"))
+        {
+            loader = new SyntheticLoader(tgfds,ConfigParser.getFirstDataFilePath());
+        }
+        else // default is imdb
+        {
+            loader = new IMDBLoader(tgfds,ConfigParser.getFirstDataFilePath());
+        }
         printWithTime("Load graph 1 (" + ConfigParser.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
 
         // Now, we need to find the matches for the first snapshot.
         for (TGFD tgfd:tgfds) {
             VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
             System.out.println("\n###########"+tgfd.getName()+"###########");
-            Iterator <GraphMapping <Vertex, RelationshipEdge>> results= VF2.execute(imdb.getGraph(), tgfd.getPattern(),false);
+            Iterator <GraphMapping <Vertex, RelationshipEdge>> results= VF2.execute(loader.getGraph(), tgfd.getPattern(),false);
 
             //Retrieving and storing the matches of each timestamp.
             System.out.println("Retrieving the matches");
@@ -84,7 +100,7 @@ public class testRunner {
 
             startTime=System.currentTimeMillis();
             System.out.println("Updating the graph");
-            IncUpdates incUpdatesOnDBpedia=new IncUpdates(imdb.getGraph(),tgfds);
+            IncUpdates incUpdatesOnDBpedia=new IncUpdates(loader.getGraph(),tgfds);
             incUpdatesOnDBpedia.AddNewVertices(changes);
 
             HashMap<String, ArrayList <String>> newMatchesSignaturesByTGFD=new HashMap <>();
