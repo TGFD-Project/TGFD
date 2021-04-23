@@ -235,35 +235,32 @@ public class Coordinator {
                 consumer = session.createConsumer(destination);
 
                 while (workersResultsChecker) {
-
                     System.out.println("Listening for new messages to get the results...");
                     Message message = consumer.receive();
                     System.out.println("Recieved a new message.");
                     if (message instanceof TextMessage) {
                         TextMessage textMessage = (TextMessage) message;
-                        if(textMessage.getText().startsWith("result"))
+                        String []temp=textMessage.getText().split("@");
+                        if(temp.length==2)
                         {
-                            String []temp=textMessage.getText().split("@");
-                            if(temp.length==2)
+                            String worker_name=temp[0].toLowerCase();
+                            if(workersStatus.containsKey(worker_name))
                             {
-                                String worker_name=temp[1];
-                                if(workersStatus.containsKey(worker_name))
-                                {
-                                    System.out.println("Results received from: '" + worker_name+"'");
-                                    results.put(worker_name,temp[1]);
-                                }
-                                else
-                                {
-                                    System.out.println("Unable to find the worker name: '" + worker_name + "' in workers list. " +
-                                            "Please update the list in the Config file.");
-                                }
+                                System.out.println("Results received from: '" + worker_name+"'");
+                                results.put(worker_name,temp[1]);
                             }
                             else
-                                System.out.println("Message corrupted: " + textMessage.getText());
+                            {
+                                System.out.println("Unable to find the worker name: '" + worker_name + "' in workers list. " +
+                                        "Please update the list in the Config file.");
+                            }
                         }
                         else
+                        {
                             System.out.println("Message corrupted: " + textMessage.getText());
-                    } else
+                        }
+                    }
+                    else
                         System.out.println("No message so far.");
 
                     boolean done=true;
