@@ -1,0 +1,9 @@
+-p ./pattern0800.txt
+-d1 ./rdf/imdb-141031.nt
+-c2 ./diffs/pattern0100/diff_2014-10-31_2014-11-28_imdbp0100_full.json
+-c3 ./diffs/pattern0100/diff_2014-11-28_2014-12-26_imdbp0100_full.json
+-s1 2014-10-31
+-s2 2014-11-28
+-s3 2014-12-26
+-dataset imdb
+-optgraphload true
