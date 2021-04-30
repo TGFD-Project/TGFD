@@ -53,7 +53,7 @@ Since there are many possible TGFDs for DBpedia, we considered the total number 
 
 From these core set of TGFDs, we modified them in several ways to generate additional TGFDs. We added additional attributes to the pattern and/or X. We expanded patterns by including additional edges and vertices that connect to the existing pattern. These modifications were not random, but in a similar manner to defining the core TGFDs, by using real life domain knowledge to form further suitable TGFDs.
 
-We varied delta according to the minimual support threshold. We estimate this support for a candidate TGFD by counting the frequency of occurrence of the edges in the pattern. We preferred to pick delta such that it is a minimum width as we do not want long deltas that subsume other deltas.
+We varied delta according to a user defined minimal support threshold. We estimate the support for a candidate TGFD by taking the minimum frequency of all edges occurring in a pattern. Selecting the minimum frequency of occurrence of edges in a pattern serves as an upper bound for the estimated number of matches. We prefer to pick a delta that has enough matches that satisfy the support, and we prefer a smaller deltas so that they are not subsumed by others.
 
 This same procedure was used to extend the core TGFDs in [2.2.1 IMDB TGFDs](#221-imdb-tgfds) and [2.3.1 Synthetic TGFDs](#231-synthetic-tgfds).
 
@@ -393,6 +393,36 @@ Expected arguments to parse:
 -optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
 ```
 
+Example of a conf.txt (to run locally):
+```
+-p ./pattern0800.txt
+-d1 ./rdf/imdb-141031.nt
+-c2 ./diffs/pattern0100/diff_2014-10-31_2014-11-28_imdbp0100_full.json
+-c3 ./diffs/pattern0100/diff_2014-11-28_2014-12-26_imdbp0100_full.json
+-s1 2014-10-31
+-s2 2014-11-28
+-s3 2014-12-26
+-dataset imdb
+-optgraphload true
+```
+
+Example of a coordinator conf.txt (to run on Amazon EC2):
+```
+-d1 imdb-141031/imdb-141031.nt
+-c2 imdb-141031/diff_2014-10-31_2014-11-28_imdbp0800_full.json
+-c3 imdb-141031/diff_2014-11-28_2014-12-26_imdbp0800_full.json
+-s1 2014-10-31
+-s2 2014-11-28
+-s3 2014-12-26
+-optgraphload true
+-amazon true
+-nodename worker1
+-dataset imdb
+-mqusername *username*
+-mqpassword *password*
+-mqurl ssl://xxxx.mq.us-east-2.amazonaws.com:61617
+```
+
 Example of a conf.txt (to run on Amazon EC2):
 ```
 -d1 imdb-141031/imdb-141031.nt
@@ -413,18 +443,6 @@ Example of a conf.txt (to run on Amazon EC2):
 -mqusername *username*
 -mqpassword *password*
 -mqurl ssl://xxxx.mq.us-east-2.amazonaws.com:61617
-```
-Example of a conf.txt (to run locally):
-```
--p ./pattern0800.txt
--d1 ./rdf/imdb-141031.nt
--c2 ./diffs/pattern0100/diff_2014-10-31_2014-11-28_imdbp0100_full.json
--c3 ./diffs/pattern0100/diff_2014-11-28_2014-12-26_imdbp0100_full.json
--s1 2014-10-31
--s2 2014-11-28
--s3 2014-12-26
--dataset imdb
--optgraphload true
 ```
 
 The same conf.txt can be used to generate the diffs as well as TGFD error detection.
