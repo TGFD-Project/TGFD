@@ -6,18 +6,10 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
-import infra.Attribute;
-import infra.DataVertex;
-import infra.RelationshipEdge;
-import infra.Violation;
-import org.apache.jena.rdf.model.*;
 import util.ConfigParser;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class IMDBPartitioner {
 
