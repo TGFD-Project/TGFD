@@ -104,7 +104,7 @@ public class IncUpdates {
     {
         //long runtime=System.currentTimeMillis();
         HashMap<String,IncrementalChange> incrementalChangeHashMap=new HashMap <>();
-        Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
+        Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphWithinDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
 
         //System.out.print("Load: " + (System.currentTimeMillis()-runtime));
         //runtime=System.currentTimeMillis();
@@ -158,7 +158,7 @@ public class IncUpdates {
         //long runtime=System.currentTimeMillis();
 
         HashMap<String,IncrementalChange> incrementalChangeHashMap=new HashMap <>();
-        Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphByDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
+        Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphWithinDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
 
         //System.out.print("Load: " + (System.currentTimeMillis()-runtime));
         //runtime=System.currentTimeMillis();
