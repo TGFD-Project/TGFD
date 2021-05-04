@@ -41,7 +41,7 @@ public class RelationshipEdge extends DefaultEdge {
     }
 
     public RelationshipEdge(String label) {
-        this.label = label;
+        this.label = label.toLowerCase();
     }
 
     @Override
