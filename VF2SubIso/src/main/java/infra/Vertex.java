@@ -44,15 +44,16 @@ public abstract class Vertex implements Comparable<Vertex>, Serializable {
 
     // Setter Functions
 
-    public void setAllAttributes(List<Attribute> attributes) {
+    public void setAllAttributes(Collection<Attribute> attributes) {
         for (Attribute attr:attributes)
             this.attributes.put(attr.getAttrName(),attr);
     }
 
-    public void addTypes(String type)
+    public void addType(String type)
     {
         this.types.add(type);
     }
+
 
     public void addAttribute(String name, String value)
     {
@@ -65,6 +66,11 @@ public abstract class Vertex implements Comparable<Vertex>, Serializable {
             attributes.get(attr.getAttrName()).setAttrValue(attr.getAttrValue());
         else
             addAttribute(attr);
+    }
+
+    public void deleteAllAttributes()
+    {
+        this.attributes= new HashMap<>();
     }
 
     public void deleteAttribute(Attribute attr)
