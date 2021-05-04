@@ -67,6 +67,8 @@ public class VF2SubgraphIsomorphism {
                 }
                 System.out.println("Number of matches: " + size);
             }
+            //TODO: Potential error here, if we want to debug and see the matches
+            //FIXME: The iterator will go to end if the ConfigParser.printDetailedMatchingResults is true! Will be useless to return
             return iterator;
         }
         else
