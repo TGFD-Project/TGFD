@@ -22,6 +22,7 @@ public class SimpleGraphPartitioner{
         HashMap<String,Integer> mapping=new HashMap<>();
         int numberOfVertices=graph.getSize();
         int partitionSize=numberOfVertices/numberOfPartitions;
+        partitionSize+=2;
         int i=0, partitionID=1;
         for (String vertexURI:graph.getNodeMap().keySet()) {
             if(++i>partitionSize)

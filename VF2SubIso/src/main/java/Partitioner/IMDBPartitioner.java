@@ -14,7 +14,7 @@ import java.util.HashMap;
 public class IMDBPartitioner {
 
     private GraphLoader imdb;
-    private int numberOfPartitions;
+    private final int numberOfPartitions;
 
     public IMDBPartitioner(IMDBLoader imdb, int numberOfPartitions)
     {
@@ -24,26 +24,30 @@ public class IMDBPartitioner {
 
     public void partition(String dataGraphFilePath, String savingDirectory)
     {
+        System.out.println("Start partitioning...");
         SimpleGraphPartitioner partitioner=new SimpleGraphPartitioner(imdb.getGraph());
         HashMap<String,Integer> partitionMapping=partitioner.partition(numberOfPartitions);
-        StringBuilder []partitionData=new StringBuilder[numberOfPartitions+1];
-
-        if (dataGraphFilePath == null || dataGraphFilePath.length() == 0) {
-            System.out.println("No Input Graph Data File Path!");
-            return;
-        }
-        System.out.println("Partitioning IMDB Graph: "+dataGraphFilePath);
-
-        S3Object fullObject = null;
-        BufferedReader br;
+        System.out.println("Partitioning done.");
+        imdb=null;
         try
         {
+            FileWriter []writers=new FileWriter[numberOfPartitions];
+            for (int i=0;i<writers.length;i++) {
+                writers[i]=new FileWriter(savingDirectory+"imdb"+i+".nt");
+            }
+            if (dataGraphFilePath == null || dataGraphFilePath.length() == 0) {
+                System.out.println("No Input Graph Data File Path!");
+                return;
+            }
+            System.out.println("Reading IMDB Graph: "+dataGraphFilePath);
+
+            S3Object fullObject = null;
+            BufferedReader br;
+
             if(ConfigParser.Amazon)
             {
                 AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
                         .withRegion(ConfigParser.region)
-                        //.withCredentials(new ProfileCredentialsProvider())
-                        //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                         .build();
                 //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
                 String bucketName=dataGraphFilePath.substring(0,dataGraphFilePath.lastIndexOf("/"));
@@ -58,27 +62,27 @@ public class IMDBPartitioner {
                 br = new BufferedReader(new FileReader(dataGraphFilePath));
             }
 
+            System.out.println("Reading the file line by line...");
+            int lineCount=1;
             String line= br.readLine();
             while (line!=null) {
                 String []temp=line.split(" ");
-                if(temp.length>0)
+                if(temp.length>0 && temp[0].length()>2)
                 {
                     try {
-                        String subjectNodeURL=temp[0].toLowerCase();
+                        String subjectNodeURL=temp[0].toLowerCase().trim().substring(1,temp[0].trim().length()-1);
                         if (subjectNodeURL.length() > 16) {
                             subjectNodeURL = subjectNodeURL.substring(16);
                         }
 
                         var temp2=subjectNodeURL.split("/");
-                        if(temp2.length!=2)
-                        {
-                            continue;
-                        }
-                        String subjectID=temp2[1];
-                        if(partitionMapping.containsKey(subjectID))
-                        {
-                            int partitionID=partitionMapping.get(subjectID);
-                            partitionData[partitionID].append(line).append("\n");
+                        if(temp2.length==2) {
+                            String subjectID = temp2[1];
+                            if (partitionMapping.containsKey(subjectID)) {
+                                int partitionID = partitionMapping.get(subjectID);
+                                writers[partitionID - 1].write(line + "\n");
+                                //partitionData.get(partitionID).append(line).append("\n");
+                            }
                         }
                     }
                     catch (Exception e)
@@ -87,6 +91,13 @@ public class IMDBPartitioner {
                     }
                 }
                 line= br.readLine();
+                lineCount++;
+                if(lineCount%1000000==0) {
+                    System.out.println("Done reading lines: " + lineCount);
+                    for (FileWriter writer:writers) {
+                        writer.flush();
+                    }
+                }
             }
             System.out.println("Done.");
             if (fullObject != null) {
@@ -94,29 +105,14 @@ public class IMDBPartitioner {
             }
             br.close();
 
-            for (int i=1;i<partitionData.length;i++)
-            {
-                savePartition(partitionData[i], savingDirectory+"/imdb"+i+".nt");
+            for (FileWriter writer:writers) {
+                writer.flush();
+                writer.close();
             }
-
         }
         catch (Exception e)
         {
             System.out.println(e.getMessage());
         }
     }
-
-    private void savePartition(StringBuilder sb, String path)
-    {
-        try {
-            FileWriter file = new FileWriter(path );
-            file.write(sb.toString());
-            file.close();
-            System.out.println("Successfully wrote to the file: " + path);
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }
-    }
-
 }
