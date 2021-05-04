@@ -108,7 +108,7 @@ public class DBPediaLoader extends GraphLoader {
                     graph.addVertex(v);
                 }
                 else {
-                    v.addTypes(nodeType);
+                    v.addType(nodeType);
                 }
             }
             System.out.println("Done. Number of Types: " + graph.getSize());

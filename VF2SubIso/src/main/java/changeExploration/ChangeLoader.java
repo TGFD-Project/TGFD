@@ -114,7 +114,7 @@ public class ChangeLoader {
 
                     DataVertex dataVertex=new DataVertex(uri,types.get(0));
                     for (int i=1;i<types.size();i++)
-                        dataVertex.addTypes(types.get(i));
+                        dataVertex.addType(types.get(i));
                     for (Attribute attribute:allAttributes) {
                         dataVertex.addAttribute(attribute);
                     }

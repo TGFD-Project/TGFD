@@ -98,7 +98,7 @@ public class IMDBLoader extends GraphLoader{
                     graph.addVertex(subjectVertex);
                 }
                 else {
-                    subjectVertex.addTypes(subjectType);
+                    subjectVertex.addType(subjectType);
                 }
 
                 String predicate = stmt.getPredicate().getLocalName().toLowerCase();
@@ -140,7 +140,7 @@ public class IMDBLoader extends GraphLoader{
                         graph.addVertex(objectVertex);
                     }
                     else {
-                        objectVertex.addTypes(objectType);
+                        objectVertex.addType(objectType);
                     }
                     graph.addEdge(subjectVertex, objectVertex, new RelationshipEdge(predicate));
                     graphSize++;
