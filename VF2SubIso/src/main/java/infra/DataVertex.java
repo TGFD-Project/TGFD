@@ -2,7 +2,9 @@ package infra;
 
 import org.jetbrains.annotations.NotNull;
 
-public class DataVertex extends Vertex {
+import java.io.Serializable;
+
+public class DataVertex extends Vertex implements Serializable {
 
 
     private String vertexURI="";

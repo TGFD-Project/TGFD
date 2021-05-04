@@ -1,8 +1,9 @@
 package infra;
 
+import java.io.Serializable;
 import java.util.*;
 
-public abstract class Vertex implements Comparable<Vertex>{
+public abstract class Vertex implements Comparable<Vertex>, Serializable {
 
     private Set<String> types=new HashSet<>();
 

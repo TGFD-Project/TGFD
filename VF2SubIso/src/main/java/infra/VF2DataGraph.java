@@ -3,9 +3,10 @@ package infra;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class VF2DataGraph {
+public class VF2DataGraph implements Serializable {
 
     private Graph<Vertex, RelationshipEdge> graph = new DefaultDirectedGraph<>(RelationshipEdge.class);
 
