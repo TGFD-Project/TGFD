@@ -119,4 +119,15 @@ public class Util {
         return graphToSend;
     }
 
+    public static void mergeGraphs(VF2DataGraph base, VF2DataGraph inputGraph, HashMap<String,Integer> mapping)
+    {
+        for (Vertex v:inputGraph.getGraph().vertexSet()) {
+            DataVertex data_v= (DataVertex) v;
+            if(base.getNode(data_v.getVertexURI())==null)
+            {
+                base.addVertex(data_v);
+            }
+        }
+    }
+
 }
