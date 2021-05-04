@@ -115,17 +115,39 @@ public class Util {
             }
         }
 
-        VF2DataGraph graphToSend=new VF2DataGraph(subgraph);
-        return graphToSend;
+        return new VF2DataGraph(subgraph);
     }
 
     public static void mergeGraphs(VF2DataGraph base, VF2DataGraph inputGraph, HashMap<String,Integer> mapping)
     {
         for (Vertex v:inputGraph.getGraph().vertexSet()) {
             DataVertex data_v= (DataVertex) v;
-            if(base.getNode(data_v.getVertexURI())==null)
+            DataVertex currentVertex= (DataVertex) base.getNode(data_v.getVertexURI());
+            if(currentVertex==null)
             {
                 base.addVertex(data_v);
+            }
+            else
+            {
+                currentVertex.deleteAllAttributes();
+                currentVertex.setAllAttributes(data_v.getAllAttributesList());
+                data_v.getTypes().forEach(currentVertex::addType);
+            }
+        }
+        for (RelationshipEdge e:inputGraph.getGraph().edgeSet()) {
+            DataVertex src= (DataVertex) e.getSource();
+            DataVertex dst= (DataVertex) e.getTarget();
+            boolean exist=false;
+            for (RelationshipEdge edges_of_src:base.getGraph().outgoingEdgesOf(e.getSource())) {
+                if(edges_of_src.getLabel().equals(e.getLabel()) && ((DataVertex) edges_of_src.getTarget()).getVertexURI().equals(dst.getVertexURI()))
+                {
+                    exist=true;
+                    break;
+                }
+            }
+            if(!exist)
+            {
+                base.addEdge(src,dst,e);
             }
         }
     }
