@@ -25,7 +25,7 @@ public class IMDBPartitioner {
     public void partition(String dataGraphFilePath, String savingDirectory)
     {
         System.out.println("Start partitioning...");
-        SimpleGraphPartitioner partitioner=new SimpleGraphPartitioner(imdb.getGraph());
+        RangeBasedPartitioner partitioner=new RangeBasedPartitioner(imdb.getGraph());
         HashMap<String,Integer> partitionMapping=partitioner.partition(numberOfPartitions);
         System.out.println("Partitioning done.");
         imdb=null;

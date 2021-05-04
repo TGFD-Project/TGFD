@@ -5,12 +5,11 @@ import infra.VF2DataGraph;
 
 import java.util.HashMap;
 
-public class SimpleGraphPartitioner{
+public class RangeBasedPartitioner {
 
     private VF2DataGraph graph;
 
-
-    public SimpleGraphPartitioner(VF2DataGraph graph)
+    public RangeBasedPartitioner(VF2DataGraph graph)
     {
         this.graph=graph;
     }
