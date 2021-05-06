@@ -1,5 +1,5 @@
-import MPI.Coordinator;
-import MPI.Worker;
+import SimpleParalleRunner.Coordinator;
+import SimpleParalleRunner.Worker;
 import util.ConfigParser;
 
 import java.io.FileNotFoundException;
