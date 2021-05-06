@@ -1,5 +1,6 @@
 package Partitioner;
 
+import AmazonStorage.S3Storage;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -28,14 +29,11 @@ public class Util {
         {
             if (ConfigParser.Amazon)
             {
-                final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(ConfigParser.region).build();
-
                 //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
                 String bucketName = path.substring(0, path.lastIndexOf("/"));
                 String key = path.substring(path.lastIndexOf("/") + 1);
 
-                s3Client.putObject(bucketName, key,sb);
-                System.out.println("Uploaded the file to Amazon S3 - Bucket name: " + bucketName + " - Key: " + key);
+                S3Storage.upload(bucketName,key,sb);
             }
             else
             {
