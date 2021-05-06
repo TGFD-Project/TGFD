@@ -1,6 +1,8 @@
 package infra;
 
-public class Attribute implements Comparable<Attribute>{
+import java.io.Serializable;
+
+public class Attribute implements Comparable<Attribute>, Serializable {
 
     private String attrName;
     private String attrValue;
