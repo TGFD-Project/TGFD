@@ -1,16 +1,15 @@
-package MPI;
+package SimpleParalleRunner;
 
+import MPI.Consumer;
+import MPI.Producer;
+import MPI.Status;
 import org.apache.activemq.ActiveMQConnection;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import util.ConfigParser;
 
 import javax.jms.*;
 import java.util.HashMap;
 
 public class Coordinator {
-
-    // default broker URL is : tcp://localhost:61616"
-    private String url = ActiveMQConnection.DEFAULT_BROKER_URL;
 
     private String nodeName = "coordinator";
 
@@ -27,7 +26,6 @@ public class Coordinator {
         for (String worker:ConfigParser.workers) {
             workersStatus.put(worker,false);
         }
-        this.url= ConfigParser.ActiveMQBrokerURL;
     }
 
     public void start()
@@ -59,7 +57,7 @@ public class Coordinator {
 
     public HashMap<String,String> getResults()
     {
-        if(getStatus()==Status.Coordinator_Is_Done)
+        if(getStatus()== Status.Coordinator_Is_Done)
             return results;
         else
             return null;
@@ -82,28 +80,19 @@ public class Coordinator {
     {
         @Override
         public void run() {
-            Connection connection=null;
-            MessageConsumer consumer=null;
             try {
-                final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
-                connectionFactory.setUserName(ConfigParser.ActiveMQUsername);
-                connectionFactory.setPassword(ConfigParser.ActiveMQPassword);
-                connection = connectionFactory.createConnection();
-                connection.start();
-                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                Destination destination = session.createQueue("status");
-                consumer = session.createConsumer(destination);
+                Consumer consumer=new Consumer();
+                consumer.connect("status");
 
                 while (workersStatusChecker) {
 
                     System.out.println("Listening for new messages to get workers' status...");
-                    Message message = consumer.receive();
-                    System.out.println("Recieved a new message.");
-                    if (message instanceof TextMessage) {
-                        TextMessage textMessage = (TextMessage) message;
-                        if(textMessage.getText().startsWith("up"))
+                    String msg = consumer.receive();
+                    System.out.println("Received a new message.");
+                    if (msg==null) {
+                        if(msg.startsWith("up"))
                         {
-                            String []temp=textMessage.getText().split(" ");
+                            String []temp=msg.split(" ");
                             if(temp.length==2)
                             {
                                 String worker_name=temp[1];
@@ -119,12 +108,12 @@ public class Coordinator {
                                 }
                             }
                             else
-                                System.out.println("Message corrupted: " + textMessage.getText());
+                                System.out.println("Message corrupted: " + msg);
                         }
                         else
-                            System.out.println("Message corrupted: " + textMessage.getText());
+                            System.out.println("Message corrupted: " + msg);
                     } else
-                        System.out.println("No message so far.");
+                        System.out.println("Error happened.");
 
                     boolean done=true;
                     for (Boolean worker_status:workersStatus.values()) {
@@ -140,7 +129,6 @@ public class Coordinator {
                         workersStatusChecker =false;
                     }
                 }
-                connection.close();
                 consumer.close();
             }
             catch (Exception e) {
@@ -150,7 +138,7 @@ public class Coordinator {
 
         @Override
         public void onException(JMSException e) {
-            System.out.println("JMS Exception occured.  Shutting down coordinator.");
+            System.out.println("JMS Exception occurred.  Shutting down coordinator.");
         }
     }
 
@@ -164,7 +152,7 @@ public class Coordinator {
 
         @Override
         public void run() {
-            System.out.println("Jobs are recieved to be assigned to the workers");
+            System.out.println("Jobs are received to be assigned to the workers");
             try {
                 while(getStatus()==Status.Coordinator_Waits_For_Workers_Status) {
                     System.out.println("Coordinator waits for these workers to be online: ");
@@ -174,26 +162,17 @@ public class Coordinator {
                     }
                     Thread.sleep(3000);
                 }
-                final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
-                connectionFactory.setUserName(ConfigParser.ActiveMQUsername);
-                connectionFactory.setPassword(ConfigParser.ActiveMQPassword);
-                Connection connection = connectionFactory.createConnection();
-                connection.start();
-                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                Producer messageProducer=new Producer();
+                messageProducer.connect();
                 for (String worker:jobs.keySet()) {
 
-                    Destination destination = session.createQueue(worker);
-
-                    MessageProducer producer = session.createProducer(destination);
-                    TextMessage message = session.createTextMessage(jobs.get(worker));
-                    producer.send(message);
+                    messageProducer.send(worker,jobs.get(worker));
                     System.out.println("Job assigned to '" + worker + "' successfully");
-                    producer.close();
                 }
-                connection.close();
+                messageProducer.close();
                 System.out.println("All jobs are assigned.");
                 workersResultsChecker=true;
-            } catch (InterruptedException | JMSException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -209,8 +188,6 @@ public class Coordinator {
         @Override
         public void run() {
             System.out.println("Coordinator listens to get the results back from the workers");
-            Connection connection=null;
-            MessageConsumer consumer=null;
             try {
                 while(getStatus()==Status.Coordinator_Waits_For_Workers_Status) {
                     System.out.print("\nCoordinator waits for workers to be online: ");
@@ -225,22 +202,15 @@ public class Coordinator {
                     System.out.println("Coordinator waits to finish assigning the jobs");
                     Thread.sleep(3000);
                 }
-                final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
-                connectionFactory.setUserName(ConfigParser.ActiveMQUsername);
-                connectionFactory.setPassword(ConfigParser.ActiveMQPassword);
-                connection = connectionFactory.createConnection();
-                connection.start();
-                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                Destination destination = session.createQueue("results");
-                consumer = session.createConsumer(destination);
+                Consumer consumer=new Consumer();
+                consumer.connect("results");
 
                 while (workersResultsChecker) {
                     System.out.println("Listening for new messages to get the results...");
-                    Message message = consumer.receive();
+                    String msg = consumer.receive();
                     System.out.println("Recieved a new message.");
-                    if (message instanceof TextMessage) {
-                        TextMessage textMessage = (TextMessage) message;
-                        String []temp=textMessage.getText().split("@");
+                    if (msg!=null) {
+                        String []temp=msg.split("@");
                         if(temp.length==2)
                         {
                             String worker_name=temp[0].toLowerCase();
@@ -257,11 +227,11 @@ public class Coordinator {
                         }
                         else
                         {
-                            System.out.println("Message corrupted: " + textMessage.getText());
+                            System.out.println("Message corrupted: " + msg);
                         }
                     }
                     else
-                        System.out.println("No message so far.");
+                        System.out.println("Error happened.");
 
                     boolean done=true;
                     for (String worker_name:workersStatus.keySet()) {
@@ -278,9 +248,8 @@ public class Coordinator {
                         allDone=true;
                     }
                 }
-                connection.close();
                 consumer.close();
-            } catch (InterruptedException | JMSException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
