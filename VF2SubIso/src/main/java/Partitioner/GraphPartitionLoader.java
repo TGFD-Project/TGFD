@@ -1,11 +1,12 @@
-package graphLoader;
+package Partitioner;
 
+import graphLoader.GraphLoader;
 import infra.*;
 import org.jgrapht.Graph;
 
 import java.util.List;
 
-public class GraphPartitionLoader extends GraphLoader{
+public class GraphPartitionLoader extends GraphLoader {
 
     public GraphPartitionLoader(GraphLoader graphLoader, List<FocusNode> focusNodes) {
         super();
