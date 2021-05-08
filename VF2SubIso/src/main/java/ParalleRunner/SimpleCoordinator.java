@@ -88,7 +88,7 @@ public class SimpleCoordinator {
                     System.out.println("Listening for new messages to get workers' status...");
                     String msg = consumer.receive();
                     System.out.println("Received a new message.");
-                    if (msg==null) {
+                    if (msg!=null) {
                         if(msg.startsWith("up"))
                         {
                             String []temp=msg.split(" ");
