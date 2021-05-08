@@ -1,15 +1,14 @@
-package SimpleParalleRunner;
+package ParalleRunner;
 
 import MPI.Consumer;
 import MPI.Producer;
 import MPI.Status;
-import org.apache.activemq.ActiveMQConnection;
 import util.ConfigParser;
 
 import javax.jms.*;
 import java.util.HashMap;
 
-public class Coordinator {
+public class SimpleCoordinator {
 
     private String nodeName = "coordinator";
 
@@ -21,7 +20,7 @@ public class Coordinator {
 
     private HashMap<String,String> results=new HashMap <>();
 
-    public Coordinator()
+    public SimpleCoordinator()
     {
         for (String worker:ConfigParser.workers) {
             workersStatus.put(worker,false);

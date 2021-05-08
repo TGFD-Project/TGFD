@@ -1,5 +1,5 @@
-import SimpleParalleRunner.Coordinator;
-import SimpleParalleRunner.Worker;
+import ParalleRunner.SimpleCoordinator;
+import ParalleRunner.SimpleWorker;
 import util.ConfigParser;
 
 import java.io.FileNotFoundException;
@@ -11,15 +11,15 @@ public class testParallelIMDB {
         if(ConfigParser.nodeName.equalsIgnoreCase("coordinator"))
         {
 
-            Coordinator coordinator=new Coordinator();
-            coordinator.start();
-            coordinator.assignJob(ConfigParser.jobs);
-            coordinator.waitForResults();
+            SimpleCoordinator simpleCoordinator =new SimpleCoordinator();
+            simpleCoordinator.start();
+            simpleCoordinator.assignJob(ConfigParser.jobs);
+            simpleCoordinator.waitForResults();
         }
         else
         {
             System.out.println("Worker '"+ConfigParser.nodeName+"' is starting...");
-            Worker worker=new Worker();
+            SimpleWorker worker=new SimpleWorker();
             worker.start();
         }
     }

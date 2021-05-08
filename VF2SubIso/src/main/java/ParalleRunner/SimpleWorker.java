@@ -1,22 +1,21 @@
-package SimpleParalleRunner;
+package ParalleRunner;
 
 import MPI.Consumer;
 import MPI.Producer;
 import MPI.Status;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import util.ConfigParser;
 import util.testRunner;
 
 import javax.jms.*;
 
-public class Worker {
+public class SimpleWorker {
 
     private String nodeName = "";
     private boolean jobReceived=false;
     private boolean workerDone=false;
     private String job="";
 
-    public Worker()  {
+    public SimpleWorker()  {
         this.nodeName=ConfigParser.nodeName;
     }
 
