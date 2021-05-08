@@ -7,8 +7,7 @@ import javax.jms.*;
 
 public class Producer {
 
-    private ActiveMQConnectionFactory connectionFactory;
-    private String url;
+    private final String url;
     private Connection connection=null;
     private Session session=null;
 
@@ -21,7 +20,7 @@ public class Producer {
     {
         try
         {
-            connectionFactory = new ActiveMQConnectionFactory(url);
+            ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
             connectionFactory.setUserName(ConfigParser.ActiveMQUsername);
             connectionFactory.setPassword(ConfigParser.ActiveMQPassword);
             connection = connectionFactory.createConnection();

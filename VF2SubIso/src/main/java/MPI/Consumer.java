@@ -7,8 +7,7 @@ import javax.jms.*;
 
 public class Consumer {
 
-    private ActiveMQConnectionFactory connectionFactory;
-    private String url;
+    private final String url;
     private Connection connection=null;
     private Session session=null;
     private MessageConsumer consumer=null;
@@ -22,7 +21,7 @@ public class Consumer {
     {
         try
         {
-            connectionFactory = new ActiveMQConnectionFactory(url);
+            ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
             connectionFactory.setUserName(ConfigParser.ActiveMQUsername);
             connectionFactory.setPassword(ConfigParser.ActiveMQPassword);
             connection = connectionFactory.createConnection();
@@ -35,7 +34,6 @@ public class Consumer {
         {
             e.printStackTrace();
         }
-
     }
 
     public String receive()
