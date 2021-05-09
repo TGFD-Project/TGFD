@@ -116,7 +116,7 @@ public class Util {
         return new VF2DataGraph(subgraph);
     }
 
-    public static void mergeGraphs(VF2DataGraph base, VF2DataGraph inputGraph, HashMap<String,Integer> mapping)
+    public static void mergeGraphs(VF2DataGraph base, VF2DataGraph inputGraph)
     {
         inputGraph.getGraph()
                 .vertexSet()
