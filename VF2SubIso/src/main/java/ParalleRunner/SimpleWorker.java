@@ -91,6 +91,7 @@ public class SimpleWorker {
                 ConfigParser.patternPath=job;
 
                 testRunner runner=new testRunner();
+                runner.load();
                 String result= runner.run();
 
                 Producer producer=new Producer();
