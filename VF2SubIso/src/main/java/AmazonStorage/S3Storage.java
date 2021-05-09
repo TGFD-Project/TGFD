@@ -9,7 +9,7 @@ import java.io.*;
 
 public class S3Storage {
 
-    public static void upload(String bucketName, String key, Object obj)
+    public static boolean upload(String bucketName, String key, Object obj)
     {
         String fileName="./tempGraph.ser";
         try {
@@ -29,12 +29,17 @@ public class S3Storage {
             System.out.println("Uploading Done. [Bucket name: " + bucketName + "] [Key: " + key + "]");
 
             System.out.println("Cleaning up the temporary storage...");
-            fileToBeUploaded.delete();
-            System.out.println("All done.");
+            boolean deleted = fileToBeUploaded.delete();
+            if(deleted)
+                System.out.println("All done.");
+            else
+                System.out.println("Couldn't delete the temporary file: '" + fileName + "' ");
+            return true;
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     public static void upload(String bucketName, String key, String textToBeUploaded)
@@ -55,8 +60,11 @@ public class S3Storage {
             System.out.println("Uploading Done. [Bucket name: " + bucketName + "] [Key: " + key + "]");
 
             System.out.println("Cleaning up the temporary storage...");
-            fileToBeUploaded.delete();
-            System.out.println("All done.");
+            boolean deleted = fileToBeUploaded.delete();
+            if(deleted)
+                System.out.println("All done.");
+            else
+                System.out.println("Couldn't delete the temporary file: '" + fileName + "' ");
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -87,7 +95,7 @@ public class S3Storage {
         return obj;
     }
 
-    public static StringBuilder downloadText(String bucketName, String key)
+    public static StringBuilder downloadWholeTextFile(String bucketName, String key)
     {
         StringBuilder sb=new StringBuilder();
         try
@@ -96,7 +104,7 @@ public class S3Storage {
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
                     .withRegion(ConfigParser.region)
                     .build();
-            System.out.println("Downloading the object from Amazon S3 - Bucket name: " + bucketName +" - Key: " + key);
+            System.out.println("Downloading text file from Amazon S3 - Bucket name: " + bucketName +" - Key: " + key);
             fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
 
             BufferedReader br = new BufferedReader(new InputStreamReader(fullObject.getObjectContent()));
