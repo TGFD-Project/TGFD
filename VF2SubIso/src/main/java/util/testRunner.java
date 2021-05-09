@@ -20,38 +20,28 @@ import java.util.concurrent.TimeUnit;
 
 public class testRunner {
 
+    private GraphLoader loader=null;
+    private List<TGFD> tgfds;
+    private long wallClockTime=0;
 
     public testRunner()
     {
+        System.out.println("Test Incremental algorithm for the "+ConfigParser.dataset+" dataset from testRunner");
     }
 
-    public String run()
+    public void load()
     {
-        long wallClockStart=System.currentTimeMillis();
-
-        StringBuilder msg=new StringBuilder();
-
-        System.out.println("Test Incremental algorithm for the "+ConfigParser.dataset+" dataset from testRunner");
+        long startTime=System.currentTimeMillis();
 
         // Test whether we loaded all the files correctly
         System.out.println(Arrays.toString(ConfigParser.getFirstDataFilePath().toArray()));
         System.out.println(ConfigParser.getDiffFilesPath().keySet() + " *** " + ConfigParser.getDiffFilesPath().values());
 
         TGFDGenerator generator = new TGFDGenerator(ConfigParser.patternPath);
-        List<TGFD> tgfds=generator.getTGFDs();
-
-        //Create the match collection for all the TGFDs in the list
-        HashMap <String, MatchCollection> matchCollectionHashMap=new HashMap <>();
-        for (TGFD tgfd:tgfds) {
-            matchCollectionHashMap.put(tgfd.getName(),new MatchCollection(tgfd.getPattern(),tgfd.getDependency(),tgfd.getDelta().getGranularity()));
-        }
+        tgfds=generator.getTGFDs();
 
         //Load the first timestamp
         System.out.println("===========Snapshot 1 (" + ConfigParser.getTimestamps().get(1) + ")===========");
-        long startTime=System.currentTimeMillis();
-        LocalDate currentSnapshotDate=ConfigParser.getTimestamps().get(1);
-
-        GraphLoader loader;
 
         if(ConfigParser.dataset.equals("dbpedia"))
         {
@@ -66,6 +56,29 @@ public class testRunner {
             loader = new IMDBLoader(tgfds,ConfigParser.getFirstDataFilePath());
         }
         printWithTime("Load graph 1 (" + ConfigParser.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
+
+        wallClockTime+=System.currentTimeMillis()-startTime;
+
+    }
+
+    public String run()
+    {
+        if(loader==null)
+        {
+            System.out.println("Graph is not loaded yet");
+            return null;
+        }
+        StringBuilder msg=new StringBuilder();
+
+        long startTime, functionWallClockTime=System.currentTimeMillis();
+        LocalDate currentSnapshotDate=ConfigParser.getTimestamps().get(1);
+
+        //Create the match collection for all the TGFDs in the list
+        HashMap <String, MatchCollection> matchCollectionHashMap=new HashMap <>();
+        for (TGFD tgfd:tgfds) {
+            matchCollectionHashMap.put(tgfd.getName(),new MatchCollection(tgfd.getPattern(),tgfd.getDependency(),tgfd.getDelta().getGranularity()));
+        }
+
 
         // Now, we need to find the matches for the first snapshot.
         for (TGFD tgfd:tgfds) {
@@ -146,8 +159,13 @@ public class testRunner {
             printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
             msg.append(getViolationsMessage(allViolationsOptBatchTED,tgfd));
         }
-        printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
+        wallClockTime+=System.currentTimeMillis()-functionWallClockTime;
+        printWithTime("Total wall clock time: ", wallClockTime);
         return msg.toString();
+    }
+
+    public GraphLoader getLoader() {
+        return loader;
     }
 
     private String getViolationsMessage(Set<Violation> violations, TGFD tgfd)
