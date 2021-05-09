@@ -100,6 +100,8 @@ public class SimpleWorker {
                 System.out.println("Results successfully sent to the coordinator");
                 producer.close();
 
+                workerDone=true;
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

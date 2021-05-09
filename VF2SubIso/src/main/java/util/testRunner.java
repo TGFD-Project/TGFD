@@ -31,7 +31,7 @@ public class testRunner {
 
         StringBuilder msg=new StringBuilder();
 
-        System.out.println("Test Incremental algorithm for the IMDB dataset from testRunner");
+        System.out.println("Test Incremental algorithm for the "+ConfigParser.dataset+" dataset from testRunner");
 
         // Test whether we loaded all the files correctly
         System.out.println(Arrays.toString(ConfigParser.getFirstDataFilePath().toArray()));
