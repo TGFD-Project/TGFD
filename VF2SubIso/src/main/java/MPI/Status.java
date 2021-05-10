@@ -7,5 +7,8 @@ public enum Status {
     Coordinator_Is_Done,
     Worker_waits_For_Job,
     Worker_Received_Job,
+    Worker_Shipping_Data,
+    Worker_Receiving_Data,
+    Worker_Ready_To_Run,
     Worker_Is_Done
 }
