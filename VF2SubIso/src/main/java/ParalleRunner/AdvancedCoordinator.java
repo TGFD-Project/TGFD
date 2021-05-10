@@ -8,14 +8,15 @@ import util.ConfigParser;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AdvancedCoordinator {
 
     private String nodeName = "coordinator";
 
-    private boolean workersStatusChecker =true;
-    private boolean workersResultsChecker =false;
-    private boolean allDone=false;
+    private AtomicBoolean workersStatusChecker=new AtomicBoolean(true);
+    private AtomicBoolean workersResultsChecker =new AtomicBoolean(false);
+    private AtomicBoolean allDone=new AtomicBoolean(false);
 
     private HashMap<String,Boolean> workersStatus=new HashMap <>();
 
@@ -37,8 +38,8 @@ public class AdvancedCoordinator {
 
     public void stop()
     {
-        this.workersStatusChecker =false;
-        workersResultsChecker=false;
+        this.workersStatusChecker.set(false);
+        this.workersResultsChecker.set(false);
     }
 
     public void assignJob(HashMap<String,String> jobs)
@@ -66,11 +67,11 @@ public class AdvancedCoordinator {
 
     public Status getStatus()
     {
-        if(workersStatusChecker)
+        if(workersStatusChecker.get())
             return Status.Coordinator_Waits_For_Workers_Status;
-        else if(workersResultsChecker)
+        else if(workersResultsChecker.get())
             return Status.Coordinator_Waits_For_Workers_Results;
-        else if(allDone)
+        else if(allDone.get())
             return Status.Coordinator_Is_Done;
         else
             return Status.Coordinator_Assigns_jobs_To_Workers;
@@ -84,7 +85,7 @@ public class AdvancedCoordinator {
                 Consumer consumer=new Consumer();
                 consumer.connect("status");
 
-                while (workersStatusChecker) {
+                while (workersStatusChecker.get()) {
 
                     System.out.println("Listening for new messages to get workers' status...");
                     String msg = consumer.receive();
@@ -126,7 +127,7 @@ public class AdvancedCoordinator {
                     if(done)
                     {
                         System.out.println("All workers are up and ready to start.");
-                        workersStatusChecker =false;
+                        workersStatusChecker.set(false);
                     }
                 }
                 consumer.close();
@@ -177,7 +178,7 @@ public class AdvancedCoordinator {
                 }
                 messageProducer.close();
                 System.out.println("All jobs are assigned.");
-                workersResultsChecker=true;
+                workersResultsChecker.set(true);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -211,7 +212,7 @@ public class AdvancedCoordinator {
                 Consumer consumer=new Consumer();
                 consumer.connect("results");
 
-                while (workersResultsChecker) {
+                while (workersResultsChecker.get()) {
                     System.out.println("Listening for new messages to get the results...");
                     String msg = consumer.receive();
                     System.out.println("Recieved a new message.");
@@ -250,8 +251,8 @@ public class AdvancedCoordinator {
                     if(done)
                     {
                         System.out.println("All workers have sent the results.");
-                        workersResultsChecker =false;
-                        allDone=true;
+                        workersResultsChecker.set(false);
+                        allDone.set(true);
                     }
                 }
                 consumer.close();
