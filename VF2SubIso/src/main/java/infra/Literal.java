@@ -1,6 +1,6 @@
 package infra;
 
-public class Literal {
+public abstract class Literal {
 
     public enum LiteralType
     {
