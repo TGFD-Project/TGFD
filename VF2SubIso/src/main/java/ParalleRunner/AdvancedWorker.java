@@ -13,17 +13,21 @@ import util.testRunner;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.lang.Thread.sleep;
 
 public class AdvancedWorker {
 
     private String nodeName = "";
-    private boolean jobReceived=false;
-    private boolean workerDone=false;
+    private AtomicBoolean jobReceived =new AtomicBoolean(false);
+    private AtomicBoolean dataShipping=new AtomicBoolean(false);
+    private AtomicBoolean dataReceiving=new AtomicBoolean(false);
+    private AtomicBoolean readyToRun=new AtomicBoolean(false);
+    private AtomicBoolean workerDone=new AtomicBoolean(false);
     private String job="";
     private HashMap<String, String> allJobs;
     private HashMap<String, List<TGFD>> otherWorkersJobs;
@@ -42,7 +46,7 @@ public class AdvancedWorker {
 
     public void start()
     {
-        sendStatusToCoordiantor();
+        sendStatusToCoordinator();
 
         Thread jobReceiverThread = new Thread(new JobReceiver());
         jobReceiverThread.setDaemon(false);
@@ -51,19 +55,33 @@ public class AdvancedWorker {
         Thread jobRunnerThread = new Thread(new JobRunner());
         jobRunnerThread.setDaemon(false);
         jobRunnerThread.start();
+
+        Thread dataShipperThread = new Thread(new DataShipper());
+        dataShipperThread.setDaemon(false);
+        dataShipperThread.start();
+
+        Thread dataReceiverThread = new Thread(new DataReceiver());
+        dataReceiverThread.setDaemon(false);
+        dataReceiverThread.start();
     }
 
     public Status getStatus()
     {
-        if(workerDone)
+        if(workerDone.get())
             return Status.Worker_Is_Done;
-        if(!jobReceived)
-            return Status.Worker_waits_For_Job;
-        else
+        else if(jobReceived.get())
             return Status.Worker_Received_Job;
+        else if(dataShipping.get())
+            return Status.Worker_Shipping_Data;
+        else if(dataReceiving.get())
+            return Status.Worker_Receiving_Data;
+        else if(readyToRun.get())
+            return Status.Worker_Ready_To_Run;
+        else
+            return Status.Worker_waits_For_Job;
     }
 
-    private void sendStatusToCoordiantor()
+    private void sendStatusToCoordinator()
     {
         System.out.println("Worker '"+nodeName+"' is up and send status to the Coordinator");
         Producer producer=new Producer();
@@ -89,19 +107,19 @@ public class AdvancedWorker {
                 job=allJobs.get(nodeName);
                 allJobs.remove(nodeName);
                 ConfigParser.patternPath=job;
-                jobReceived=true;
-                System.out.println("The job has been received: " + job);
+                jobReceived.set(true);
+                System.out.println("*JOB RECEIVER*: The job has been received: " + job);
             }
             else
             {
-                System.out.println("Error happened");
+                System.out.println("*JOB RECEIVER*: Error happened - message is null");
             }
             consumer.close();
         }
 
         @Override
         public void onException(JMSException e) {
-            System.out.println("JMS Exception occurred.  Shutting down client.");
+            System.out.println("*JOB RECEIVER*: JMS Exception occurred. Shutting down worker.");
         }
     }
 
@@ -109,12 +127,16 @@ public class AdvancedWorker {
     {
         @Override
         public void run() {
-            System.out.println("Jobs are recieved to be assigned to the workers");
             try {
                 while(getStatus()!=Status.Worker_Received_Job) {
-                    Thread.sleep(3000);
-                    System.out.println("Worker '"+nodeName+"' has not received the job yet.");
+                    sleep(3000);
+                    System.out.println("*DATA SHIPPER*: Worker '"+nodeName+"' has not received the job yet.");
                 }
+
+                System.out.println("*DATA SHIPPER*: Start shipping data.");
+
+                jobReceived.set(false);
+                dataShipping.set(true);
 
                 runner=new testRunner();
                 runner.load();
@@ -129,24 +151,26 @@ public class AdvancedWorker {
                     String key = workerName + "_" + RandomStringUtils.randomAlphabetic(5) + ".ser";
                     boolean result = S3Storage.upload(workingBucketName,key,graphToBeShipped);
                     if(!result)
-                        System.out.println("Error to upload the data for: " + workerName);
+                        System.out.println("*DATA SHIPPER*: Error to upload the data for: " + workerName);
                     else
                     {
                         producer.send(workerName + "_shippedData",workingBucketName + "/" + key);
-                        System.out.println("File path has been sent to worker: '"+workerName + "'");
+                        System.out.println("*DATA SHIPPER*: Uploaded successfully! File path has been sent to worker: '"+workerName + "'");
                     }
                 }
                 producer.close();
 
-                System.out.println("All files have been sent to other workers.");
+                System.out.println("*DATA SHIPPER*: All files have been sent to other workers.");
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            dataShipping.set(false);
+            dataReceiving.set(true);
         }
         @Override
         public void onException(JMSException e) {
-            System.out.println("JMS Exception occurred (JobAssigner).  Shutting down coordinator.");
+            System.out.println("*DATA SHIPPER*: JMS Exception occurred . Shutting down worker.");
         }
     }
 
@@ -154,36 +178,53 @@ public class AdvancedWorker {
     {
         @Override
         public void run() {
-            Consumer consumer=new Consumer();
-            consumer.connect(nodeName + "_shippedData");
-            int numberOfFilesReceived=0;
-            while (numberOfFilesReceived<allJobs.size())
+            try
             {
-                String msg=consumer.receive();
-                if (msg !=null) {
-                    String bucketName=msg.substring(0,msg.lastIndexOf("/"));
-                    String key=msg.substring(msg.lastIndexOf("/")+1);
+                while(getStatus()!=Status.Worker_Receiving_Data) {
+                    sleep(3000);
+                    System.out.println("*DATA RECEIVER*: Worker '"+nodeName+"' has not received the job yet.");
+                }
 
-                    Object obj=S3Storage.downloadObject(bucketName,key);
-                    if(obj!=null)
-                    {
-                        VF2DataGraph ShippedData=(VF2DataGraph) obj;
-                        Partitioner.Util.mergeGraphs(runner.getLoader().getGraph(),ShippedData);
-                    }
-                    System.out.println("The job has been received: " + job);
-                }
-                else
+                System.out.println("*DATA RECEIVER*: Start Receiving data.");
+
+                Consumer consumer=new Consumer();
+                consumer.connect(nodeName + "_shippedData");
+                int numberOfFilesReceived=0;
+                while (numberOfFilesReceived<allJobs.size())
                 {
-                    System.out.println("Error happened");
+                    String msg=consumer.receive();
+                    if (msg !=null) {
+                        String bucketName=msg.substring(0,msg.lastIndexOf("/"));
+                        String key=msg.substring(msg.lastIndexOf("/")+1);
+
+                        Object obj=S3Storage.downloadObject(bucketName,key);
+                        if(obj!=null)
+                        {
+                            VF2DataGraph ShippedData=(VF2DataGraph) obj;
+                            Partitioner.Util.mergeGraphs(runner.getLoader().getGraph(),ShippedData);
+                        }
+                        System.out.println("*DATA RECEIVER*: Data '" + numberOfFilesReceived +"' has been received");
+                    }
+                    else
+                    {
+                        System.out.println("*DATA RECEIVER*: Error happened - message is null");
+                    }
+                    numberOfFilesReceived++;
                 }
-                numberOfFilesReceived++;
+                System.out.println("*DATA RECEIVER*: All data has been received");
+                consumer.close();
             }
-            consumer.close();
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+            dataReceiving.set(false);
+            readyToRun.set(true);
         }
 
         @Override
         public void onException(JMSException e) {
-            System.out.println("JMS Exception occurred.  Shutting down client.");
+            System.out.println("*DATA RECEIVER*: JMS Exception occurred.  Shutting down worker.");
         }
     }
 
@@ -191,27 +232,25 @@ public class AdvancedWorker {
     {
         @Override
         public void run() {
-            System.out.println("Jobs are recieved to be assigned to the workers");
             try {
-                while(getStatus()!=Status.Worker_Received_Job) {
-                    Thread.sleep(3000);
-                    System.out.println("Worker '"+nodeName+"' has not received the job yet.");
+                while(getStatus()!=Status.Worker_Ready_To_Run) {
+                    sleep(3000);
+                    System.out.println("*RUNNER*: Worker '"+nodeName+"' has not received the data yet to start.");
                 }
+                readyToRun.set(false);
 
-                ConfigParser.patternPath=job;
+                System.out.println("*RUNNER*: Start Running the TED algorithm.");
 
-                runner=new testRunner();
-                runner.load();
                 String result= runner.run();
 
                 Producer producer=new Producer();
                 producer.connect();
                 producer.send("results",nodeName + "@" + result);
 
-                System.out.println("Results successfully sent to the coordinator");
+                System.out.println("*RUNNER*: Results successfully sent to the worker");
                 producer.close();
 
-                workerDone=true;
+                workerDone.set(true);
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -219,7 +258,7 @@ public class AdvancedWorker {
         }
         @Override
         public void onException(JMSException e) {
-            System.out.println("JMS Exception occurred (JobAssigner).  Shutting down coordinator.");
+            System.out.println("*RUNNER*: JMS Exception occurred. Shutting down worker.");
         }
     }
 
