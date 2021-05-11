@@ -7,12 +7,13 @@ import util.ConfigParser;
 import util.testRunner;
 
 import javax.jms.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SimpleWorker {
 
     private String nodeName = "";
-    private boolean jobReceived=false;
-    private boolean workerDone=false;
+    private AtomicBoolean jobReceived=new AtomicBoolean(false);
+    private AtomicBoolean workerDone=new AtomicBoolean(false);
     private String job="";
 
     public SimpleWorker()  {
@@ -21,7 +22,7 @@ public class SimpleWorker {
 
     public void start()
     {
-        sendStatusToCoordiantor();
+        sendStatusToCoordinator();
 
         Thread jobReceiverThread = new Thread(new JobReceiver());
         jobReceiverThread.setDaemon(false);
@@ -34,15 +35,15 @@ public class SimpleWorker {
 
     public Status getStatus()
     {
-        if(workerDone)
+        if(workerDone.get())
             return Status.Worker_Is_Done;
-        if(!jobReceived)
+        if(!jobReceived.get())
             return Status.Worker_waits_For_Job;
         else
             return Status.Worker_Received_Job;
     }
 
-    private void sendStatusToCoordiantor()
+    private void sendStatusToCoordinator()
     {
         System.out.println("Worker '"+nodeName+"' is up and send status to the Coordinator");
         Producer producer=new Producer();
@@ -61,12 +62,12 @@ public class SimpleWorker {
             String msg=consumer.receive();
             if (msg !=null) {
                 job=msg;
-                jobReceived=true;
-                System.out.println("The job has been received: " + job);
+                jobReceived.set(true);
+                System.out.println("*JOB RECEIVER*: The job has been received: " + job);
             }
             else
             {
-                System.out.println("Error happened");
+                System.out.println("*JOB RECEIVER*: Error happened. Message is null");
             }
             consumer.close();
         }
@@ -81,12 +82,13 @@ public class SimpleWorker {
     {
         @Override
         public void run() {
-            System.out.println("Jobs are recieved to be assigned to the workers");
             try {
                 while(getStatus()!=Status.Worker_Received_Job) {
-                    Thread.sleep(3000);
-                    System.out.println("Worker '"+nodeName+"' has not received the job yet.");
+                    Thread.sleep(ConfigParser.threadsIdleTime);
+                    System.out.println("*JOB RUNNER*: Worker '"+nodeName+"' has not received the job yet.");
                 }
+
+                System.out.println("*JOB RUNNER*: Jobs are received. Starting the TED algorithm");
 
                 ConfigParser.patternPath=job;
 
@@ -98,10 +100,10 @@ public class SimpleWorker {
                 producer.connect();
                 producer.send("results",nodeName + "@" + result);
 
-                System.out.println("Results successfully sent to the coordinator");
+                System.out.println("*JOB RUNNER*: Done. Results successfully sent to the coordinator");
                 producer.close();
 
-                workerDone=true;
+                workerDone.set(true);
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -109,7 +111,7 @@ public class SimpleWorker {
         }
         @Override
         public void onException(JMSException e) {
-            System.out.println("JMS Exception occured (JobAssigner).  Shutting down coordinator.");
+            System.out.println("*JOB RUNNER*: JMS Exception occurred. Shutting down worker.");
         }
     }
 

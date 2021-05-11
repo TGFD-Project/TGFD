@@ -7,14 +7,15 @@ import util.ConfigParser;
 
 import javax.jms.*;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SimpleCoordinator {
 
     private String nodeName = "coordinator";
 
-    private boolean workersStatusChecker =true;
-    private boolean workersResultsChecker =false;
-    private boolean allDone=false;
+    private AtomicBoolean workersStatusChecker =new AtomicBoolean(true);
+    private AtomicBoolean workersResultsChecker =new AtomicBoolean(false);
+    private AtomicBoolean allDone=new AtomicBoolean(false);
 
     private HashMap<String,Boolean> workersStatus=new HashMap <>();
 
@@ -36,8 +37,8 @@ public class SimpleCoordinator {
 
     public void stop()
     {
-        this.workersStatusChecker =false;
-        workersResultsChecker=false;
+        workersStatusChecker.set(false);
+        workersResultsChecker.set(false);
     }
 
     public void assignJob(HashMap<String,String> jobs)
@@ -65,11 +66,11 @@ public class SimpleCoordinator {
 
     public Status getStatus()
     {
-        if(workersStatusChecker)
+        if(workersStatusChecker.get())
             return Status.Coordinator_Waits_For_Workers_Status;
-        else if(workersResultsChecker)
+        else if(workersResultsChecker.get())
             return Status.Coordinator_Waits_For_Workers_Results;
-        else if(allDone)
+        else if(allDone.get())
             return Status.Coordinator_Is_Done;
         else
             return Status.Coordinator_Assigns_jobs_To_Workers;
@@ -83,11 +84,11 @@ public class SimpleCoordinator {
                 Consumer consumer=new Consumer();
                 consumer.connect("status");
 
-                while (workersStatusChecker) {
+                while (workersStatusChecker.get()) {
 
-                    System.out.println("Listening for new messages to get workers' status...");
+                    System.out.println("*SETUP*: Listening for new messages to get workers' status...");
                     String msg = consumer.receive();
-                    System.out.println("Received a new message.");
+                    System.out.println("*SETUP*: Received a new message.");
                     if (msg!=null) {
                         if(msg.startsWith("up"))
                         {
@@ -97,22 +98,22 @@ public class SimpleCoordinator {
                                 String worker_name=temp[1];
                                 if(workersStatus.containsKey(worker_name))
                                 {
-                                    System.out.println("Status update: '" + worker_name + "' is up");
+                                    System.out.println("*SETUP*: Status update: '" + worker_name + "' is up");
                                     workersStatus.put(worker_name,true);
                                 }
                                 else
                                 {
-                                    System.out.println("Unable to find the worker name: '" + worker_name + "' in workers list. " +
+                                    System.out.println("*SETUP*: Unable to find the worker name: '" + worker_name + "' in workers list. " +
                                             "Please update the list in the Config file.");
                                 }
                             }
                             else
-                                System.out.println("Message corrupted: " + msg);
+                                System.out.println("*SETUP*: Message corrupted: " + msg);
                         }
                         else
-                            System.out.println("Message corrupted: " + msg);
+                            System.out.println("*SETUP*: Message corrupted: " + msg);
                     } else
-                        System.out.println("Error happened.");
+                        System.out.println("*SETUP*: Error happened. message is null");
 
                     boolean done=true;
                     for (Boolean worker_status:workersStatus.values()) {
@@ -124,8 +125,8 @@ public class SimpleCoordinator {
                     }
                     if(done)
                     {
-                        System.out.println("All workers are up and ready to start.");
-                        workersStatusChecker =false;
+                        System.out.println("*SETUP*: All workers are up and ready to start.");
+                        workersStatusChecker.set(false);
                     }
                 }
                 consumer.close();
@@ -137,7 +138,7 @@ public class SimpleCoordinator {
 
         @Override
         public void onException(JMSException e) {
-            System.out.println("JMS Exception occurred.  Shutting down coordinator.");
+            System.out.println("*SETUP*: JMS Exception occurred. Shutting down coordinator.");
         }
     }
 
@@ -151,26 +152,27 @@ public class SimpleCoordinator {
 
         @Override
         public void run() {
-            System.out.println("Jobs are received to be assigned to the workers");
+            System.out.println("*JOB ASSIGNER*: Jobs are received to be assigned to the workers");
             try {
                 while(getStatus()==Status.Coordinator_Waits_For_Workers_Status) {
-                    System.out.println("Coordinator waits for these workers to be online: ");
+                    System.out.println("\n*JOB ASSIGNER*: Coordinator waits for these workers to be online: ");
                     for (String worker : workersStatus.keySet()) {
                         if (!workersStatus.get(worker))
                             System.out.print(worker + " - ");
                     }
-                    Thread.sleep(3000);
+                    System.out.println("");
+                    Thread.sleep(ConfigParser.threadsIdleTime);
                 }
                 Producer messageProducer=new Producer();
                 messageProducer.connect();
                 for (String worker:jobs.keySet()) {
 
                     messageProducer.send(worker,jobs.get(worker));
-                    System.out.println("Job assigned to '" + worker + "' successfully");
+                    System.out.println("*JOB ASSIGNER*: Job assigned to '" + worker + "' successfully");
                 }
                 messageProducer.close();
-                System.out.println("All jobs are assigned.");
-                workersResultsChecker=true;
+                System.out.println("*JOB ASSIGNER*: All jobs are assigned.");
+                workersResultsChecker.set(true);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -178,7 +180,7 @@ public class SimpleCoordinator {
 
         @Override
         public void onException(JMSException e) {
-            System.out.println("JMS Exception occured (JobAssigner).  Shutting down coordinator.");
+            System.out.println("*JOB ASSIGNER*: JMS Exception occurred. Shutting down coordinator.");
         }
     }
 
@@ -186,28 +188,28 @@ public class SimpleCoordinator {
     {
         @Override
         public void run() {
-            System.out.println("Coordinator listens to get the results back from the workers");
+            System.out.println("*RESULTS GETTER*: Coordinator listens to get the results back from the workers");
             try {
                 while(getStatus()==Status.Coordinator_Waits_For_Workers_Status) {
-                    System.out.print("\nCoordinator waits for workers to be online: ");
+                    System.out.println("\n*RESULTS GETTER*: Coordinator waits for workers to be online: ");
                     for (String worker : workersStatus.keySet()) {
                         if (!workersStatus.get(worker))
                             System.out.print(worker + " - ");
                     }
                     System.out.println("\n");
-                    Thread.sleep(3000);
+                    Thread.sleep(ConfigParser.threadsIdleTime);
                 }
                 while(getStatus()==Status.Coordinator_Assigns_jobs_To_Workers) {
-                    System.out.println("Coordinator waits to finish assigning the jobs");
-                    Thread.sleep(3000);
+                    System.out.println("*RESULTS GETTER*: Coordinator waits to finish assigning the jobs");
+                    Thread.sleep(ConfigParser.threadsIdleTime);
                 }
                 Consumer consumer=new Consumer();
                 consumer.connect("results");
 
-                while (workersResultsChecker) {
-                    System.out.println("Listening for new messages to get the results...");
+                while (workersResultsChecker.get()) {
+                    System.out.println("*RESULTS GETTER*: Listening for new messages to get the results...");
                     String msg = consumer.receive();
-                    System.out.println("Recieved a new message.");
+                    System.out.println("*RESULTS GETTER*: Received a new message.");
                     if (msg!=null) {
                         String []temp=msg.split("@");
                         if(temp.length==2)
@@ -215,22 +217,22 @@ public class SimpleCoordinator {
                             String worker_name=temp[0].toLowerCase();
                             if(workersStatus.containsKey(worker_name))
                             {
-                                System.out.println("Results received from: '" + worker_name+"'");
+                                System.out.println("*RESULTS GETTER*: Results received from: '" + worker_name+"'");
                                 results.put(worker_name,temp[1]);
                             }
                             else
                             {
-                                System.out.println("Unable to find the worker name: '" + worker_name + "' in workers list. " +
+                                System.out.println("*RESULTS GETTER*: Unable to find the worker name: '" + worker_name + "' in workers list. " +
                                         "Please update the list in the Config file.");
                             }
                         }
                         else
                         {
-                            System.out.println("Message corrupted: " + msg);
+                            System.out.println("*RESULTS GETTER*: Message corrupted: " + msg);
                         }
                     }
                     else
-                        System.out.println("Error happened.");
+                        System.out.println("*RESULTS GETTER*: Error happened. Message is null");
 
                     boolean done=true;
                     for (String worker_name:workersStatus.keySet()) {
@@ -242,9 +244,9 @@ public class SimpleCoordinator {
                     }
                     if(done)
                     {
-                        System.out.println("All workers have sent the results.");
-                        workersResultsChecker =false;
-                        allDone=true;
+                        System.out.println("*RESULTS GETTER*: All workers have sent the results.");
+                        workersResultsChecker.set(false);
+                        allDone.set(true);
                     }
                 }
                 consumer.close();
@@ -255,7 +257,7 @@ public class SimpleCoordinator {
 
         @Override
         public void onException(JMSException e) {
-            System.out.println("JMS Exception occured (JobAssigner).  Shutting down coordinator.");
+            System.out.println("*RESULTS GETTER*: JMS Exception occurred. Shutting down coordinator.");
         }
     }
 

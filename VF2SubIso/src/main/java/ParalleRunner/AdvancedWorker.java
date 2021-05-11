@@ -129,7 +129,7 @@ public class AdvancedWorker {
         public void run() {
             try {
                 while(getStatus()!=Status.Worker_Received_Job) {
-                    sleep(3000);
+                    sleep(ConfigParser.threadsIdleTime);
                     System.out.println("*DATA SHIPPER*: Worker '"+nodeName+"' has not received the job yet.");
                 }
 
@@ -181,7 +181,7 @@ public class AdvancedWorker {
             try
             {
                 while(getStatus()!=Status.Worker_Receiving_Data) {
-                    sleep(3000);
+                    sleep(ConfigParser.threadsIdleTime);
                     System.out.println("*DATA RECEIVER*: Worker '"+nodeName+"' has not received the job yet.");
                 }
 
@@ -234,7 +234,7 @@ public class AdvancedWorker {
         public void run() {
             try {
                 while(getStatus()!=Status.Worker_Ready_To_Run) {
-                    sleep(3000);
+                    sleep(ConfigParser.threadsIdleTime);
                     System.out.println("*RUNNER*: Worker '"+nodeName+"' has not received the data yet to start.");
                 }
                 readyToRun.set(false);
