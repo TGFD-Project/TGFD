@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class ConfigParser {
+public class Config {
 
     private static HashMap<Integer, ArrayList<String>> typesPaths = new HashMap<>();
     private static HashMap<Integer, ArrayList<String>> dataPaths = new HashMap<>();
@@ -30,6 +30,7 @@ public class ConfigParser {
     public static String language="N-Triples";
     public static HashMap<String,String> jobs=new HashMap <>();
     public static String dataset="imdb";
+    public static long threadsIdleTime=3000;// in ms
 
     public static boolean optimizedLoadingBasedOnTGFD=false;
     public static boolean saveViolations=false;
@@ -57,6 +58,7 @@ public class ConfigParser {
                      -language <language name> // Names like "N-Triples", "TURTLE", "RDF/XML"
                      -job <worker name>,<job> // For example: -job worker1,pattern1.txt
                      -dataset <dataset name> // Options: imdb (default), dbpedia, synthetic
+                     -idletime <time> // idle time in threads (in ms)
                     """.indent(5));
         } else
             parseInputParams(input);
@@ -105,6 +107,8 @@ public class ConfigParser {
                     if(temp.length !=2)
                         continue;
                     jobs.put(temp[0],temp[1]);
+                }else if(conf[0].equals("-idletime")) {
+                    threadsIdleTime=Long.parseLong(conf[1]);
                 }else if (conf[0].startsWith("-t")) {
                     var snapshotId = Integer.parseInt(conf[0].substring(2));
                     if (!typesPaths.containsKey(snapshotId))
