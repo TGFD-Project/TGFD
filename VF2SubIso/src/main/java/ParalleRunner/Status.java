@@ -1,4 +1,4 @@
-package MPI;
+package ParalleRunner;
 
 public enum Status {
     Coordinator_Waits_For_Workers_Status,

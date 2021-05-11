@@ -1,4 +1,4 @@
-package MPI;
+package Partitioner;
 
 import infra.FocusNode;
 
