@@ -153,6 +153,69 @@ public class VF2DataGraph implements Serializable {
         return subgraph;
     }
 
+    public int getSubGraphSize(DataVertex center, int diameter)
+    {
+        int size=0;
+
+        List<Vertex> withinDiameter=new ArrayList<>();
+
+        // Define a HashMap to store visited vertices
+        HashMap<String,Integer> visited=new HashMap<>();
+
+        // Create a queue for BFS
+        LinkedList<DataVertex> queue = new LinkedList<>();
+        // Mark the current node as visited with distance 0 and then enqueue it
+        visited.put(center.getVertexURI(),0);
+        queue.add(center);
+        // Store the center as the node within the diameter
+        withinDiameter.add(center);
+        //temp variables
+        DataVertex v,w;
+        while (queue.size() != 0)
+        {
+            // Dequeue a vertex from queue and get its distance
+            v = queue.poll();
+            int distance=visited.get(v.getVertexURI());
+            // Outgoing edges
+            for (RelationshipEdge edge : graph.outgoingEdgesOf(v)) {
+                w = (DataVertex) edge.getTarget();
+                // Check if the vertex is not visited
+                if (!visited.containsKey(w.getVertexURI())) {
+                    // Check if the vertex is within the diameter
+                    if (distance + 1 <= diameter) {
+                        //Enqueue the vertex and add it to the visited set
+                        visited.put(w.getVertexURI(), distance + 1);
+                        queue.add(w);
+                        withinDiameter.add(w);
+                    }
+                }
+            }
+            // Incoming edges
+            for (RelationshipEdge edge : graph.incomingEdgesOf(v)) {
+                w = (DataVertex) edge.getSource();
+                // Check if the vertex is not visited
+                if (!visited.containsKey(w.getVertexURI())) {
+                    // Check if the vertex is within the diameter
+                    if (distance + 1 <= diameter) {
+                        //Enqueue the vertex and add it to the visited set
+                        visited.put(w.getVertexURI(), distance + 1);
+                        queue.add(w);
+                        withinDiameter.add(w);
+                    }
+
+                }
+            }
+        }
+        for (Vertex source : withinDiameter) {
+            for (RelationshipEdge e : graph.outgoingEdgesOf(source)) {
+                DataVertex target = (DataVertex) e.getTarget();
+                if (visited.containsKey(target.getVertexURI()))
+                    size++;
+            }
+        }
+        return size;
+    }
+
     public List<Vertex> getVerticesWithinDiameter(DataVertex center, int diameter)
     {
         List<Vertex> withinDiameter=new ArrayList<>();
