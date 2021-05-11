@@ -3,7 +3,7 @@ import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphLoader.DBPediaLoader;
 import infra.TGFD;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -20,13 +20,13 @@ public class testDiffExtractorDbpedia {
 
         System.out.println("Test extract diffs over DBPedia graph");
 
-        ConfigParser.parse(args[0]);
+        Config.parse(args[0]);
 
-        System.out.println(ConfigParser.getAllDataPaths().keySet() + " *** " + ConfigParser.getAllDataPaths().values());
-        System.out.println(ConfigParser.getAllTypesPaths().keySet() + " *** " + ConfigParser.getAllTypesPaths().values());
+        System.out.println(Config.getAllDataPaths().keySet() + " *** " + Config.getAllDataPaths().values());
+        System.out.println(Config.getAllTypesPaths().keySet() + " *** " + Config.getAllTypesPaths().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(ConfigParser.patternPath);
+        TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
         List<TGFD> allTGFDs=generator.getTGFDs();
 
         String name="";
@@ -39,7 +39,7 @@ public class testDiffExtractorDbpedia {
             name="noSpecificTGFDs";
 
         System.out.println("Generating the diff files for the TGFD: " + name);
-        Object[] ids=ConfigParser.getAllDataPaths().keySet().toArray();
+        Object[] ids= Config.getAllDataPaths().keySet().toArray();
         Arrays.sort(ids);
         DBPediaLoader first, second=null;
         List<Change> allChanges;
@@ -50,8 +50,8 @@ public class testDiffExtractorDbpedia {
             long startTime = System.currentTimeMillis();
 
             t1=(int)ids[i];
-            first = new DBPediaLoader(allTGFDs,ConfigParser.getAllTypesPaths().get((int) ids[i]),
-                    ConfigParser.getAllDataPaths().get((int) ids[i]));
+            first = new DBPediaLoader(allTGFDs, Config.getAllTypesPaths().get((int) ids[i]),
+                    Config.getAllDataPaths().get((int) ids[i]));
 
             printWithTime("Load graph (" + ids[i] + ")", System.currentTimeMillis() - startTime);
 
@@ -61,7 +61,7 @@ public class testDiffExtractorDbpedia {
                 ChangeFinder cFinder=new ChangeFinder(second,first,allTGFDs);
                 allChanges= cFinder.findAllChanged();
 
-                analyzeChanges(allChanges,allTGFDs,second.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t2,t1,name,ConfigParser.getDiffCaps());
+                analyzeChanges(allChanges,allTGFDs,second.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t2,t1,name, Config.getDiffCaps());
             }
 
             if(i+1>=ids.length)
@@ -71,8 +71,8 @@ public class testDiffExtractorDbpedia {
             startTime = System.currentTimeMillis();
 
             t2=(int)ids[i+1];
-            second = new DBPediaLoader(allTGFDs,ConfigParser.getAllTypesPaths().get((int) ids[i+1]),
-                    ConfigParser.getAllDataPaths().get((int) ids[i+1]));
+            second = new DBPediaLoader(allTGFDs, Config.getAllTypesPaths().get((int) ids[i+1]),
+                    Config.getAllDataPaths().get((int) ids[i+1]));
 
             printWithTime("Load graph (" + ids[i+1] + ")", System.currentTimeMillis() - startTime);
 
@@ -80,7 +80,7 @@ public class testDiffExtractorDbpedia {
             ChangeFinder cFinder=new ChangeFinder(first,second,allTGFDs);
             allChanges= cFinder.findAllChanged();
 
-            analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t1,t2,name,ConfigParser.getDiffCaps());
+            analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),t1,t2,name, Config.getDiffCaps());
         }
     }
 

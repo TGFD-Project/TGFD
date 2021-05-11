@@ -1,7 +1,7 @@
 import Partitioner.IMDBPartitioner;
 import graphLoader.IMDBLoader;
 import infra.TGFD;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -13,10 +13,10 @@ public class testIMDBPartitioner {
         try {
             if(args.length==2)
             {
-                ConfigParser.parse(args[0]);
-                IMDBLoader loader=new IMDBLoader(new ArrayList<TGFD>(),ConfigParser.getFirstDataFilePath());
+                Config.parse(args[0]);
+                IMDBLoader loader=new IMDBLoader(new ArrayList<TGFD>(), Config.getFirstDataFilePath());
                 IMDBPartitioner partitioner=new IMDBPartitioner(loader,Integer.parseInt(args[1]));
-                partitioner.partition(ConfigParser.getFirstDataFilePath().get(0),"./");
+                partitioner.partition(Config.getFirstDataFilePath().get(0),"./");
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -9,7 +9,7 @@ import infra.DataVertex;
 import infra.RelationshipEdge;
 import infra.TGFD;
 import org.apache.commons.lang3.RandomStringUtils;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,10 +62,10 @@ public class SyntheticLoader extends GraphLoader {
         S3Object fullObject=null;
         try
         {
-            if(ConfigParser.Amazon)
+            if(Config.Amazon)
             {
                 AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                        .withRegion(ConfigParser.region)
+                        .withRegion(Config.region)
                         //.withCredentials(new ProfileCredentialsProvider())
                         //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                         .build();
@@ -96,9 +96,9 @@ public class SyntheticLoader extends GraphLoader {
                     String []object=rdf[2].split("_");
                     if(subject.length==2 && object.length==2)
                     {
-                        if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(subject[0]))
+                        if(Config.optimizedLoadingBasedOnTGFD && !validTypes.contains(subject[0]))
                             continue;
-                        if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(object[0]))
+                        if(Config.optimizedLoadingBasedOnTGFD && !validTypes.contains(object[0]))
                             continue;
 
                         DataVertex subjectVertex= (DataVertex) graph.getNode(subject[1]);

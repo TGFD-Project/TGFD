@@ -9,7 +9,7 @@ import infra.DataVertex;
 import infra.RelationshipEdge;
 import infra.TGFD;
 import org.apache.jena.rdf.model.*;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -62,10 +62,10 @@ public class DBPediaLoader extends GraphLoader {
             Model model = ModelFactory.createDefaultModel();
             System.out.println("Loading Node Types: " + nodeTypesPath);
 
-            if(ConfigParser.Amazon)
+            if(Config.Amazon)
             {
                 AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                        .withRegion(ConfigParser.region)
+                        .withRegion(Config.region)
                         //.withCredentials(new ProfileCredentialsProvider())
                         //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                         .build();
@@ -77,7 +77,7 @@ public class DBPediaLoader extends GraphLoader {
                 fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
 
                 br = new BufferedReader(new InputStreamReader(fullObject.getObjectContent()));
-                model.read(br,null, ConfigParser.language);
+                model.read(br,null, Config.language);
             }
             else
             {
@@ -98,7 +98,7 @@ public class DBPediaLoader extends GraphLoader {
 
                 // ignore the node if the type is not in the validTypes and
                 // optimizedLoadingBasedOnTGFD is true
-                if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(nodeType))
+                if(Config.optimizedLoadingBasedOnTGFD && !validTypes.contains(nodeType))
                     continue;
                 //int nodeId = subject.hashCode();
                 DataVertex v= (DataVertex) graph.getNode(nodeURI);
@@ -144,10 +144,10 @@ public class DBPediaLoader extends GraphLoader {
         try
         {
             Model model = ModelFactory.createDefaultModel();
-            if(ConfigParser.Amazon)
+            if(Config.Amazon)
             {
                 AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                        .withRegion(ConfigParser.region)
+                        .withRegion(Config.region)
                         //.withCredentials(new ProfileCredentialsProvider())
                         //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                         .build();
@@ -159,7 +159,7 @@ public class DBPediaLoader extends GraphLoader {
                 fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
 
                 br = new BufferedReader(new InputStreamReader(fullObject.getObjectContent()));
-                model.read(br,null, ConfigParser.language);
+                model.read(br,null, Config.language);
             }
             else
             {
@@ -213,7 +213,7 @@ public class DBPediaLoader extends GraphLoader {
                 }
                 else
                 {
-                    if(!ConfigParser.optimizedLoadingBasedOnTGFD || validAttributes.contains(predicate))
+                    if(!Config.optimizedLoadingBasedOnTGFD || validAttributes.contains(predicate))
                     {
                         subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
                         graphSize++;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
 import infra.TGFD;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -22,13 +22,13 @@ public class testDiffExtractorIMDB {
 
         System.out.println("Test extract diffs over IMDB graph");
 
-        ConfigParser.parse(args[0]);
+        Config.parse(args[0]);
 
-        System.out.println(ConfigParser.getAllDataPaths().keySet() + " *** " + ConfigParser.getAllDataPaths().values());
-        System.out.println(ConfigParser.getAllTypesPaths().keySet() + " *** " + ConfigParser.getAllTypesPaths().values());
+        System.out.println(Config.getAllDataPaths().keySet() + " *** " + Config.getAllDataPaths().values());
+        System.out.println(Config.getAllTypesPaths().keySet() + " *** " + Config.getAllTypesPaths().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(ConfigParser.patternPath);
+        TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
         List<TGFD> allTGFDs=generator.getTGFDs();
 
         String name="";
@@ -41,20 +41,20 @@ public class testDiffExtractorIMDB {
             name="noTGFDs";
 
         System.out.println("Generating the change files for the TGFD: " + name);
-        Object[] ids=ConfigParser.getAllDataPaths().keySet().toArray();
+        Object[] ids= Config.getAllDataPaths().keySet().toArray();
         Arrays.sort(ids);
         GraphLoader first, second=null;
         List<Change> allChanges;
         int t1,t2=0;
         for (int i=0;i<ids.length;i+=2) {
 
-            System.out.println("===========Snapshot "+ids[i]+" (" + ConfigParser.getTimestamps().get(ids[i]) + ")===========");
+            System.out.println("===========Snapshot "+ids[i]+" (" + Config.getTimestamps().get(ids[i]) + ")===========");
             long startTime = System.currentTimeMillis();
 
             t1=(int)ids[i];
-            first = new IMDBLoader(allTGFDs,ConfigParser.getAllDataPaths().get((int) ids[i]));
+            first = new IMDBLoader(allTGFDs, Config.getAllDataPaths().get((int) ids[i]));
 
-            printWithTime("Load graph "+ids[i]+" (" + ConfigParser.getTimestamps().get(ids[i]) + ")", System.currentTimeMillis() - startTime);
+            printWithTime("Load graph "+ids[i]+" (" + Config.getTimestamps().get(ids[i]) + ")", System.currentTimeMillis() - startTime);
 
             //
             if(second!=null)
@@ -63,19 +63,19 @@ public class testDiffExtractorIMDB {
                 allChanges= cFinder.findAllChanged();
 
                 analyzeChanges(allChanges,allTGFDs,second.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),
-                        ConfigParser.getTimestamps().get(t2),ConfigParser.getTimestamps().get(t1),name,ConfigParser.getDiffCaps());
+                        Config.getTimestamps().get(t2), Config.getTimestamps().get(t1),name, Config.getDiffCaps());
             }
 
             if(i+1>=ids.length)
                 break;
 
-            System.out.println("===========Snapshot "+ids[i+1]+" (" + ConfigParser.getTimestamps().get(ids[i+1]) + ")===========");
+            System.out.println("===========Snapshot "+ids[i+1]+" (" + Config.getTimestamps().get(ids[i+1]) + ")===========");
             startTime = System.currentTimeMillis();
 
             t2=(int)ids[i+1];
-            second = new IMDBLoader(allTGFDs,ConfigParser.getAllDataPaths().get((int) ids[i+1]));
+            second = new IMDBLoader(allTGFDs, Config.getAllDataPaths().get((int) ids[i+1]));
 
-            printWithTime("Load graph "+ids[i+1]+" (" + ConfigParser.getTimestamps().get(ids[i+1])+ ")", System.currentTimeMillis() - startTime);
+            printWithTime("Load graph "+ids[i+1]+" (" + Config.getTimestamps().get(ids[i+1])+ ")", System.currentTimeMillis() - startTime);
 
             //
             System.out.println("Finding the diffs.");
@@ -83,7 +83,7 @@ public class testDiffExtractorIMDB {
             allChanges= cFinder.findAllChanged();
 
             analyzeChanges(allChanges,allTGFDs,first.getGraphSize(),cFinder.getNumberOfEffectiveChanges(),
-                    ConfigParser.getTimestamps().get(t1),ConfigParser.getTimestamps().get(t2),name,ConfigParser.getDiffCaps());
+                    Config.getTimestamps().get(t1), Config.getTimestamps().get(t2),name, Config.getDiffCaps());
 
 
         }

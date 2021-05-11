@@ -26,7 +26,7 @@ public class testRunner {
 
     public testRunner()
     {
-        System.out.println("Test Incremental algorithm for the "+ConfigParser.dataset+" dataset from testRunner");
+        System.out.println("Test Incremental algorithm for the "+ Config.dataset+" dataset from testRunner");
     }
 
     public void load()
@@ -34,28 +34,28 @@ public class testRunner {
         long startTime=System.currentTimeMillis();
 
         // Test whether we loaded all the files correctly
-        System.out.println(Arrays.toString(ConfigParser.getFirstDataFilePath().toArray()));
-        System.out.println(ConfigParser.getDiffFilesPath().keySet() + " *** " + ConfigParser.getDiffFilesPath().values());
+        System.out.println(Arrays.toString(Config.getFirstDataFilePath().toArray()));
+        System.out.println(Config.getDiffFilesPath().keySet() + " *** " + Config.getDiffFilesPath().values());
 
-        TGFDGenerator generator = new TGFDGenerator(ConfigParser.patternPath);
+        TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
         tgfds=generator.getTGFDs();
 
         //Load the first timestamp
-        System.out.println("===========Snapshot 1 (" + ConfigParser.getTimestamps().get(1) + ")===========");
+        System.out.println("===========Snapshot 1 (" + Config.getTimestamps().get(1) + ")===========");
 
-        if(ConfigParser.dataset.equals("dbpedia"))
+        if(Config.dataset.equals("dbpedia"))
         {
-            loader = new DBPediaLoader(tgfds,ConfigParser.getFirstTypesFilePath(),ConfigParser.getFirstDataFilePath());
+            loader = new DBPediaLoader(tgfds, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
         }
-        else if(ConfigParser.dataset.equals("synthetic"))
+        else if(Config.dataset.equals("synthetic"))
         {
-            loader = new SyntheticLoader(tgfds,ConfigParser.getFirstDataFilePath());
+            loader = new SyntheticLoader(tgfds, Config.getFirstDataFilePath());
         }
         else // default is imdb
         {
-            loader = new IMDBLoader(tgfds,ConfigParser.getFirstDataFilePath());
+            loader = new IMDBLoader(tgfds, Config.getFirstDataFilePath());
         }
-        printWithTime("Load graph 1 (" + ConfigParser.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
+        printWithTime("Load graph 1 (" + Config.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
 
         wallClockTime+=System.currentTimeMillis()-startTime;
 
@@ -71,7 +71,7 @@ public class testRunner {
         StringBuilder msg=new StringBuilder();
 
         long startTime, functionWallClockTime=System.currentTimeMillis();
-        LocalDate currentSnapshotDate=ConfigParser.getTimestamps().get(1);
+        LocalDate currentSnapshotDate= Config.getTimestamps().get(1);
 
         //Create the match collection for all the TGFDs in the list
         HashMap <String, MatchCollection> matchCollectionHashMap=new HashMap <>();
@@ -94,18 +94,18 @@ public class testRunner {
         }
 
         //Load the change files
-        Object[] ids=ConfigParser.getDiffFilesPath().keySet().toArray();
+        Object[] ids= Config.getDiffFilesPath().keySet().toArray();
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++)
         {
-            System.out.println("===========Snapshot "+ids[i]+" (" + ConfigParser.getTimestamps().get(ids[i]) + ")===========");
+            System.out.println("===========Snapshot "+ids[i]+" (" + Config.getTimestamps().get(ids[i]) + ")===========");
 
             startTime=System.currentTimeMillis();
-            currentSnapshotDate=ConfigParser.getTimestamps().get((int)ids[i]);
-            ChangeLoader changeLoader=new ChangeLoader(ConfigParser.getDiffFilesPath().get(ids[i]));
+            currentSnapshotDate= Config.getTimestamps().get((int)ids[i]);
+            ChangeLoader changeLoader=new ChangeLoader(Config.getDiffFilesPath().get(ids[i]));
             List<Change> changes=changeLoader.getAllChanges();
 
-            printWithTime("Load changes "+ids[i]+" (" + ConfigParser.getTimestamps().get(ids[i]) + ")", System.currentTimeMillis()-startTime);
+            printWithTime("Load changes "+ids[i]+" (" + Config.getTimestamps().get(ids[i]) + ")", System.currentTimeMillis()-startTime);
             System.out.println("Total number of changes: " + changes.size());
 
             // Now, we need to find the matches for each snapshot.

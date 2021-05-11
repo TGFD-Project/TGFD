@@ -3,7 +3,7 @@ package AmazonStorage;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.*;
 
@@ -22,7 +22,7 @@ public class S3Storage {
 
             System.out.println("Uploading to Amazon S3");
 
-            final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(ConfigParser.region).build();
+            final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Config.region).build();
             File fileToBeUploaded = new File(fileName);
             PutObjectRequest request = new PutObjectRequest(bucketName, key, fileToBeUploaded).withCannedAcl(CannedAccessControlList.PublicRead);
             PutObjectResult result = s3Client.putObject(request);
@@ -53,7 +53,7 @@ public class S3Storage {
 
             System.out.println("Uploading to Amazon S3");
 
-            final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(ConfigParser.region).build();
+            final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Config.region).build();
             File fileToBeUploaded = new File(fileName);
             PutObjectRequest request = new PutObjectRequest(bucketName, key, fileToBeUploaded).withCannedAcl(CannedAccessControlList.PublicRead);
             PutObjectResult result = s3Client.putObject(request);
@@ -78,7 +78,7 @@ public class S3Storage {
         {
             S3Object fullObject;
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                    .withRegion(ConfigParser.region)
+                    .withRegion(Config.region)
                     .build();
             System.out.println("Downloading the object from Amazon S3 - Bucket name: " + bucketName +" - Key: " + key);
             fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
@@ -102,7 +102,7 @@ public class S3Storage {
         {
             S3Object fullObject;
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                    .withRegion(ConfigParser.region)
+                    .withRegion(Config.region)
                     .build();
             System.out.println("Downloading text file from Amazon S3 - Bucket name: " + bucketName +" - Key: " + key);
             fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));

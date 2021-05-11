@@ -5,7 +5,7 @@ import VF2Runner.VF2SubgraphIsomorphism;
 import graphLoader.DBPediaLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -103,7 +103,7 @@ public class testDbpedia
             }
             else if(conf[0].toLowerCase().startsWith("-optgraphload"))
             {
-                ConfigParser.optimizedLoadingBasedOnTGFD=Boolean.parseBoolean(conf[1]);
+                Config.optimizedLoadingBasedOnTGFD=Boolean.parseBoolean(conf[1]);
             }
         }
         // TODO: check that typesPaths.keySet == dataPaths.keySet [2021-02-14]
@@ -190,7 +190,7 @@ public class testDbpedia
 
             printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
 
-            if(ConfigParser.saveViolations)
+            if(Config.saveViolations)
                 saveViolations("optimized",allViolationsOptBatchTED,tgfd);
         }
         printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);

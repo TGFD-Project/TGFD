@@ -3,7 +3,7 @@ package ParalleRunner;
 import MPI.Consumer;
 import MPI.Producer;
 import MPI.Status;
-import util.ConfigParser;
+import util.Config;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
@@ -24,7 +24,7 @@ public class AdvancedCoordinator {
 
     public AdvancedCoordinator()
     {
-        for (String worker:ConfigParser.workers) {
+        for (String worker: Config.workers) {
             workersStatus.put(worker,false);
         }
     }
@@ -162,7 +162,7 @@ public class AdvancedCoordinator {
                         if (!workersStatus.get(worker))
                             System.out.print(worker + " - ");
                     }
-                    Thread.sleep(ConfigParser.threadsIdleTime);
+                    Thread.sleep(Config.threadsIdleTime);
                 }
                 Producer messageProducer=new Producer();
                 messageProducer.connect();
@@ -203,11 +203,11 @@ public class AdvancedCoordinator {
                             System.out.print(worker + " - ");
                     }
                     System.out.println("\n");
-                    Thread.sleep(ConfigParser.threadsIdleTime);
+                    Thread.sleep(Config.threadsIdleTime);
                 }
                 while(getStatus()==Status.Coordinator_Assigns_jobs_To_Workers) {
                     System.out.println("*RESULTS GETTER*: Coordinator waits to finish assigning the jobs");
-                    Thread.sleep(ConfigParser.threadsIdleTime);
+                    Thread.sleep(Config.threadsIdleTime);
                 }
                 Consumer consumer=new Consumer();
                 consumer.connect("results");

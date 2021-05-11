@@ -8,7 +8,7 @@ import TGFDLoader.TGFDGenerator;
 import infra.TGFD;
 import infra.VF2DataGraph;
 import org.apache.commons.lang3.RandomStringUtils;
-import util.ConfigParser;
+import util.Config;
 import util.testRunner;
 
 import javax.jms.ExceptionListener;
@@ -35,11 +35,11 @@ public class AdvancedWorker {
     private String workingBucketName="";
 
     public AdvancedWorker()  {
-        this.nodeName=ConfigParser.nodeName;
-        workingBucketName = ConfigParser
+        this.nodeName= Config.nodeName;
+        workingBucketName = Config
                 .getFirstDataFilePath()
                 .get(0)
-                .substring(0,ConfigParser.getFirstDataFilePath().get(0).lastIndexOf("/"));
+                .substring(0, Config.getFirstDataFilePath().get(0).lastIndexOf("/"));
         allJobs=new HashMap<>();
         otherWorkersJobs=new HashMap<>();
     }
@@ -106,7 +106,7 @@ public class AdvancedWorker {
                         .forEach(arr -> allJobs.put(arr[0], arr[1]));
                 job=allJobs.get(nodeName);
                 allJobs.remove(nodeName);
-                ConfigParser.patternPath=job;
+                Config.patternPath=job;
                 jobReceived.set(true);
                 System.out.println("*JOB RECEIVER*: The job has been received: " + job);
             }
@@ -129,7 +129,7 @@ public class AdvancedWorker {
         public void run() {
             try {
                 while(getStatus()!=Status.Worker_Received_Job) {
-                    sleep(ConfigParser.threadsIdleTime);
+                    sleep(Config.threadsIdleTime);
                     System.out.println("*DATA SHIPPER*: Worker '"+nodeName+"' has not received the job yet.");
                 }
 
@@ -181,7 +181,7 @@ public class AdvancedWorker {
             try
             {
                 while(getStatus()!=Status.Worker_Receiving_Data) {
-                    sleep(ConfigParser.threadsIdleTime);
+                    sleep(Config.threadsIdleTime);
                     System.out.println("*DATA RECEIVER*: Worker '"+nodeName+"' has not received the job yet.");
                 }
 
@@ -234,7 +234,7 @@ public class AdvancedWorker {
         public void run() {
             try {
                 while(getStatus()!=Status.Worker_Ready_To_Run) {
-                    sleep(ConfigParser.threadsIdleTime);
+                    sleep(Config.threadsIdleTime);
                     System.out.println("*RUNNER*: Worker '"+nodeName+"' has not received the data yet to start.");
                 }
                 readyToRun.set(false);

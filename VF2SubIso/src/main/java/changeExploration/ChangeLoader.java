@@ -8,7 +8,7 @@ import infra.Attribute;
 import infra.DataVertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -40,10 +40,10 @@ public class ChangeLoader {
         Object json;
         try
         {
-            if(ConfigParser.Amazon)
+            if(Config.Amazon)
             {
                 AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                        .withRegion(ConfigParser.region)
+                        .withRegion(Config.region)
                         //.withCredentials(new ProfileCredentialsProvider())
                         //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                         .build();

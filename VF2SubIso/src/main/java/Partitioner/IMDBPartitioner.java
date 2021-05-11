@@ -6,7 +6,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.*;
 import java.util.HashMap;
@@ -44,10 +44,10 @@ public class IMDBPartitioner {
             S3Object fullObject = null;
             BufferedReader br;
 
-            if(ConfigParser.Amazon)
+            if(Config.Amazon)
             {
                 AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                        .withRegion(ConfigParser.region)
+                        .withRegion(Config.region)
                         .build();
                 //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
                 String bucketName=dataGraphFilePath.substring(0,dataGraphFilePath.lastIndexOf("/"));

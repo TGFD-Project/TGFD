@@ -1,7 +1,7 @@
 package MPI;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import util.ConfigParser;
+import util.Config;
 
 import javax.jms.*;
 
@@ -14,7 +14,7 @@ public class Consumer {
 
     public Consumer()
     {
-        url= ConfigParser.ActiveMQBrokerURL;
+        url= Config.ActiveMQBrokerURL;
     }
 
     public void connect(String queueName)
@@ -22,8 +22,8 @@ public class Consumer {
         try
         {
             ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
-            connectionFactory.setUserName(ConfigParser.ActiveMQUsername);
-            connectionFactory.setPassword(ConfigParser.ActiveMQPassword);
+            connectionFactory.setUserName(Config.ActiveMQUsername);
+            connectionFactory.setPassword(Config.ActiveMQPassword);
             connection = connectionFactory.createConnection();
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

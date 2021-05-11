@@ -2,7 +2,7 @@ package graphLoader;
 
 import changeExploration.*;
 import infra.*;
-import util.ConfigParser;
+import util.Config;
 
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +42,7 @@ public class GraphLoader {
         validTypes=new HashSet <>();
         validAttributes=new HashSet<>();
 
-        if(ConfigParser.optimizedLoadingBasedOnTGFD)
+        if(Config.optimizedLoadingBasedOnTGFD)
             for (TGFD tgfd:alltgfd) {
                 extractValidTypesFromTGFD(tgfd);
                 extractValidAttributesFromTGFD(tgfd);

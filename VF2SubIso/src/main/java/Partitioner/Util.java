@@ -8,7 +8,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import infra.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -27,7 +27,7 @@ public class Util {
         String sb= mapping.keySet().stream().map(key -> key + "\t" + mapping.get(key) + "\n").collect(Collectors.joining());
         try
         {
-            if (ConfigParser.Amazon)
+            if (Config.Amazon)
             {
                 //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
                 String bucketName = path.substring(0, path.lastIndexOf("/"));
@@ -57,10 +57,10 @@ public class Util {
         BufferedReader br;
         try
         {
-            if(ConfigParser.Amazon)
+            if(Config.Amazon)
             {
                 AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                        .withRegion(ConfigParser.region)
+                        .withRegion(Config.region)
                         .build();
                 //TODO: Need to check if the path is correct (should be in the form of bucketName/Key )
                 String bucketName=path.substring(0,path.lastIndexOf("/"));

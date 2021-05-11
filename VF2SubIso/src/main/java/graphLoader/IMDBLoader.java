@@ -9,7 +9,7 @@ import infra.DataVertex;
 import infra.RelationshipEdge;
 import infra.TGFD;
 import org.apache.jena.rdf.model.*;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -44,10 +44,10 @@ public class IMDBLoader extends GraphLoader{
             HashSet<String> types=new HashSet <>();
             Model model = ModelFactory.createDefaultModel();
 
-            if(ConfigParser.Amazon)
+            if(Config.Amazon)
             {
                 AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                        .withRegion(ConfigParser.region)
+                        .withRegion(Config.region)
                         //.withCredentials(new ProfileCredentialsProvider())
                         //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                         .build();
@@ -58,7 +58,7 @@ public class IMDBLoader extends GraphLoader{
                 fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key));
 
                 br = new BufferedReader(new InputStreamReader(fullObject.getObjectContent()));
-                model.read(br,null, ConfigParser.language);
+                model.read(br,null, Config.language);
             }
             else
             {
@@ -86,7 +86,7 @@ public class IMDBLoader extends GraphLoader{
 
                 // ignore the node if the type is not in the validTypes and
                 // optimizedLoadingBasedOnTGFD is true
-                if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(subjectType))
+                if(Config.optimizedLoadingBasedOnTGFD && !validTypes.contains(subjectType))
                     continue;
 
                 types.add(subjectType);
@@ -107,7 +107,7 @@ public class IMDBLoader extends GraphLoader{
                 if (object.isLiteral())
                 {
                     objectNodeURI = object.asLiteral().getString().toLowerCase();
-                    if(ConfigParser.optimizedLoadingBasedOnTGFD && validAttributes.contains(predicate)) {
+                    if(Config.optimizedLoadingBasedOnTGFD && validAttributes.contains(predicate)) {
                         subjectVertex.addAttribute(new Attribute(predicate, objectNodeURI));
                         graphSize++;
                     }
@@ -130,7 +130,7 @@ public class IMDBLoader extends GraphLoader{
 
                     // ignore the node if the type is not in the validTypes and
                     // optimizedLoadingBasedOnTGFD is true
-                    if(ConfigParser.optimizedLoadingBasedOnTGFD && !validTypes.contains(objectType))
+                    if(Config.optimizedLoadingBasedOnTGFD && !validTypes.contains(objectType))
                         continue;
 
                     types.add(objectType);

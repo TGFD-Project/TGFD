@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import infra.*;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -44,10 +44,10 @@ public class TGFDGenerator {
         String line="";
         try
         {
-            if(ConfigParser.Amazon)
+            if(Config.Amazon)
             {
                 AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                        .withRegion(ConfigParser.region)
+                        .withRegion(Config.region)
                         //.withCredentials(new ProfileCredentialsProvider())
                         //.withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                         .build();

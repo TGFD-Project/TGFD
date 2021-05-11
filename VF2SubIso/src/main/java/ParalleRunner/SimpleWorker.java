@@ -3,7 +3,7 @@ package ParalleRunner;
 import MPI.Consumer;
 import MPI.Producer;
 import MPI.Status;
-import util.ConfigParser;
+import util.Config;
 import util.testRunner;
 
 import javax.jms.*;
@@ -17,7 +17,7 @@ public class SimpleWorker {
     private String job="";
 
     public SimpleWorker()  {
-        this.nodeName=ConfigParser.nodeName;
+        this.nodeName= Config.nodeName;
     }
 
     public void start()
@@ -84,13 +84,13 @@ public class SimpleWorker {
         public void run() {
             try {
                 while(getStatus()!=Status.Worker_Received_Job) {
-                    Thread.sleep(ConfigParser.threadsIdleTime);
+                    Thread.sleep(Config.threadsIdleTime);
                     System.out.println("*JOB RUNNER*: Worker '"+nodeName+"' has not received the job yet.");
                 }
 
                 System.out.println("*JOB RUNNER*: Jobs are received. Starting the TED algorithm");
 
-                ConfigParser.patternPath=job;
+                Config.patternPath=job;
 
                 testRunner runner=new testRunner();
                 runner.load();

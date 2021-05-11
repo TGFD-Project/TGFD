@@ -1,24 +1,24 @@
 import ParalleRunner.SimpleCoordinator;
 import ParalleRunner.SimpleWorker;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.FileNotFoundException;
 
 public class testParallelIMDB {
 
     public static void main(String []args) throws FileNotFoundException {
-        ConfigParser.parse(args[0]);
-        if(ConfigParser.nodeName.equalsIgnoreCase("coordinator"))
+        Config.parse(args[0]);
+        if(Config.nodeName.equalsIgnoreCase("coordinator"))
         {
 
             SimpleCoordinator simpleCoordinator =new SimpleCoordinator();
             simpleCoordinator.start();
-            simpleCoordinator.assignJob(ConfigParser.jobs);
+            simpleCoordinator.assignJob(Config.jobs);
             simpleCoordinator.waitForResults();
         }
         else
         {
-            System.out.println("Worker '"+ConfigParser.nodeName+"' is starting...");
+            System.out.println("Worker '"+ Config.nodeName+"' is starting...");
             SimpleWorker worker=new SimpleWorker();
             worker.start();
         }

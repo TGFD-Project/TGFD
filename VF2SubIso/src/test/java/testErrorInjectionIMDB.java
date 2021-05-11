@@ -9,7 +9,7 @@ import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
 import infra.*;
 import org.jgrapht.GraphMapping;
-import util.ConfigParser;
+import util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -24,15 +24,15 @@ public class testErrorInjectionIMDB {
 
         long wallClockStart=System.currentTimeMillis();
 
-        ConfigParser.parse(args[0]);
+        Config.parse(args[0]);
 
         System.out.println("Test Error Injection over IMDB");
 
-        System.out.println(Arrays.toString(ConfigParser.getFirstDataFilePath().toArray()));
-        System.out.println(ConfigParser.getDiffFilesPath().keySet() + " *** " + ConfigParser.getDiffFilesPath().values());
+        System.out.println(Arrays.toString(Config.getFirstDataFilePath().toArray()));
+        System.out.println(Config.getDiffFilesPath().keySet() + " *** " + Config.getDiffFilesPath().values());
 
         //Load the TGFDs.
-        TGFDGenerator generator = new TGFDGenerator(ConfigParser.patternPath);
+        TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
         List <TGFD> allTGFDs=generator.getTGFDs();
 
         //Create the match collection for all the TGFDs in the list
@@ -44,8 +44,8 @@ public class testErrorInjectionIMDB {
         //Load the first timestamp
         System.out.println("-----------Snapshot (1)-----------");
         long startTime=System.currentTimeMillis();
-        LocalDate currentSnapshotDate=ConfigParser.getTimestamps().get(1);
-        GraphLoader imdb = new IMDBLoader(allTGFDs,ConfigParser.getFirstDataFilePath());
+        LocalDate currentSnapshotDate= Config.getTimestamps().get(1);
+        GraphLoader imdb = new IMDBLoader(allTGFDs, Config.getFirstDataFilePath());
 
         printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
@@ -65,15 +65,15 @@ public class testErrorInjectionIMDB {
         }
 
         //Load the change files
-        Object[] ids=ConfigParser.getDiffFilesPath().keySet().toArray();
+        Object[] ids= Config.getDiffFilesPath().keySet().toArray();
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++)
         {
             System.out.println("-----------Snapshot (" + ids[i] + ")-----------");
 
             startTime=System.currentTimeMillis();
-            currentSnapshotDate=ConfigParser.getTimestamps().get((int)ids[i]);
-            ChangeLoader changeLoader=new ChangeLoader(ConfigParser.getDiffFilesPath().get(ids[i]));
+            currentSnapshotDate= Config.getTimestamps().get((int)ids[i]);
+            ChangeLoader changeLoader=new ChangeLoader(Config.getDiffFilesPath().get(ids[i]));
             List<Change> changes=changeLoader.getAllChanges();
 
             printWithTime("Load changes ("+ids[i] + ")", System.currentTimeMillis()-startTime);
