@@ -155,4 +155,107 @@ public class TGFDGenerator {
             e.printStackTrace();
         }
     }
+
+    public String toTextFormat(TGFD tgfd)
+    {
+        StringBuilder res=new StringBuilder();
+        res.append("tgfd#").append(tgfd.getName()).append("\n");
+        int index=1;
+        HashMap<Vertex,String> map=new HashMap<>();
+        for (Vertex v:tgfd.getPattern().getPattern().vertexSet()) {
+            map.put(v,"v"+index);
+            res.append("vertex#").append("v").append(index);
+            v.getTypes().forEach(type -> res.append("#").append(type));
+            v.getAllAttributesList().forEach(attr -> {
+                if (attr.isNULL())
+                {
+                    res.append("#").append(attr.getAttrName());
+                }
+                else
+                {
+                    res.append("#").append(attr.getAttrName()).append("$").append(attr.getAttrValue());
+                }
+            });
+            res.append("\n");
+            index++;
+        }
+        tgfd.getPattern()
+                .getPattern()
+                .edgeSet()
+                .forEach(e -> res
+                        .append("edge#")
+                        .append(map.get(e.getSource()))
+                        .append("#")
+                        .append(map.get(e.getTarget()))
+                        .append("#")
+                        .append(e.getLabel())
+                        .append("\n"));
+
+        res.append("diameter#")
+                .append(tgfd.getPattern().getDiameter())
+                .append("\n");
+
+        tgfd.getDependency().getX().forEach(literal -> {
+            res.append("literal#x#");
+            if (literal instanceof ConstantLiteral)
+            {
+                ConstantLiteral l = (ConstantLiteral) literal;
+                res.append(l.getVertexType())
+                        .append("$")
+                        .append(l.getAttrName())
+                        .append("$")
+                        .append(l.getAttrValue())
+                        .append("\n");
+            }
+            else if (literal instanceof VariableLiteral)
+            {
+                VariableLiteral l = (VariableLiteral) literal;
+                res.append(l.getVertexType_1())
+                        .append("$")
+                        .append(l.getAttrName_1())
+                        .append("$")
+                        .append(l.getVertexType_2())
+                        .append("$")
+                        .append(l.getAttrName_2())
+                        .append("\n");
+            }
+        });
+
+        tgfd.getDependency().getY().forEach(literal -> {
+            res.append("literal#y#");
+            if (literal instanceof ConstantLiteral)
+            {
+                ConstantLiteral l = (ConstantLiteral) literal;
+                res.append(l.getVertexType())
+                        .append("$")
+                        .append(l.getAttrName())
+                        .append("$")
+                        .append(l.getAttrValue())
+                        .append("\n");
+            }
+            else if (literal instanceof VariableLiteral)
+            {
+                VariableLiteral l = (VariableLiteral) literal;
+                res.append(l.getVertexType_1())
+                        .append("$")
+                        .append(l.getAttrName_1())
+                        .append("$")
+                        .append(l.getVertexType_2())
+                        .append("$")
+                        .append(l.getAttrName_2())
+                        .append("\n");
+            }
+        });
+
+        res.append("delta#")
+                .append(tgfd.getDelta().getMin().getDays())
+                .append("#")
+                .append(tgfd.getDelta().getMax().getDays())
+                .append("#")
+                .append(tgfd.getDelta().getGranularity().toDays())
+                .append("\n");
+
+
+        return  res.toString();
+    }
 }
