@@ -14,10 +14,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Util {
@@ -97,14 +94,16 @@ public class Util {
     public static VF2DataGraph getSubgraphToSendToOtherNodes(VF2DataGraph dataGraph, List<TGFD> tgfds)
     {
         Graph<Vertex, RelationshipEdge> subgraph = new DefaultDirectedGraph<>(RelationshipEdge.class);
-        List<Vertex> vertices=new ArrayList<>();
+        List<Vertex> vertices;
         List<String> validTypes=new ArrayList<>();
         tgfds.forEach(tgfd -> tgfd.getPattern().getPattern().vertexSet().stream().map(Vertex::getTypes).forEach(validTypes::addAll));
 
-        for (Vertex v:dataGraph.getGraph().vertexSet()) {
-            if(!Collections.disjoint(v.getTypes(),validTypes))
-                vertices.add(v);
-        }
+        vertices = dataGraph
+                .getGraph()
+                .vertexSet()
+                .stream()
+                .filter(v -> !Collections.disjoint(v.getTypes(), validTypes))
+                .collect(Collectors.toList());
 
         for (Vertex source:vertices) {
             for (RelationshipEdge e:dataGraph.getGraph().outgoingEdgesOf(source)) {
@@ -145,6 +144,69 @@ public class Util {
                 if (!exist)
                     base.addEdge(src, dst, e);
                 });
+    }
+
+    public static int communicationCost(VF2DataGraph graph, HashMap<String,Integer> mapping, int assignedPartition, List<TGFD> assignedTGFDs)
+    {
+        int cost;
+
+        HashSet<String> types=new HashSet<>();
+        assignedTGFDs
+                .stream()
+                .flatMap(tgfd -> tgfd
+                        .getPattern()
+                        .getPattern()
+                        .vertexSet()
+                        .stream())
+                .map(Vertex::getTypes)
+                .forEach(types::addAll);
+
+        cost = (int) graph
+                .getGraph()
+                .vertexSet()
+                .stream()
+                .map(v -> (DataVertex) v)
+                .filter(v -> mapping.get(v.getVertexURI()) != assignedPartition)
+                //.filter(v -> types.stream().anyMatch(type -> v.getTypes().contains(type)))
+                .filter(v -> !Collections.disjoint(v.getTypes(), types))
+                .count();
+
+        cost += (int) graph
+                .getGraph()
+                .edgeSet()
+                .stream()
+                .filter(e -> (
+                        mapping.get(((DataVertex)e.getSource()).getVertexURI()) != assignedPartition
+                        && !Collections.disjoint(e.getSource().getTypes(), types))
+                            ||
+                        (mapping.get(((DataVertex)e.getTarget()).getVertexURI()) != assignedPartition
+                        && !Collections.disjoint(e.getTarget().getTypes(), types)))
+                .count();
+
+        return cost;
+    }
+
+    public static double workloadEstimationTime(VF2DataGraph graph, TGFD tgfd)
+    {
+        double cost=0;
+        HashSet<String> types=new HashSet<>();
+        tgfd
+                .getPattern()
+                .getPattern()
+                .vertexSet()
+                .stream()
+                .map(Vertex::getTypes)
+                .forEach(types::addAll);
+
+        String type = tgfd.getPattern().getCenterVertexType();
+        for (Vertex v:graph.getGraph().vertexSet()) {
+            if(v.getTypes().contains(type))
+            {
+                int graphSize=graph.getSubGraphSize((DataVertex) v,tgfd.getPattern().getDiameter());
+                cost += Math.pow(graphSize, tgfd.getPattern().getSize());
+            }
+        }
+        return cost;
     }
 
 }
