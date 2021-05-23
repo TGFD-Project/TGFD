@@ -3,6 +3,7 @@ package infra;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -141,11 +142,41 @@ public class VF2PatternGraph {
     @Override
     public String toString() {
         String res="VF2PatternGraph{";
-        for (RelationshipEdge edge: pattern.edgeSet()) {
-            res+=edge.toString();
+        if (pattern.edgeSet().size() == 0) {
+            res+="\n\t"+pattern.vertexSet().toString();
+            res+="\n\t}";
+            return res;
         }
-        res+='}';
+        for (RelationshipEdge edge: pattern.edgeSet()) {
+            res+="\n\t"+edge.toString();
+        }
+        res+="\n\t}";
         return res;
+    }
+
+    public VF2PatternGraph copy() {
+        VF2PatternGraph newPattern = new VF2PatternGraph();
+        for (Vertex v : pattern.vertexSet()) {
+            PatternVertex newV = ((PatternVertex) v).copy();
+            newPattern.addVertex(newV);
+        }
+        for (RelationshipEdge e : pattern.edgeSet()) {
+            PatternVertex source = null;
+            for (Vertex vertex : newPattern.getPattern().vertexSet()) {
+                if (vertex.getTypes().contains(new ArrayList<>(((PatternVertex) e.getSource()).getTypes()).get(0))) {
+                    source = (PatternVertex) vertex;
+                }
+            }
+            PatternVertex target = null;
+            for (Vertex vertex : newPattern.getPattern().vertexSet()) {
+                if (vertex.getTypes().contains(new ArrayList<>(((PatternVertex) e.getTarget()).getTypes()).get(0))) {
+                    target = (PatternVertex) vertex;
+                }
+            }
+            newPattern.addEdge(source, target, new RelationshipEdge(e.getLabel()));
+        }
+
+        return newPattern;
     }
 
 }

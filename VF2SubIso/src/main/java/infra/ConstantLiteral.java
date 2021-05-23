@@ -1,5 +1,7 @@
 package infra;
 
+import org.jetbrains.annotations.NotNull;
+
 public class ConstantLiteral extends Literal {
 
     String vertexType, attrName, attrValue;
@@ -29,5 +31,13 @@ public class ConstantLiteral extends Literal {
                 ", attrName='" + attrName + '\'' +
                 ", attrValue='" + attrValue + '\'' +
                 '}';
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (!(obj instanceof ConstantLiteral)) return false;
+        return this.vertexType.equals(((ConstantLiteral)obj).vertexType) &&
+                this.attrName.equals(((ConstantLiteral)obj).attrName) &&
+                ((this.attrValue != null && ((ConstantLiteral)obj).attrValue != null) ? this.attrValue.equals(((ConstantLiteral)obj).attrValue) : true);
     }
 }

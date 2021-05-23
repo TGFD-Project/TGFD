@@ -41,8 +41,8 @@ public class Dependency {
     @Override
     public String toString() {
         return "Dependency{" +
-                "X=" + X +
-                ", Y=" + Y +
-                '}';
+                "\n\tY=" + Y +
+                ",\n\tX=" + X +
+                "\n\t}";
     }
 }

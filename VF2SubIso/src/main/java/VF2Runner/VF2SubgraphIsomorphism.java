@@ -37,6 +37,85 @@ public class VF2SubgraphIsomorphism {
                 return 1;
         };
     }
+    public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, double support, boolean cacheEdges)
+    {
+        System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
+
+        long startTime = System.currentTimeMillis();
+        inspector = new VF2SubgraphIsomorphismInspector<>(
+                dataGraph.getGraph(), pattern.getPattern(),
+                myVertexComparator, myEdgeComparator, cacheEdges);
+
+        System.out.println("Search Cost: " + (System.currentTimeMillis() - startTime));
+        int size=0;
+        if (inspector.isomorphismExists()) {
+            Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
+            if(Config.printDetailedMatchingResults)
+            {
+                while (size < support && iterator.hasNext()) {
+                    System.out.println("---------- Match found ---------- ");
+                    GraphMapping<Vertex, RelationshipEdge> mappings = iterator.next();
+
+                    for (Vertex v : pattern.getPattern().vertexSet()) {
+                        Vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
+                        if (currentMatchedVertex != null) {
+                            System.out.println(v + " --> " + currentMatchedVertex);
+                        }
+                    }
+                    size++;
+                }
+                System.out.println("Number of matches: " + size);
+            }
+            //TODO: Potential error here, if we want to debug and see the matches
+            //FIXME: The iterator will go to end if the ConfigParser.printDetailedMatchingResults is true! Will be useless to return
+            return iterator;
+        }
+        else
+        {
+            System.out.println("No Matches for the query!");
+            return null;
+        }
+    }
+
+    public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean cacheEdges, boolean isDeltaDiscovery)
+    {
+        System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
+//        System.gc();
+
+        long startTime = System.currentTimeMillis();
+        inspector = new VF2SubgraphIsomorphismInspector<>(
+                dataGraph.getGraph(), pattern.getPattern(),
+                myVertexComparator, myEdgeComparator, cacheEdges);
+
+        System.out.println("Search Cost: " + (System.currentTimeMillis() - startTime));
+        int size=0;
+        if (inspector.isomorphismExists()) {
+            Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
+            if (!isDeltaDiscovery) {
+                while (iterator.hasNext()) {
+                    System.out.println("---------- Match found ---------- ");
+                    GraphMapping<Vertex, RelationshipEdge> mappings = iterator.next();
+
+                    for (Vertex v : pattern.getPattern().vertexSet()) {
+                        Vertex currentMatchedVertex = mappings.getVertexCorrespondence(v, false);
+                        if (currentMatchedVertex != null) {
+                            System.out.println(v + " --> " + currentMatchedVertex);
+                        }
+                    }
+                    size++;
+                }
+                System.out.println("Number of matches: " + size);
+            }
+            //TODO: Potential error here, if we want to debug and see the matches
+            //FIXME: The iterator will go to end if the ConfigParser.printDetailedMatchingResults is true! Will be useless to return
+            return iterator;
+        }
+        else
+        {
+            System.out.println("No Matches for the query!");
+            return null;
+        }
+    }
 
     public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean cacheEdges)
     {

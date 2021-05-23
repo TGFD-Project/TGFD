@@ -56,8 +56,8 @@ public class TGFD {
     public String toString() {
         return "TGFD{" +
                 "delta=" + delta +
-                ", dependency=" + dependency +
-                ", pattern=" + pattern +
+                ",\n dependency=" + dependency +
+                ",\n pattern=" + pattern +
                 '}';
     }
 }
