@@ -5,6 +5,7 @@ public class TGFD {
     private Delta delta;
     private Dependency dependency;
     private VF2PatternGraph pattern;
+    private Double support;
     private String name="";
 
     public TGFD (VF2PatternGraph pattern, Delta delta, Dependency dependency,String name)
@@ -12,6 +13,15 @@ public class TGFD {
         this.delta=delta;
         this.pattern=pattern;
         this.dependency=dependency;
+        this.name=name;
+    }
+
+    public TGFD (VF2PatternGraph pattern, Delta delta, Dependency dependency, double support, String name)
+    {
+        this.delta = delta;
+        this.pattern = pattern;
+        this.dependency = dependency;
+        this.support = support;
         this.name=name;
     }
 
@@ -44,6 +54,10 @@ public class TGFD {
         return delta;
     }
 
+    public Double getSupport() {
+        return support;
+    }
+
     public String getName() {
         return name;
     }
@@ -55,9 +69,10 @@ public class TGFD {
     @Override
     public String toString() {
         return "TGFD{" +
-                "delta=" + delta +
-                ",\n dependency=" + dependency +
-                ",\n pattern=" + pattern +
+                "\n pattern=" + pattern +
+                "\n dependency=" + dependency +
+                "\n delta=" + delta +
+                "\n support=" + support +
                 '}';
     }
 }

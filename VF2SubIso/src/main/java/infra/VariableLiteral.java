@@ -2,6 +2,8 @@ package infra;
 
 import org.apache.jena.sparql.core.Var;
 
+import java.util.Objects;
+
 /**
  * A variable literal to assert that a value of an attribute of a pair of vertices are the same.
  *
@@ -66,6 +68,7 @@ public class VariableLiteral extends Literal
                 '}';
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) return false;
         if (!(obj instanceof VariableLiteral)) return false;
@@ -73,5 +76,10 @@ public class VariableLiteral extends Literal
                 this.attrName_1.equals(((VariableLiteral)obj).attrName_1) &&
                 this.vertexType_2.equals(((VariableLiteral)obj).vertexType_2) &&
                 this.attrName_2.equals(((VariableLiteral)obj).attrName_2);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(vertexType_1, attrName_1, vertexType_2, attrName_2);
     }
 }
