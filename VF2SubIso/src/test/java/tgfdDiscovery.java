@@ -7,6 +7,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.riot.system.PrefixMap;
 import org.jetbrains.annotations.NotNull;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
@@ -47,6 +48,7 @@ public class tgfdDiscovery {
 	public static boolean isGraphExperiment;
 	public static HashSet<String> lowPatternSupportEdges;
 	private static HashSet<String> activeAttributesSet;
+	private static ArrayList<DBPediaLoader> graphs;
 
 	public static void printTGFDstoFile(String experimentName, int k, double theta, ArrayList<TGFD> tgfds) {
 		tgfds.sort(new Comparator<TGFD>() {
@@ -617,6 +619,75 @@ public class tgfdDiscovery {
 		System.out.println();
 	}
 
+	public static Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> findMatches2(ArrayList<DBPediaLoader> graphs, VF2PatternGraph pattern, List<ConstantLiteral> attributes) {
+		String yVertexType = attributes.get(attributes.size()-1).getVertexType();
+		String yAttrName = attributes.get(attributes.size()-1).getAttrName();
+//		List<ConstantLiteral> xAttributes = attributes.subList(0,attributes.size()-1);
+		Map<Set<ConstantLiteral>, Map<ConstantLiteral, List<Integer>>> entitiesWithRHSvalues = new HashMap<>();
+		int t = 2015;
+		for (DBPediaLoader graph : graphs) {
+			System.out.println("---------- Attribute values in " + t + " ---------- ");
+			int numOfMatches = 0;
+			Iterator<GraphMapping<Vertex, RelationshipEdge>> results = new VF2SubgraphIsomorphism().execute(graph.getGraph(), pattern, false, true);
+			if (results == null) continue;
+			while (results.hasNext()) {
+				Set<ConstantLiteral> entity = new HashSet<>();
+				ConstantLiteral rhs = null;
+				GraphMapping<Vertex, RelationshipEdge> match = results.next();
+				for (Vertex patternVertex : pattern.getPattern().vertexSet()) {
+					Vertex currentMatchedVertex = match.getVertexCorrespondence(patternVertex, false);
+					if (currentMatchedVertex == null) continue;
+					String patternVertexType = new ArrayList<>(patternVertex.getTypes()).get(0);
+					for (ConstantLiteral attribute : attributes) {
+						if (attribute.getVertexType().equals(patternVertexType)) {
+							for (String attrName : patternVertex.getAllAttributesNames()) {
+								if (attribute.getAttrName().equals(attrName)) {
+									String xAttrValue = currentMatchedVertex.getAttributeValueByName(attrName);
+									ConstantLiteral xLiteral = new ConstantLiteral(patternVertexType, attrName, xAttrValue);
+									entity.add(xLiteral);
+								}
+							}
+						}
+					}
+					if (patternVertexType.equals(yVertexType) && currentMatchedVertex.hasAttribute(yAttrName)) {
+						String yAttrValue = currentMatchedVertex.getAttributeValueByName(yAttrName);
+						rhs = new ConstantLiteral(patternVertexType, yAttrName, yAttrValue);
+					}
+				}
+				if (entity.size() == 0 || rhs == null) continue;
+
+				if (!entitiesWithRHSvalues.containsKey(entity)) {
+					entitiesWithRHSvalues.put(entity, new HashMap<>());
+				}
+				if (!entitiesWithRHSvalues.get(entity).containsKey(rhs)) {
+					entitiesWithRHSvalues.get(entity).put(rhs, new ArrayList<>());
+				}
+				entitiesWithRHSvalues.get(entity).get(rhs).add(t);
+				numOfMatches++;
+			}
+			System.out.println("Number of matches: " + numOfMatches);
+			t++;
+		}
+		if (entitiesWithRHSvalues.size() == 0) return null;
+
+		Comparator<Entry<ConstantLiteral, List<Integer>>> comparator = new Comparator<Entry<ConstantLiteral, List<Integer>>>() {
+			@Override
+			public int compare(Entry<ConstantLiteral, List<Integer>> o1, Entry<ConstantLiteral, List<Integer>> o2) {
+				return o2.getValue().size() - o1.getValue().size();
+			}
+		};
+
+		Map<Set<ConstantLiteral>, ArrayList<Map.Entry<ConstantLiteral, List<Integer>>>> entitiesWithSortedRHSvalues = new HashMap<>();
+		for (Set<ConstantLiteral> entity : entitiesWithRHSvalues.keySet()) {
+			Map<ConstantLiteral, List<Integer>> rhsMapOfEntity = entitiesWithRHSvalues.get(entity);
+			ArrayList<Map.Entry<ConstantLiteral, List<Integer>>> sortedRhsMapOfEntity = new ArrayList<>(rhsMapOfEntity.entrySet());
+			sortedRhsMapOfEntity.sort(comparator);
+			entitiesWithSortedRHSvalues.put(entity, sortedRhsMapOfEntity);
+		}
+
+		return entitiesWithSortedRHSvalues;
+	}
+
 	public static Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> findMatches(ArrayList<DBPediaLoader> graphs, VF2PatternGraph pattern, HashMap<String, HashSet<String>> xVertexToAttrNameMap, String yVertexType, String yAttrName) {
 		Map<Set<ConstantLiteral>, Map<ConstantLiteral, List<Integer>>> entitiesWithRHSvalues = new HashMap<>();
 		int t = 2015;
@@ -648,13 +719,7 @@ public class tgfdDiscovery {
 					}
 				}
 				if (entity.size() == 0 || rhs == null) continue;
-//				ConstantLiteral[] entityArray = new ConstantLiteral[entity.size()];
-//				int i = 0;
-//				for (ConstantLiteral l : entity) {
-//					entityArray[i] = l;
-//					i++;
-//				}
-//				MultiKey<ConstantLiteral> entityKey = new MultiKey<ConstantLiteral>(entityArray);
+
 				if (!entitiesWithRHSvalues.containsKey(entity)) {
 					entitiesWithRHSvalues.put(entity, new HashMap<>());
 				}
@@ -811,6 +876,447 @@ public class tgfdDiscovery {
 		}
 	}
 
+	public static HashSet<ConstantLiteral> getActiveAttributesInPattern(Set<Vertex> vertexSet) {
+		HashMap<String, HashSet<String>> patternVerticesAttributes = new HashMap<>();
+		for (Vertex vertex : vertexSet) {
+			for (String vertexType : vertex.getTypes()) {
+				patternVerticesAttributes.put(vertexType, new HashSet<>());
+				Set<String> attrNameSet = vertexTypesAttributes.get(vertexType);
+				for (String attrName : attrNameSet) {
+					patternVerticesAttributes.get(vertexType).add(attrName);
+				}
+			}
+		}
+		HashSet<ConstantLiteral> literals = new HashSet<>();
+		for (String vertexType : patternVerticesAttributes.keySet()) {
+			for (String attrName : patternVerticesAttributes.get(vertexType)) {
+				ConstantLiteral literal = new ConstantLiteral(vertexType, attrName, null);
+				literals.add(literal);
+			}
+		}
+		return literals;
+	}
+
+	public static boolean isPathVisited(Dependency path, ArrayList<Dependency> visitedPaths) {
+		for (Dependency visitedPath : visitedPaths) {
+			if (visitedPath.getY().size() == path.getY().size() && visitedPath.getX().size() == path.getX().size() &&
+					visitedPath.getY().containsAll(path.getY()) && visitedPath.getX().containsAll(path.getX())) {
+				System.out.println("This dependency was already visited.");
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isZeroEntityPath(Dependency path, GenTreeNode patternTreeNode) {
+		ArrayList<Dependency> zeroEntityPaths = new ArrayList<>();
+		GenTreeNode currPatternTreeNode = patternTreeNode;
+		zeroEntityPaths.addAll(currPatternTreeNode.getZeroEntityDependencies());
+		while (currPatternTreeNode.parentNode() != null) {
+			currPatternTreeNode = currPatternTreeNode.parentNode();
+			zeroEntityPaths.addAll(currPatternTreeNode.getZeroEntityDependencies());
+		}
+		for (Dependency zeroEntityPath : zeroEntityPaths) {
+			if (//zeroEntityPath.getY().size() == path.getY().size() && zeroEntityPath.getX().size() == path.getX().size() &&
+					path.getY().containsAll(zeroEntityPath.getY()) && path.getX().containsAll(zeroEntityPath.getX())) {
+				System.out.println("Superset of zero-entity dependency: " + zeroEntityPath);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isMinimalPath(Dependency path, GenTreeNode patternTreeNode) {
+		ArrayList<Dependency> minimalPaths = new ArrayList<>();
+		GenTreeNode currPatternTreeNode = patternTreeNode;
+		minimalPaths.addAll(currPatternTreeNode.getMinimalDependencies());
+		while (currPatternTreeNode.parentNode() != null) {
+			currPatternTreeNode = currPatternTreeNode.parentNode();
+			minimalPaths.addAll(currPatternTreeNode.getMinimalDependencies());
+		}
+		for (Dependency minimalPath : minimalPaths) {
+			if (//minimalPath.getY().size() == path.getY().size() && minimalPath.getX().size() == path.getX().size() &&
+					path.getY().containsAll(minimalPath.getY()) && path.getX().containsAll(minimalPath.getX())) {
+				System.out.println("Superset of minimal dependency: " + minimalPath);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static ArrayList<TGFD> deltaDiscovery2(ArrayList<DBPediaLoader> graphs, double theta, GenTreeNode patternNode, LiteralTreeNode literalNode, ArrayList<Dependency> visitedDependencies) {
+		ArrayList<TGFD> tgfds = new ArrayList<>();
+
+		// Traverse up the literal tree to generate dependency
+		ArrayList<ConstantLiteral> literalPath = new ArrayList<>();
+		literalPath.add(literalNode.getLiteral());
+		LiteralTreeNode parentLiteralNode = literalNode.getParent();
+		while (parentLiteralNode != null) {
+			literalPath.add(parentLiteralNode.getLiteral());
+			parentLiteralNode = parentLiteralNode.getParent();
+		}
+		System.out.println("Literal path: "+literalPath);
+		Dependency dependency = new Dependency();
+		dependency.addLiteralToY(literalPath.get(literalPath.size()-1));
+		for (ConstantLiteral literal : literalPath.subList(0,literalPath.size()-1)) {
+			dependency.addLiteralToX(literal);
+		}
+		if (isPathVisited(dependency, visitedDependencies) || isZeroEntityPath(dependency, patternNode) || isMinimalPath(dependency, patternNode)) {
+			System.out.println("Skip dependency");
+			return tgfds;
+		}
+		visitedDependencies.add(dependency);
+
+		// Add dependency attributes to pattern
+		VF2PatternGraph patternForDependency = patternNode.getPattern().copy();
+		Set<ConstantLiteral> attributesSetForDependency = new HashSet<>(literalPath);
+		for (Vertex v : patternForDependency.getPattern().vertexSet()) {
+			String vType = new ArrayList<>(v.getTypes()).get(0);
+			for (ConstantLiteral attribute : attributesSetForDependency) {
+				if (vType.equals(attribute.getVertexType())) {
+					v.addAttribute(new Attribute(attribute.getAttrName()));
+				}
+			}
+		}
+
+		System.out.println("Pattern: " + patternForDependency);
+		System.out.println("Dependency: " + dependency);
+
+		System.out.println("Performing Entity Discovery");
+
+		// Discover entities
+		Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities = findMatches2(graphs, patternForDependency, literalPath.subList(0,literalPath.size()-1));
+		if (entities == null) {
+			System.out.println("Mark as Pruned. No matches found during entity discovery.");
+			literalNode.setIsPruned();
+			patternNode.addZeroEntityDependency(dependency);
+			return tgfds;
+		}
+
+		System.out.println("Discovering constant TGFDs");
+
+		// Find Constant TGFDs
+		ArrayList<Pair> constantXdeltas = new ArrayList<>();
+		ArrayList<TreeSet<Pair>> satisfyingAttrValues = new ArrayList<>();
+		ArrayList<TGFD> constantTGFDs = discoverConstantTGFDs(theta, patternNode, literalPath.get(literalPath.size()-1), entities, constantXdeltas, satisfyingAttrValues);
+		if (constantTGFDs.size() == 0) {
+			System.out.println("Could not find any constant TGFDs");
+			return constantTGFDs;
+		}
+		tgfds.addAll(constantTGFDs);
+
+		System.out.println("Discovering general TGFDs");
+
+		// Find general TGFDs
+		ArrayList<TGFD> generalTGFD = discoverGeneralTGFD(theta, patternForDependency, literalPath, entities.size(), constantXdeltas, satisfyingAttrValues);
+		if (generalTGFD.size() > 0) {
+			System.out.println("Marking literal node as pruned. Discovered general TGFDs for this dependency.");
+			literalNode.setIsPruned();
+			patternNode.addMinimalDependency(dependency);
+		}
+		tgfds.addAll(generalTGFD);
+
+
+		return tgfds;
+	}
+
+	private static ArrayList<TGFD> discoverGeneralTGFD(double theta, VF2PatternGraph patternForDependency, ArrayList<ConstantLiteral> literalPath, int entitiesSize, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
+
+		ArrayList<TGFD> tgfds = new ArrayList<>();
+
+		System.out.println("Size of constantXdeltas: " + constantXdeltas.size());
+		for (Pair deltaPair : constantXdeltas) {
+			System.out.println("constant delta: " + deltaPair);
+		}
+
+		System.out.println("Size of satisfyingAttrValues: " + satisfyingAttrValues.size());
+		for (Set<Pair> satisfyingPairs : satisfyingAttrValues) {
+			System.out.println("satisfyingAttrValues entry: " + satisfyingPairs);
+		}
+
+		// Find intersection delta
+		HashMap<Pair, ArrayList<TreeSet<Pair>>> intersections = new HashMap<>();
+		int currMin = 0;
+		int currMax = graphs.size() - 1;
+		ArrayList<TreeSet<Pair>> currSatisfyingAttrValues = new ArrayList<>();
+		for (int index = 0; index < constantXdeltas.size(); index++) {
+			Pair deltaPair = constantXdeltas.get(index);
+			if (Math.max(currMin, deltaPair.min()) <= Math.min(currMax, deltaPair.max())) {
+				currMin = Math.max(currMin, deltaPair.min());
+				currMax = Math.min(currMax, deltaPair.max());
+				currSatisfyingAttrValues.add(satisfyingAttrValues.get(index)); // By axiom 4
+			} else {
+				intersections.putIfAbsent(new Pair(currMin, currMax), currSatisfyingAttrValues);
+				currMin = 0;
+				currMax = graphs.size() - 1;
+				if (Math.max(currMin, deltaPair.min()) <= Math.min(currMax, deltaPair.max())) {
+					currMin = Math.max(currMin, deltaPair.min());
+					currMax = Math.min(currMax, deltaPair.max());
+					currSatisfyingAttrValues.add(satisfyingAttrValues.get(index));
+				}
+			}
+		}
+		intersections.putIfAbsent(new Pair(currMin, currMax), currSatisfyingAttrValues);
+
+		ArrayList<Entry<Pair, ArrayList<TreeSet<Pair>>>> sortedIntersections = new ArrayList<>(intersections.entrySet());
+		sortedIntersections.sort(new Comparator<Entry<Pair, ArrayList<TreeSet<Pair>>>>() {
+			@Override
+			public int compare(Entry<Pair, ArrayList<TreeSet<Pair>>> o1, Entry<Pair, ArrayList<TreeSet<Pair>>> o2) {
+				return o2.getValue().size() - o1.getValue().size();
+			}
+		});
+
+		System.out.println("Candidate deltas for general TGFD:");
+		for (Entry<Pair, ArrayList<TreeSet<Pair>>> intersection : sortedIntersections) {
+			System.out.println(intersection.getKey());
+		}
+
+		for (Entry<Pair, ArrayList<TreeSet<Pair>>> intersection : sortedIntersections) {
+			int generalMin = intersection.getKey().min();
+			int generalMax = intersection.getKey().max();
+			System.out.println("General min: " + generalMin);
+			System.out.println("General max: " + generalMax);
+
+			// Compute general support
+			float numerator = 0;
+			float denominator = 2 * entitiesSize * graphs.size();
+
+			int numberOfSatisfyingPairs = 0;
+			for (TreeSet<Pair> timestamps : intersection.getValue()) {
+				TreeSet<Pair> satisfyingPairs = new TreeSet<Pair>();
+				for (Pair timestamp : timestamps) {
+					if (timestamp.max() - timestamp.min() >= generalMin && timestamp.max() - timestamp.min() <= generalMax) {
+						satisfyingPairs.add(new Pair(timestamp.min(), timestamp.max()));
+					}
+				}
+				numberOfSatisfyingPairs += satisfyingPairs.size();
+			}
+
+			System.out.println("Number of satisfying pairs: " + numberOfSatisfyingPairs);
+
+			numerator = numberOfSatisfyingPairs;
+
+			float support = numerator / denominator;
+			if (support < theta) {
+				System.out.println("Support for candidate general TGFD is below support threshold");
+				continue;
+			}
+
+			System.out.println("TGFD Support = " + numerator + "/" + denominator);
+
+			Delta delta = new Delta(Period.ofDays(generalMin * 183), Period.ofDays(generalMax * 183 + 1), Duration.ofDays(183));
+
+			Dependency generalDependency = new Dependency();
+			String yVertexType = literalPath.get(literalPath.size()-1).getVertexType();
+			String yAttrName = literalPath.get(literalPath.size()-1).getAttrName();
+			VariableLiteral y = new VariableLiteral(yVertexType, yAttrName, yVertexType, yAttrName);
+			generalDependency.addLiteralToY(y);
+			for (ConstantLiteral x : literalPath.subList(0, literalPath.size()-1)) {
+				String xVertexType = x.getVertexType();
+				String xAttrName = x.getAttrName();
+				VariableLiteral varX = new VariableLiteral(xVertexType, xAttrName, xVertexType, xAttrName);
+				generalDependency.addLiteralToX(varX);
+			}
+
+			TGFD tgfd = new TGFD(patternForDependency, delta, generalDependency, support, "");
+			System.out.println("TGFD: " + tgfd);
+			tgfds.add(tgfd);
+		}
+		return tgfds;
+	}
+
+	private static ArrayList<TGFD> discoverConstantTGFDs(double theta, GenTreeNode patternNode, ConstantLiteral yLiteral, Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
+		ArrayList<TGFD> tgfds = new ArrayList<>();
+		String yVertexType = yLiteral.getVertexType();
+		String yAttrName = yLiteral.getAttrName();
+		for (Entry<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entityEntry : entities.entrySet()) {
+			VF2PatternGraph newPattern = patternNode.getPattern().copy();
+			Dependency newDependency = new Dependency();
+			for (ConstantLiteral xLiteral : entityEntry.getKey()) {
+				for (Vertex v : newPattern.getPattern().vertexSet()) {
+					if (v.getTypes().contains(yVertexType)) {
+						v.addAttribute(new Attribute(yAttrName));
+						VariableLiteral newY = new VariableLiteral(yVertexType, yAttrName, yVertexType, yAttrName);
+						newDependency.addLiteralToY(newY);
+					}
+					String vType = new ArrayList<>(v.getTypes()).get(0);
+					if (xLiteral.getVertexType().equalsIgnoreCase(vType)) {
+						v.addAttribute(new Attribute(xLiteral.getAttrName(), xLiteral.getAttrValue()));
+						newDependency.addLiteralToX(new ConstantLiteral(vType, xLiteral.getAttrName(), xLiteral.getAttrValue()));
+					}
+				}
+			}
+
+			System.out.println("Performing Y discovery on pattern: " + newPattern);
+			System.out.println("Entity: " + entityEntry.getKey());
+			ArrayList<Entry<ConstantLiteral, List<Integer>>> attrValuesTimestampsSortedByFreq = entityEntry.getValue();
+
+			for (Map.Entry<ConstantLiteral, List<Integer>> entry : attrValuesTimestampsSortedByFreq) {
+				System.out.println(entry.getKey() + ":" + entry.getValue());
+			}
+
+			Delta delta = null;
+			double support = 0.0;
+			ArrayList<Pair> candidateDeltas = new ArrayList<>();
+			if (attrValuesTimestampsSortedByFreq.size() == 1) {
+				List<Integer> timestamps = attrValuesTimestampsSortedByFreq.get(0).getValue();
+				int minDistance = graphs.size() - 1;
+				int maxDistance = timestamps.get(timestamps.size() - 1) - timestamps.get(0);
+				for (int index = 1; index < timestamps.size(); index++) {
+					minDistance = Math.min(minDistance, timestamps.get(index) - timestamps.get(index - 1));
+				}
+				candidateDeltas.add(new Pair(minDistance, maxDistance));
+			} else if (attrValuesTimestampsSortedByFreq.size() > 1) {
+				int minExclusionDistance = graphs.size() - 1;
+				int maxExclusionDistance = 0;
+				ArrayList<Integer> distances = new ArrayList<>();
+				int l1 = attrValuesTimestampsSortedByFreq.get(0).getValue().get(0);
+				int u1 = attrValuesTimestampsSortedByFreq.get(0).getValue().get(attrValuesTimestampsSortedByFreq.get(0).getValue().size() - 1);
+				for (int index = 1; index < attrValuesTimestampsSortedByFreq.size(); index++) {
+					int l2 = attrValuesTimestampsSortedByFreq.get(index).getValue().get(0);
+					int u2 = attrValuesTimestampsSortedByFreq.get(index).getValue().get(attrValuesTimestampsSortedByFreq.get(index).getValue().size() - 1);
+					distances.add(Math.abs(u2 - l1));
+					distances.add(Math.abs(u1 - l2));
+				}
+				for (int index = 0; index < distances.size(); index++) {
+					minExclusionDistance = Math.min(minExclusionDistance, distances.get(index));
+					maxExclusionDistance = Math.max(maxExclusionDistance, distances.get(index));
+				}
+
+				if (minExclusionDistance > 0) {
+					Pair deltaPair = new Pair(0, minExclusionDistance - 1);
+					candidateDeltas.add(deltaPair);
+				}
+				if (maxExclusionDistance < graphs.size() - 1) {
+					Pair deltaPair = new Pair(maxExclusionDistance + 1, graphs.size() - 1);
+					candidateDeltas.add(deltaPair);
+				}
+			}
+			// Compute support
+			for (Pair candidateDelta : candidateDeltas) {
+				int minDistance = candidateDelta.min();
+				int maxDistance = candidateDelta.max();
+				if (minDistance <= maxDistance) {
+					System.out.println("("+minDistance+","+maxDistance+")");
+					float numer = 0;
+					float denom = 2 * 1 * graphs.size();
+					List<Integer> timestamps = attrValuesTimestampsSortedByFreq.get(0).getValue();
+					TreeSet<Pair> satisfyingPairs = new TreeSet<Pair>();
+					for (int index = 0; index < timestamps.size() - 1; index++) {
+						for (int j = index + 1; j < timestamps.size(); j++) {
+							if (timestamps.get(j) - timestamps.get(index) >= minDistance && timestamps.get(j) - timestamps.get(index) <= maxDistance) {
+								satisfyingPairs.add(new Pair(timestamps.get(index), timestamps.get(j)));
+							}
+						}
+					}
+
+					System.out.println("Satisfying pairs: " + satisfyingPairs);
+
+					numer = satisfyingPairs.size();
+					System.out.println("Support = " + numer + "/" + denom);
+					double candidateSupport = numer / denom;
+
+					if (candidateSupport > support) {
+						support = candidateSupport;
+					}
+					if (support >= theta) {
+						delta = new Delta(Period.ofDays(minDistance * 183), Period.ofDays(maxDistance * 183 + 1), Duration.ofDays(183));
+						satisfyingAttrValues.add(satisfyingPairs);
+						constantXdeltas.add(new Pair(minDistance, maxDistance));
+						break;
+					}
+				}
+			}
+
+			if (delta == null) {
+				System.out.println("Could not find a delta for entity: " + entityEntry.getKey());
+				continue;
+			}
+
+			System.out.println(delta);
+			System.out.println("TGFD Support = " + support);
+
+			//TO-DO: Add minimal constant dependencies to pruned list?
+			TGFD tgfd = new TGFD(newPattern, delta, newDependency, support, "");
+			System.out.println("TGFD: " + tgfd);
+			tgfds.add(tgfd);
+		}
+		return tgfds;
+	}
+
+	public static void loadDBpediaSnapshots() {
+		graphs = new ArrayList<>();
+		for (int year = 5; year < 8; year++) {
+			String fileSuffix = tgfdDiscovery.fileSuffix == null ? "" : "-" + tgfdDiscovery.fileSuffix;
+			String typeFileName = "201" + year + "types" + fileSuffix + ".ttl";
+			String literalsFileName = "201" + year + "literals" + fileSuffix + ".ttl";
+			String objectsFileName = "201" + year + "objects" + fileSuffix + ".ttl";
+			DBPediaLoader dbpedia = new DBPediaLoader(new ArrayList<>(), new ArrayList<>(Collections.singletonList(typeFileName)), new ArrayList<>(Arrays.asList(literalsFileName, objectsFileName)));
+			graphs.add(dbpedia);
+		}
+	}
+
+	public static ArrayList<TGFD> hSpawn2(int i, double theta) {
+		ArrayList<TGFD> tgfds = new ArrayList<>();
+		for (GenTreeNode patternNode : genTree.getLevel(i)) {
+
+			System.out.println("Performing HSpawn for " + patternNode.getPattern());
+
+			HashSet<ConstantLiteral> literals = getActiveAttributesInPattern(patternNode.getGraph().vertexSet());
+
+			LiteralTree literalTree = new LiteralTree();
+			for (int j = 0; j < literals.size(); j++) {
+
+				System.out.println("HSpawn level " + j);
+
+				if (j == 0) {
+					literalTree.addLevel();
+					for (ConstantLiteral literal: literals) {
+						literalTree.createNodeAtLevel(j, literal, null);
+					}
+				} else {
+					ArrayList<LiteralTreeNode> literalTreePreviousLevel = literalTree.getLevel(j - 1);
+					if (literalTreePreviousLevel.size() == 0) break;
+					literalTree.addLevel();
+
+					for (LiteralTreeNode previousLevelLiteral : literalTreePreviousLevel) {
+						if (previousLevelLiteral.isPruned()) continue;
+						for (ConstantLiteral literal: literals) {
+							boolean existsInPath = false;
+							LiteralTreeNode parent = previousLevelLiteral;
+							while (parent != null) {
+								if (parent.getLiteral().equals(literal)) {
+									existsInPath = true;
+									break;
+								} else {
+									parent = parent.getParent();
+								}
+							}
+							if (existsInPath) continue;
+							literalTree.createNodeAtLevel(j, literal, previousLevelLiteral);
+						}
+					}
+					if (j < i) continue;
+					ArrayList<LiteralTreeNode> currentLiteralTreeLevel = literalTree.getLevel(j);
+					System.out.println("Generated new literal tree nodes: "+ currentLiteralTreeLevel.size());
+
+					ArrayList<Dependency> visitedPaths = new ArrayList<>();
+					for (LiteralTreeNode literalTreeNode: currentLiteralTreeLevel) {
+						System.out.println("Performing Delta Discovery at HSpawn level " + j);
+						ArrayList<TGFD> hSpawnTGFDs = deltaDiscovery2(graphs, theta, patternNode, literalTreeNode, visitedPaths);
+						if (hSpawnTGFDs.size() > 0) {
+							tgfds.addAll(hSpawnTGFDs);
+						} else {
+							literalTreeNode.setIsPruned();
+						}
+					}
+				}
+			}
+			System.out.println("Current TGFD count: " + tgfds.size());
+		}
+		return tgfds;
+	}
+
 	//	public static ArrayList<TGFD> deltaDiscovery(int k, double theta, ArrayList<DBPediaLoader> graphs) {
 	public static ArrayList<TGFD> deltaDiscovery(int i, double theta) {
 
@@ -875,9 +1381,11 @@ public class tgfdDiscovery {
 					// Discover entities
 					int numOfTGFDsAddedForThisDependency = 0;
 
+					// Get RHS attributes
 					String yVertexType = ((ConstantLiteral) (dependency.getY().get(0))).getVertexType();
 					String yAttrName = ((ConstantLiteral) (dependency.getY().get(0))).getAttrName();
 
+					// Get LHS attributes
 					HashMap<String, HashSet<String>> xAttrNameMap = new HashMap<>();
 					for (Literal l : dependency.getX()) { // TO-DO: What if X is an empty set?
 						ConstantLiteral literal = (ConstantLiteral) l;
@@ -890,6 +1398,7 @@ public class tgfdDiscovery {
 						}
 					}
 
+					// Add attributes to pattern
 					VF2PatternGraph patternCopy = node.getPattern().copy();
 					for (Vertex v : patternCopy.getPattern().vertexSet()) {
 						String vType = new ArrayList<>(v.getTypes()).get(0);
@@ -907,12 +1416,10 @@ public class tgfdDiscovery {
 					System.out.println("Performing X discovery");
 					System.out.println("Pattern: " + patternCopy);
 					System.out.println("Dependency: " + dependency);
-//					HashMap<String, HashMap<String, ArrayList<Entry<String, Integer>>>> xAttrValueMap = findMatchesX(graphs, patternCopy, xAttrNameMap);
 					Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities = findMatches(graphs, patternCopy, xAttrNameMap, yVertexType, yAttrName);
 					System.gc();
 
-					if (entities == null) {
-//					if (xAttrValueMap.size() == 0) { // TO-DO: Only discard dependencies that build off this one. Don't discard ones that start in a different order.
+					if (entities == null) { // TO-DO: Only discard dependencies that build off this one. Don't discard ones that start in a different order.
 						System.out.println("Could not find any matches during entity discovery for " + dependency);
 						System.out.println("Do not expand this dependency. Pruned");
 						prunedSetOfDependencies.add(dependency);
@@ -920,34 +1427,12 @@ public class tgfdDiscovery {
 						continue;
 					}
 
-					// Create a list of entities by using various combination of X attr values
-//					ArrayList<ArrayList<ConstantLiteral>> sets =  new ArrayList<>();
-//					for (String vertexType : xAttrValueMap.keySet()) {
-//						HashMap<String, ArrayList<Entry<String, Integer>>> vertexTypeMap = xAttrValueMap.get(vertexType);
-//						for (String attrName : vertexTypeMap.keySet()) {
-//							ArrayList<ConstantLiteral> set = new ArrayList<>();
-//							ArrayList<Map.Entry<String, Integer>> attrValueFrequencies = vertexTypeMap.get(attrName);
-//							for (Entry<String, Integer> attrValueFreq : attrValueFrequencies) {
-//								ConstantLiteral constantLiteral = new ConstantLiteral(vertexType, attrName, attrValueFreq.getKey());
-//								set.add(constantLiteral);
-//							}
-//							sets.add(set);
-//						}
-//					}
-//					ArrayList<ArrayList<ConstantLiteral>> entities = createCombinationOfEntities(new ArrayList<>(), sets);
-//
-//					for (ArrayList<ConstantLiteral> entity : entities) {
-//						System.out.println(entity);
-//					}
-
 					// Discover Y values and corresponding deltas for each entity
 					ArrayList<Pair> constantXdeltas = new ArrayList<>();
 					ArrayList<TreeSet<Pair>> satisfyingAttrValues = new ArrayList<>();
-//					for (ArrayList<ConstantLiteral> entity : entities) {
 					for (Entry<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entityEntry : entities.entrySet()) {
 						VF2PatternGraph newPattern = node.getPattern().copy();
 						Dependency newDependency = new Dependency();
-//						for (ConstantLiteral xLiteral : entity) {
 						for (ConstantLiteral xLiteral : entityEntry.getKey()) {
 							for (Vertex v : newPattern.getPattern().vertexSet()) {
 								if (v.getTypes().contains(yVertexType)) {
@@ -1425,7 +1910,7 @@ public class tgfdDiscovery {
 
 	public static void discover(int k, double theta, String experimentName) {
 		// TO-DO: Is it possible to prune the graphs by passing them our histogram's frequent nodes and edges as dummy TGFDs ???
-		Config.optimizedLoadingBasedOnTGFD = !tgfdDiscovery.isNaive;
+//		Config.optimizedLoadingBasedOnTGFD = !tgfdDiscovery.isNaive;
 
 		PrintStream kExperimentResultsFile = null;
 		if (experimentName.startsWith("k")) {
@@ -1437,11 +1922,12 @@ public class tgfdDiscovery {
 			}
 		}
 		final long kStartTime = System.currentTimeMillis();
-
+		loadDBpediaSnapshots();
 		for (int i = 0; i <= k; i++) {
-			vSpawn(i);
+			ArrayList<TGFD> tgfds = vSpawn(i, theta);
+//			vSpawn(i, theta);
 //			if (MAX_NUMBER_OF_ATTR_PER_VERTEX == 1 && i < 1) continue; // ignore single-node patterns because they're expensive and uninteresting
-			ArrayList<TGFD> tgfds = deltaDiscovery(i, theta);
+//			ArrayList<TGFD> tgfds = deltaDiscovery(i, theta);
 
 			printTGFDstoFile(experimentName, i, theta, tgfds);
 
@@ -1457,7 +1943,8 @@ public class tgfdDiscovery {
 		}
 	}
 
-	public static void vSpawnInit() {
+	public static ArrayList<TGFD> vSpawnInit(double theta) {
+
 		genTree = new GenerationTree();
 		genTree.addLevel();
 
@@ -1475,27 +1962,26 @@ public class tgfdDiscovery {
 			int numOfInstancesOfAllVertexTypes = tgfdDiscovery.NUM_OF_VERTICES_IN_GRAPH;
 
 			double patternSupport = (double) numOfInstancesOfVertexType / (double) numOfInstancesOfAllVertexTypes;
+//			System.out.println("Pattern Support: " + patternSupport);
 
 			System.out.println(vertexType);
 			VF2PatternGraph candidatePattern = new VF2PatternGraph();
 			PatternVertex vertex = new PatternVertex(vertexType);
 			candidatePattern.addVertex(vertex);
-			System.out.println("Pattern: " + candidatePattern);
+//			System.out.println("Pattern: " + candidatePattern);
 
 			if (tgfdDiscovery.isNaive) {
 				if (patternSupport >= PATTERN_SUPPORT_THRESHOLD) {
-					System.out.println("Pattern Support: " + patternSupport);
-					System.out.println("Performing HSpawn");
-					ArrayList<TreeSet<Dependency>> dependenciesSets = hSpawn(candidatePattern, patternSupport);
-					genTree.createNodeAtLevel(0, candidatePattern, dependenciesSets, patternSupport);
+					genTree.createNodeAtLevel(0, candidatePattern, patternSupport, null);
+//					ArrayList<TreeSet<Dependency>> dependenciesSets = hSpawn(candidatePattern, patternSupport);
+//					genTree.createNodeAtLevel(0, candidatePattern, dependenciesSets, patternSupport);
 				} else {
 					System.out.println("Pattern support of " + patternSupport + " is below threshold.");
 				}
 			} else {
-				System.out.println("Pattern Support: " + patternSupport);
-				System.out.println("Performing HSpawn");
-				ArrayList<TreeSet<Dependency>> dependenciesSets = hSpawn(candidatePattern, patternSupport);
-				genTree.createNodeAtLevel(0, candidatePattern, dependenciesSets, patternSupport);
+				genTree.createNodeAtLevel(0, candidatePattern, patternSupport, null);
+//				ArrayList<TreeSet<Dependency>> dependenciesSets = hSpawn(candidatePattern, patternSupport);
+//				genTree.createNodeAtLevel(0, candidatePattern, dependenciesSets, patternSupport);
 			}
 			System.gc();
 		}
@@ -1505,6 +1991,10 @@ public class tgfdDiscovery {
 			System.out.println("Pattern Support: " + node.getPatternSupport());
 //			System.out.println("Dependency: " + node.getDependenciesSets());
 		}
+
+		System.out.println("Performing HSpawn");
+		ArrayList<TGFD> tgfds = hSpawn2(0, theta);
+		return tgfds;
 	}
 
 	public static boolean isDuplicateEdge(VF2PatternGraph pattern, String edgeType, String type1, String type2) {
@@ -1519,12 +2009,15 @@ public class tgfdDiscovery {
 	}
 
 	//	public static void vSpawn(int k, ArrayList<DBPediaLoader> graphs) {
-	public static void vSpawn(int i) {
+	public static ArrayList<TGFD> vSpawn(int i, double theta) {
 
 		if (i == 0) {
-			vSpawnInit();
-			return;
+			ArrayList<TGFD> tgfds = new ArrayList<>();
+			tgfds = vSpawnInit(theta);
+			return tgfds;
 		}
+
+		ArrayList<TGFD> tgfds = new ArrayList<>();
 
 		List<Entry<String, Integer>> sortedUniqueEdgesHist = getSortedEdgeHistogram();
 
@@ -1543,22 +2036,14 @@ public class tgfdDiscovery {
 				System.out.println("Marked as pruned. Skip.");
 				continue;
 			}
-//			int newPatternsFormed = 0;
-//			if (tgfdDiscovery.isNaive) {
-//				NUM_OF_FREQ_EDGES_TO_CONSIDER = edgesHist.size();
-//			}
-//			for (Map.Entry<String, Integer> candidateEdge : edgesHist.subList(0, Math.min(edgesHist.size(), NUM_OF_FREQ_EDGES_TO_CONSIDER))) {
+
 			for (Map.Entry<String, Integer> candidateEdge : sortedUniqueEdgesHist) {
 				String candidateEdgeString = candidateEdge.getKey();
 				System.out.println("Candidate edge:" + candidateEdgeString);
 				if (tgfdDiscovery.isNaive && (1.0 * uniqueEdgesHist.get(candidateEdgeString) / NUM_OF_EDGES_IN_GRAPH) < PATTERN_SUPPORT_THRESHOLD) {
 					System.out.println("Below pattern support threshold. Skip");
 					continue;
-//					if (!tgfdDiscovery.isNaive) {
-//						System.out.println("Reach last frequent edge in sorted histogram.");
-//						System.out.println("Skipping remaining edges in histogram.");
-//						break;
-//					}
+
 				}
 				String sourceVertexType = candidateEdgeString.split(" ")[0];
 				String targetVertexType = candidateEdgeString.split(" ")[2];
@@ -1636,11 +2121,7 @@ public class tgfdDiscovery {
 //						}
 					double numerator = Double.MAX_VALUE;
 					double denominator = NUM_OF_EDGES_IN_GRAPH;
-//						for (Vertex tempV: newPattern.getPattern().vertexSet()) {
-//							String vertexType = (new ArrayList<>(tempV.getTypes())).get(0));
-//							numerator = Math.min(numerator, uniqueVertexTypesHist.get(vertexType);
-//
-//						}
+
 					for (RelationshipEdge tempE : newPattern.getPattern().edgeSet()) {
 						String sourceType = (new ArrayList<>(tempE.getSource().getTypes())).get(0);
 						String targetType = (new ArrayList<>(tempE.getTarget().getTypes())).get(0);
@@ -1672,23 +2153,14 @@ public class tgfdDiscovery {
 //								System.gc();
 //							}
 					System.out.println("Pattern Support: " + patternSupport);
-//						if (patternSupport >= PATTERN_SUPPORT_THRESHOLD) {
 					System.out.println("Performing HSpawn");
-					ArrayList<TreeSet<Dependency>> literalTreeList = hSpawn(newPattern, patternSupport);
-					System.gc();
-					genTree.createNodeAtLevel(i, newPattern, literalTreeList, patternSupport, node);
-//							newPatternsFormed++;
-//						} else {
-//							System.out.println("New pattern does not satisfy support threshold.");
-//						}
-//						if (newPatternsFormed == NUM_OF_CHILD_PATTERNS_LIMIT) {
-//							break;
-//						}
-//					}
+//					ArrayList<TreeSet<Dependency>> literalTreeList = hSpawn(newPattern, patternSupport);
+//					System.gc();
+//					genTree.createNodeAtLevel(i, newPattern, literalTreeList, patternSupport, node);
+					genTree.createNodeAtLevel(i, newPattern, patternSupport, node);
+					ArrayList<TGFD> hSpawnTGFDs = hSpawn2(i, theta);
+					tgfds.addAll(hSpawnTGFDs);
 				}
-//				if (newPatternsFormed == NUM_OF_CHILD_PATTERNS_LIMIT) {
-//					break;
-//				}
 			}
 		}
 		System.out.println("GenTree Level " + i + " size: " + genTree.getLevel(i).size());
@@ -1696,25 +2168,18 @@ public class tgfdDiscovery {
 			System.out.println("Pattern: " + node.getPattern());
 			System.out.println("Pattern Support: " + node.getPatternSupport());
 		}
+		return tgfds;
 //		}
 	}
 
 	public static ArrayList<TreeSet<Dependency>> hSpawn(VF2PatternGraph patternGraph, double patternSupport) {
 		HashMap<String, HashSet<String>> patternVerticesAttributes = new HashMap<>();
 		for (Vertex vertex : patternGraph.getPattern().vertexSet()) {
-//			int numOfAttrInVertex = 0;
 			for (String vertexType : vertex.getTypes()) {
 				patternVerticesAttributes.put(vertexType, new HashSet<>());
 				Set<String> attrNameSet = vertexTypesAttributes.get(vertexType);
-//				for (Map.Entry<String,Integer> attrNameRecord : vertexTypesAttributes.get(vertexType)) {
-//				String attrName = attrNameRecord.getKey();
 				for (String attrName : attrNameSet) {
-//					if (attrHist.get(attr) >= patternSupport) { // TO-DO: Is this requirement too strict?
 					patternVerticesAttributes.get(vertexType).add(attrName);
-//						numOfAttrInVertex++;
-//					}
-//					if (numOfAttrInVertex >= MAX_NUMBER_OF_ATTR_PER_VERTEX) { break; }
-					// TO-DO change vertexTypesAttributes to have a sorted list of attributes instead of Hashset
 				}
 			}
 		}
@@ -1722,7 +2187,6 @@ public class tgfdDiscovery {
 		HashSet<ConstantLiteral> attrNamesSet = new HashSet<>();
 		for (String vertexType : patternVerticesAttributes.keySet()) {
 			for (String attrName : patternVerticesAttributes.get(vertexType)) {
-//				attrNamesSet.add(vertexType+"."+attrName);
 				ConstantLiteral literal = new ConstantLiteral(vertexType, attrName, null);
 				attrNamesSet.add(literal);
 			}
@@ -1801,7 +2265,6 @@ public class tgfdDiscovery {
 
 	public static LiteralTree literalTreeGeneration(HashSet<ConstantLiteral> literals) {
 		LiteralTree literalTree = new LiteralTree();
-//		HashSet<ConstantLiteral> activeAttributesSet = new HashSet<>(literals);
 		for (int i = 0; i < literals.size(); i++) {
 			literalTree.addLevel();
 			if (i == 0) {
@@ -1810,27 +2273,19 @@ public class tgfdDiscovery {
 				}
 			} else {
 				for (LiteralTreeNode previousLevelLiteral : literalTree.getLevel(i-1)) {
-//					HashSet<ConstantLiteral> pathSoFar = new HashSet<>();
-//					pathSoFar.add(previousLevelLiteral.nodeLiteral);
-//					LiteralTreeNode parent = previousLevelLiteral.parent;
-//					while (parent != null) {
-//						pathSoFar.add(parent.nodeLiteral);
-//						parent = parent.parent;
-//					}
 					for (ConstantLiteral literal: literals) {
 						boolean existsInPath = false;
 						LiteralTreeNode parent = previousLevelLiteral;
 						while (parent != null) {
-							if (parent.nodeLiteral.equals(literal)) {
+							if (parent.getLiteral().equals(literal)) {
 								existsInPath = true;
 								break;
 							} else {
-								parent = parent.parent;
+								parent = parent.getParent();
 							}
 						}
 						if (existsInPath) continue;
 						literalTree.createNodeAtLevel(i, literal, previousLevelLiteral);
-//						if (!pathSoFar.contains(literal)) literalTree.createNodeAtLevel(i, literal, null);
 					}
 				}
 			}
@@ -1847,7 +2302,7 @@ class LiteralTree {
 
 	public void addLevel() {
 		tree.add(new ArrayList<>());
-		System.out.println("Tree size: " + tree.size());
+		System.out.println("LiteralTree levels: " + tree.size());
 	}
 
 	public void createNodeAtLevel(int level, ConstantLiteral literal, LiteralTreeNode parentNode) {
@@ -1869,7 +2324,12 @@ class LiteralTree {
 
 		public void addLevel() {
 			tree.add(new ArrayList<>());
-			System.out.println("Tree size: " + tree.size());
+			System.out.println("GenerationTree levels: " + tree.size());
+		}
+
+		public void createNodeAtLevel(int level, VF2PatternGraph pattern, double patternSupport, GenTreeNode parentNode) {
+			GenTreeNode node = new GenTreeNode(pattern, patternSupport, parentNode);
+			tree.get(level).add(node);
 		}
 
 		public void createNodeAtLevel(int level, VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double support) {
@@ -1901,6 +2361,8 @@ class LiteralTree {
 		private ArrayList<tgfdDiscovery.PatternDependencyPair> minimalSetOfDependencies = new ArrayList<>();
 		private ArrayList<tgfdDiscovery.PatternDependencyPair> prunedSetOfTGFDs = new ArrayList<>();
 		private ArrayList<tgfdDiscovery.PatternDependencyPair> prunedSetOfConstantTGFDs = new ArrayList<>();
+		private ArrayList<Dependency> zeroEntityDependencies = new ArrayList<>();
+		private ArrayList<Dependency> minimalDependencies = new ArrayList<>();
 
 		public GenTreeNode(VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport) {
 			this.pattern = pattern;
@@ -1920,6 +2382,12 @@ class LiteralTree {
 			this.dependenciesSets = dependenciesSets;
 			this.patternSupport = patternSupport;
 			this.isPruned = isPruned;
+		}
+
+		public GenTreeNode(VF2PatternGraph pattern, double patternSupport, GenTreeNode parentNode) {
+			this.pattern = pattern;
+			this.patternSupport = patternSupport;
+			this.parentNode = parentNode;
 		}
 
 		public Graph<Vertex, RelationshipEdge> getGraph() {
@@ -1986,6 +2454,22 @@ class LiteralTree {
 		public ArrayList<tgfdDiscovery.PatternDependencyPair> getPrunedSetOfConstantTGFDs() {
 			return this.prunedSetOfConstantTGFDs;
 		}
+
+		public void addZeroEntityDependency(Dependency dependency) {
+			this.zeroEntityDependencies.add(dependency);
+		}
+
+		public ArrayList<Dependency> getZeroEntityDependencies() {
+			return this.zeroEntityDependencies;
+		}
+
+		public void addMinimalDependency(Dependency dependency) {
+			this.minimalDependencies.add(dependency);
+		}
+
+		public ArrayList<Dependency> getMinimalDependencies() {
+			return this.minimalDependencies;
+		}
 	}
 
 //	class LiteralTree {
@@ -2003,84 +2487,46 @@ class LiteralTree {
 //	}
 
 	class LiteralTreeNode {
-		LiteralTreeNode parent = null;
+		private LiteralTreeNode parent = null;
 //		String vertexType;
 //		Attribute attribute;
-		ConstantLiteral nodeLiteral;
+		private ConstantLiteral literal;
 		ArrayList<LiteralTreeNode> children;
+		private boolean isPruned = false;
 
 		public LiteralTreeNode(ConstantLiteral literal, LiteralTreeNode parent) {
-			this.nodeLiteral = literal;
+			this.literal = literal;
 			this.parent = parent;
 		}
-//		public LiteralTreeNode(LiteralTreeNode parent, String vertexType, Attribute attribute, HashMap<String, HashSet<String>> attributeTypes) {
-//			this.vertexType = vertexType;
-//			this.attribute = attribute;
-//			HashMap<String, HashSet<String>> clone = new HashMap<>();
-//			for (String vt : otherLiterals.keySet()) {
-//				clone.put(vt, new HashSet<>());
-//				for (String at : otherLiterals.get(vt)) {
-//					clone.get(vt).add(at);
-//				}
-//			}
-//			clone.get(vertexType).remove(attribute.getAttrName());
-//			this.populateTree(clone);
-//		}
+
 		// TO-DO: Recursion takes up too much memory. However, if we can find an efficient way to do it, it will save a lot of subset checks in Delta Discovery
-		public LiteralTreeNode(ConstantLiteral nodeLiteral, HashSet<ConstantLiteral> otherLiterals) {
-			this.nodeLiteral = nodeLiteral;
+		public LiteralTreeNode(ConstantLiteral literal, HashSet<ConstantLiteral> otherLiterals) {
+			this.literal = literal;
 			HashSet<ConstantLiteral> subset = new HashSet<>(otherLiterals);
-			subset.remove(nodeLiteral);
+			subset.remove(literal);
 			for (ConstantLiteral otherLiteral : subset) {
 				this.children.add(new LiteralTreeNode(otherLiteral, subset));
 			}
 		}
 
-//		public void populateTree(HashMap<String, HashSet<String>> attributeTypes) {
-//			for (String vertexType : attributeTypes.keySet()) {
-//				for (String attrName : attributeTypes.get(vertexType)) {
-//					HashMap<String, HashSet<String>> clone = new HashMap<>();
-//					for (String vt : attributeTypes.keySet()) {
-//						clone.put(vt, new HashSet<>());
-//						for (String at : attributeTypes.get(vt)) {
-//							clone.get(vt).add(at);
-//						}
-//					}
-//					clone.get(vertexType).remove(attrName);
-//					this.addChild(new ConstantLiteral(vertexType, attrName, null), clone);
-//				}
-//			}
-//		}
-//		public void populateTree(HashSet<ConstantLiteral> otherLiterals) {
-//			for (ConstantLiteral otherLiteral : otherLiterals) {
-//				HashSet<ConstantLiteral> clone = new HashSet<>(otherLiterals);
-//				this.children.add(new LiteralTreeNode(this, otherLiteral, clone));
-//			}
-//		}
-
-		public void traverseTree() {
-
+		public ConstantLiteral getLiteral() {
+			return this.literal;
 		}
 
-//		private void addChild(String vertexType, Attribute attribute, HashMap<String, HashSet<String>> attributeTypes) {
-//		private void addChild(ConstantLiteral literal, HashMap<String, HashSet<String>> attributeTypes) {
-//			this.children.add(new LiteralTreeNode(this, literal, attributeTypes));
-//		}
-
-//		public Attribute getAttribute() {
-//			return this.attribute;
-//		}
-//
-//		public String getVertexType() {
-//			return this.vertexType;
-//		}
-
-		public ConstantLiteral getNodeLiteral() {
-			return this.nodeLiteral;
+		public LiteralTreeNode getParent() {
+			return this.parent;
 		}
 
 		public ArrayList<LiteralTreeNode> getChildren() {
 			return this.children;
+		}
+
+		public void setIsPruned() {
+			this.isPruned = true;
+		}
+
+		public boolean isPruned() {
+			return this.isPruned;
 		}
 
 //		public String toString() {
