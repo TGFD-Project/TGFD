@@ -7,7 +7,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.riot.system.PrefixMap;
 import org.jetbrains.annotations.NotNull;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
@@ -281,7 +280,7 @@ public class tgfdDiscovery {
 			String experimentName = "theta";
 			System.out.println("Varying " + experimentName);
 			TreeMap<String, Long> thetaRuntimes = new TreeMap<>();
-			for (double theta = 0.1; theta < 0.6; theta += 0.1) {
+			for (double theta = 0.9; theta > 0.0; theta -= 0.1) {
 //				double theta = 0.5;
 				System.out.println("Running experiment for theta = " + String.format("%.1f", theta));
 				final long startTime = System.currentTimeMillis();
@@ -629,41 +628,42 @@ public class tgfdDiscovery {
 			System.out.println("---------- Attribute values in " + t + " ---------- ");
 			int numOfMatches = 0;
 			Iterator<GraphMapping<Vertex, RelationshipEdge>> results = new VF2SubgraphIsomorphism().execute(graph.getGraph(), pattern, false, true);
-			if (results == null) continue;
-			while (results.hasNext()) {
-				Set<ConstantLiteral> entity = new HashSet<>();
-				ConstantLiteral rhs = null;
-				GraphMapping<Vertex, RelationshipEdge> match = results.next();
-				for (Vertex patternVertex : pattern.getPattern().vertexSet()) {
-					Vertex currentMatchedVertex = match.getVertexCorrespondence(patternVertex, false);
-					if (currentMatchedVertex == null) continue;
-					String patternVertexType = new ArrayList<>(patternVertex.getTypes()).get(0);
-					for (ConstantLiteral attribute : attributes) {
-						if (attribute.getVertexType().equals(patternVertexType)) {
-							for (String attrName : patternVertex.getAllAttributesNames()) {
-								if (attribute.getAttrName().equals(attrName)) {
-									String xAttrValue = currentMatchedVertex.getAttributeValueByName(attrName);
-									ConstantLiteral xLiteral = new ConstantLiteral(patternVertexType, attrName, xAttrValue);
-									entity.add(xLiteral);
+			if (results != null) {
+				while (results.hasNext()) {
+					Set<ConstantLiteral> entity = new HashSet<>();
+					ConstantLiteral rhs = null;
+					GraphMapping<Vertex, RelationshipEdge> match = results.next();
+					for (Vertex patternVertex : pattern.getPattern().vertexSet()) {
+						Vertex currentMatchedVertex = match.getVertexCorrespondence(patternVertex, false);
+						if (currentMatchedVertex == null) continue;
+						String patternVertexType = new ArrayList<>(patternVertex.getTypes()).get(0);
+						for (ConstantLiteral attribute : attributes) {
+							if (attribute.getVertexType().equals(patternVertexType)) {
+								for (String attrName : patternVertex.getAllAttributesNames()) {
+									if (attribute.getAttrName().equals(attrName)) {
+										String xAttrValue = currentMatchedVertex.getAttributeValueByName(attrName);
+										ConstantLiteral xLiteral = new ConstantLiteral(patternVertexType, attrName, xAttrValue);
+										entity.add(xLiteral);
+									}
 								}
 							}
 						}
+						if (patternVertexType.equals(yVertexType) && currentMatchedVertex.hasAttribute(yAttrName)) {
+							String yAttrValue = currentMatchedVertex.getAttributeValueByName(yAttrName);
+							rhs = new ConstantLiteral(patternVertexType, yAttrName, yAttrValue);
+						}
 					}
-					if (patternVertexType.equals(yVertexType) && currentMatchedVertex.hasAttribute(yAttrName)) {
-						String yAttrValue = currentMatchedVertex.getAttributeValueByName(yAttrName);
-						rhs = new ConstantLiteral(patternVertexType, yAttrName, yAttrValue);
-					}
-				}
-				if (entity.size() == 0 || rhs == null) continue;
+					if (entity.size() == 0 || rhs == null) continue;
 
-				if (!entitiesWithRHSvalues.containsKey(entity)) {
-					entitiesWithRHSvalues.put(entity, new HashMap<>());
+					if (!entitiesWithRHSvalues.containsKey(entity)) {
+						entitiesWithRHSvalues.put(entity, new HashMap<>());
+					}
+					if (!entitiesWithRHSvalues.get(entity).containsKey(rhs)) {
+						entitiesWithRHSvalues.get(entity).put(rhs, new ArrayList<>());
+					}
+					entitiesWithRHSvalues.get(entity).get(rhs).add(t);
+					numOfMatches++;
 				}
-				if (!entitiesWithRHSvalues.get(entity).containsKey(rhs)) {
-					entitiesWithRHSvalues.get(entity).put(rhs, new ArrayList<>());
-				}
-				entitiesWithRHSvalues.get(entity).get(rhs).add(t);
-				numOfMatches++;
 			}
 			System.out.println("Number of matches: " + numOfMatches);
 			t++;
@@ -897,10 +897,11 @@ public class tgfdDiscovery {
 		return literals;
 	}
 
-	public static boolean isPathVisited(Dependency path, ArrayList<Dependency> visitedPaths) {
-		for (Dependency visitedPath : visitedPaths) {
-			if (visitedPath.getY().size() == path.getY().size() && visitedPath.getX().size() == path.getX().size() &&
-					visitedPath.getY().containsAll(path.getY()) && visitedPath.getX().containsAll(path.getX())) {
+	public static boolean isPathVisited(ArrayList<ConstantLiteral> path, ArrayList<ArrayList<ConstantLiteral>> visitedPaths) {
+		for (ArrayList<ConstantLiteral> visitedPath : visitedPaths) {
+			if (visitedPath.size() == path.size()
+					&& visitedPath.subList(0,visitedPath.size()-1).containsAll(path.subList(0, path.size()-1))
+					&& visitedPath.get(visitedPath.size()-1).equals(path.get(path.size()-1))) {
 				System.out.println("This dependency was already visited.");
 				return true;
 			}
@@ -910,6 +911,7 @@ public class tgfdDiscovery {
 
 	public static boolean isZeroEntityPath(Dependency path, GenTreeNode patternTreeNode) {
 		ArrayList<Dependency> zeroEntityPaths = new ArrayList<>();
+		// Get all zero-entity paths in pattern tree
 		GenTreeNode currPatternTreeNode = patternTreeNode;
 		zeroEntityPaths.addAll(currPatternTreeNode.getZeroEntityDependencies());
 		while (currPatternTreeNode.parentNode() != null) {
@@ -919,7 +921,7 @@ public class tgfdDiscovery {
 		for (Dependency zeroEntityPath : zeroEntityPaths) {
 			if (//zeroEntityPath.getY().size() == path.getY().size() && zeroEntityPath.getX().size() == path.getX().size() &&
 					path.getY().containsAll(zeroEntityPath.getY()) && path.getX().containsAll(zeroEntityPath.getX())) {
-				System.out.println("Superset of zero-entity dependency: " + zeroEntityPath);
+				System.out.println("Candidate dependency is a superset of zero-entity dependency: " + zeroEntityPath);
 				return true;
 			}
 		}
@@ -928,6 +930,7 @@ public class tgfdDiscovery {
 
 	public static boolean isMinimalPath(Dependency path, GenTreeNode patternTreeNode) {
 		ArrayList<Dependency> minimalPaths = new ArrayList<>();
+		// Get all minimal paths in pattern tree
 		GenTreeNode currPatternTreeNode = patternTreeNode;
 		minimalPaths.addAll(currPatternTreeNode.getMinimalDependencies());
 		while (currPatternTreeNode.parentNode() != null) {
@@ -937,35 +940,26 @@ public class tgfdDiscovery {
 		for (Dependency minimalPath : minimalPaths) {
 			if (//minimalPath.getY().size() == path.getY().size() && minimalPath.getX().size() == path.getX().size() &&
 					path.getY().containsAll(minimalPath.getY()) && path.getX().containsAll(minimalPath.getX())) {
-				System.out.println("Superset of minimal dependency: " + minimalPath);
+				System.out.println("Candidate dependency is a superset of minimal dependency: " + minimalPath);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public static ArrayList<TGFD> deltaDiscovery2(ArrayList<DBPediaLoader> graphs, double theta, GenTreeNode patternNode, LiteralTreeNode literalNode, ArrayList<Dependency> visitedDependencies) {
+	public static ArrayList<TGFD> deltaDiscovery2(ArrayList<DBPediaLoader> graphs, double theta, GenTreeNode patternNode, LiteralTreeNode literalNode, ArrayList<ConstantLiteral> literalPath) {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
-		// Traverse up the literal tree to generate dependency
-		ArrayList<ConstantLiteral> literalPath = new ArrayList<>();
-		literalPath.add(literalNode.getLiteral());
-		LiteralTreeNode parentLiteralNode = literalNode.getParent();
-		while (parentLiteralNode != null) {
-			literalPath.add(parentLiteralNode.getLiteral());
-			parentLiteralNode = parentLiteralNode.getParent();
-		}
-		System.out.println("Literal path: "+literalPath);
 		Dependency dependency = new Dependency();
 		dependency.addLiteralToY(literalPath.get(literalPath.size()-1));
 		for (ConstantLiteral literal : literalPath.subList(0,literalPath.size()-1)) {
 			dependency.addLiteralToX(literal);
 		}
-		if (isPathVisited(dependency, visitedDependencies) || isZeroEntityPath(dependency, patternNode) || isMinimalPath(dependency, patternNode)) {
-			System.out.println("Skip dependency");
+		if (isZeroEntityPath(dependency, patternNode) || isMinimalPath(dependency, patternNode)) {
+			literalNode.setIsPruned();
+			System.out.println("Marking literal node as pruned. Skip dependency");
 			return tgfds;
 		}
-		visitedDependencies.add(dependency);
 
 		// Add dependency attributes to pattern
 		VF2PatternGraph patternForDependency = patternNode.getPattern().copy();
@@ -1267,7 +1261,7 @@ public class tgfdDiscovery {
 			LiteralTree literalTree = new LiteralTree();
 			for (int j = 0; j < literals.size(); j++) {
 
-				System.out.println("HSpawn level " + j);
+				System.out.println("HSpawn level " + j + "/" + literals.size());
 
 				if (j == 0) {
 					literalTree.addLevel();
@@ -1276,41 +1270,53 @@ public class tgfdDiscovery {
 					}
 				} else {
 					ArrayList<LiteralTreeNode> literalTreePreviousLevel = literalTree.getLevel(j - 1);
-					if (literalTreePreviousLevel.size() == 0) break;
+					if (literalTreePreviousLevel.size() == 0) {
+						System.out.println("Previous level of literal tree is empty. Nothing to expand. End HSpawn");
+						break;
+					}
 					literalTree.addLevel();
-
+					ArrayList<ArrayList<ConstantLiteral>> visitedPaths = new ArrayList<>();
+					ArrayList<TGFD> currentLevelTGFDs = new ArrayList<>();
 					for (LiteralTreeNode previousLevelLiteral : literalTreePreviousLevel) {
 						if (previousLevelLiteral.isPruned()) continue;
+						ArrayList<ConstantLiteral> parentsPathToRoot = previousLevelLiteral.getPathToRoot();
 						for (ConstantLiteral literal: literals) {
-							boolean existsInPath = false;
-							LiteralTreeNode parent = previousLevelLiteral;
-							while (parent != null) {
-								if (parent.getLiteral().equals(literal)) {
-									existsInPath = true;
-									break;
-								} else {
-									parent = parent.getParent();
-								}
-							}
-							if (existsInPath) continue;
-							literalTree.createNodeAtLevel(j, literal, previousLevelLiteral);
-						}
-					}
-					if (j < i) continue;
-					ArrayList<LiteralTreeNode> currentLiteralTreeLevel = literalTree.getLevel(j);
-					System.out.println("Generated new literal tree nodes: "+ currentLiteralTreeLevel.size());
+							// Check if leaf node exists in path already
+							if (parentsPathToRoot.contains(literal)) continue;
 
-					ArrayList<Dependency> visitedPaths = new ArrayList<>();
-					for (LiteralTreeNode literalTreeNode: currentLiteralTreeLevel) {
-						System.out.println("Performing Delta Discovery at HSpawn level " + j);
-						ArrayList<TGFD> hSpawnTGFDs = deltaDiscovery2(graphs, theta, patternNode, literalTreeNode, visitedPaths);
-						if (hSpawnTGFDs.size() > 0) {
-							tgfds.addAll(hSpawnTGFDs);
-						} else {
-							literalTreeNode.setIsPruned();
+							// Check if path to candidate leaf node is unique
+							ArrayList<ConstantLiteral> newPath = new ArrayList<>();
+							newPath.add(literal);
+							newPath.addAll(previousLevelLiteral.getPathToRoot());
+							if (isPathVisited(newPath, visitedPaths)) {
+								System.out.println("Duplicate literal path: " + newPath);
+								continue;
+							}
+							System.out.println("Newly created unique literal path: " + newPath);
+
+							// Add leaf node to tree
+							LiteralTreeNode literalTreeNode = literalTree.createNodeAtLevel(j, literal, previousLevelLiteral);
+
+							if (j < i) { // Ensures |LHS| = |Q|
+								System.out.println("|LHS| < |Q|. Skip HSpawn level " + j);
+								continue;
+							}
+							visitedPaths.add(newPath);
+
+							System.out.println("Performing Delta Discovery at HSpawn level " + j);
+							ArrayList<TGFD> discoveredTGFDs = deltaDiscovery2(graphs, theta, patternNode, literalTreeNode, newPath);
+							currentLevelTGFDs.addAll(discoveredTGFDs);
 						}
 					}
+					// If current literal tree level doesn't produces TGFDs, don't add more levels
+					// TO-DO: Verify this pruning is in accordance with axioms
+					if (currentLevelTGFDs.size() == 0) {
+						System.out.println("Current literal tree level didn't produces any TGFDs. Don't add more levels. End HSpawn");
+						break;
+					}
+					tgfds.addAll(currentLevelTGFDs);
 				}
+				System.out.println("Generated new literal tree nodes: "+ literalTree.getLevel(j).size());
 			}
 			System.out.println("Current TGFD count: " + tgfds.size());
 		}
@@ -2305,9 +2311,10 @@ class LiteralTree {
 		System.out.println("LiteralTree levels: " + tree.size());
 	}
 
-	public void createNodeAtLevel(int level, ConstantLiteral literal, LiteralTreeNode parentNode) {
+	public LiteralTreeNode createNodeAtLevel(int level, ConstantLiteral literal, LiteralTreeNode parentNode) {
 		LiteralTreeNode node = new LiteralTreeNode(literal, parentNode);
 		tree.get(level).add(node);
+		return node;
 	}
 
 	public ArrayList<LiteralTreeNode> getLevel(int i) {
@@ -2507,6 +2514,17 @@ class LiteralTree {
 			for (ConstantLiteral otherLiteral : subset) {
 				this.children.add(new LiteralTreeNode(otherLiteral, subset));
 			}
+		}
+
+		public ArrayList<ConstantLiteral> getPathToRoot() {
+			ArrayList<ConstantLiteral> literalPath = new ArrayList<>();
+			literalPath.add(literal);
+			LiteralTreeNode parentLiteralNode = parent;
+			while (parentLiteralNode != null) {
+				literalPath.add(parentLiteralNode.getLiteral());
+				parentLiteralNode = parentLiteralNode.getParent();
+			}
+			return literalPath;
 		}
 
 		public ConstantLiteral getLiteral() {
