@@ -77,7 +77,7 @@ public class VF2SubgraphIsomorphism {
         }
     }
 
-    public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean cacheEdges, boolean isDeltaDiscovery)
+    public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean cacheEdges, boolean isTgfdDiscovery)
     {
         System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
 //        System.gc();
@@ -91,7 +91,7 @@ public class VF2SubgraphIsomorphism {
         int size=0;
         if (inspector.isomorphismExists()) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
-            if (!isDeltaDiscovery) {
+            if (!isTgfdDiscovery) {
                 while (iterator.hasNext()) {
                     System.out.println("---------- Match found ---------- ");
                     GraphMapping<Vertex, RelationshipEdge> mappings = iterator.next();
