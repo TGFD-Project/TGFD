@@ -40,7 +40,7 @@ public class tgfdDiscovery {
 	public static Map<String, HashSet<String>> vertexTypesAttributes; // freq attributes come from here
 	//	public static ArrayList<Entry<String, Integer>> attrSortedHist;
 	public static Map<String, Integer> uniqueEdgesHist; // freq edges come from here
-	public static GenerationTree genTree;
+	public static PatternTree genTree;
 	//	private static Map<String, Integer> attrHist;
 	public static boolean isNaive = false;
 	public static Long fileSuffix = null;
@@ -826,8 +826,8 @@ public class tgfdDiscovery {
 	}
 
 	public static void generateDummyTGFDsForDeltaDiscovery(int i, ArrayList<TGFD> dummyTGFDs) {
-		ArrayList<GenTreeNode> nodes = genTree.getLevel(i);
-		for (GenTreeNode node : nodes) {
+		ArrayList<PatternTreeNode> nodes = genTree.getLevel(i);
+		for (PatternTreeNode node : nodes) {
 //			if (node.parentNode() != null) {
 //				if (node.parentNode().isPruned()) {
 ////					System.out.println("Skipping node: " + node.getPattern());
@@ -909,15 +909,9 @@ public class tgfdDiscovery {
 		return false;
 	}
 
-	public static boolean isZeroEntityPath(ArrayList<ConstantLiteral> path, GenTreeNode patternTreeNode) {
-		ArrayList<ArrayList<ConstantLiteral>> zeroEntityPaths = new ArrayList<>();
+	public static boolean isZeroEntityPath(ArrayList<ConstantLiteral> path, PatternTreeNode patternTreeNode) {
 		// Get all zero-entity paths in pattern tree
-		GenTreeNode currPatternTreeNode = patternTreeNode;
-		zeroEntityPaths.addAll(currPatternTreeNode.getZeroEntityDependencies());
-		while (currPatternTreeNode.parentNode() != null) {
-			currPatternTreeNode = currPatternTreeNode.parentNode();
-			zeroEntityPaths.addAll(currPatternTreeNode.getZeroEntityDependencies());
-		}
+		ArrayList<ArrayList<ConstantLiteral>> zeroEntityPaths = patternTreeNode.getAllZeroEntityDependenciesOnThisPath();
 		for (ArrayList<ConstantLiteral> zeroEntityPath : zeroEntityPaths) {
 			if (path.get(path.size()-1).equals(zeroEntityPath.get(zeroEntityPath.size()-1)) && path.subList(0, path.size()-1).containsAll(zeroEntityPath.subList(0,zeroEntityPath.size()-1))) {
 				System.out.println("Candidate dependency is a superset of zero-entity dependency: " + zeroEntityPath);
@@ -927,15 +921,7 @@ public class tgfdDiscovery {
 		return false;
 	}
 
-	public static boolean isMinimalPath(ArrayList<ConstantLiteral> path, GenTreeNode patternTreeNode) {
-		ArrayList<ArrayList<ConstantLiteral>> minimalPaths = new ArrayList<>();
-		// Get all minimal paths in pattern tree
-		GenTreeNode currPatternTreeNode = patternTreeNode;
-		minimalPaths.addAll(currPatternTreeNode.getMinimalDependencies());
-		while (currPatternTreeNode.parentNode() != null) {
-			currPatternTreeNode = currPatternTreeNode.parentNode();
-			minimalPaths.addAll(currPatternTreeNode.getMinimalDependencies());
-		}
+	public static boolean isMinimalPath(ArrayList<ConstantLiteral> path, ArrayList<ArrayList<ConstantLiteral>> minimalPaths) {
 		for (ArrayList<ConstantLiteral> minimalPath : minimalPaths) {
 			if (path.get(path.size()-1).equals(minimalPath.get(minimalPath.size()-1)) && path.subList(0, path.size()-1).containsAll(minimalPath.subList(0,minimalPath.size()-1))) {
 				System.out.println("Candidate dependency is a superset of minimal dependency: " + minimalPath);
@@ -945,10 +931,11 @@ public class tgfdDiscovery {
 		return false;
 	}
 
-	public static ArrayList<TGFD> deltaDiscovery2(ArrayList<DBPediaLoader> graphs, double theta, GenTreeNode patternNode, LiteralTreeNode literalTreeNode, ArrayList<ConstantLiteral> literalPath) {
+	public static ArrayList<TGFD> deltaDiscovery2(ArrayList<DBPediaLoader> graphs, double theta, PatternTreeNode patternNode, LiteralTreeNode literalTreeNode, ArrayList<ConstantLiteral> literalPath) {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
 		// Add dependency attributes to pattern
+		// TO-DO: Fix - when multiple vertices in a pattern have the same type, attribute values get overwritten
 		VF2PatternGraph patternForDependency = patternNode.getPattern().copy();
 		Set<ConstantLiteral> attributesSetForDependency = new HashSet<>(literalPath);
 		for (Vertex v : patternForDependency.getPattern().vertexSet()) {
@@ -1016,6 +1003,7 @@ public class tgfdDiscovery {
 		HashMap<Pair, ArrayList<TreeSet<Pair>>> intersections = new HashMap<>();
 		int currMin = 0;
 		int currMax = graphs.size() - 1;
+		// TO-DO: Verify if TreeSet<Pair> is being sorted correctly
 		ArrayList<TreeSet<Pair>> currSatisfyingAttrValues = new ArrayList<>();
 		for (int index = 0; index < constantXdeltas.size(); index++) {
 			Pair deltaPair = constantXdeltas.get(index);
@@ -1025,6 +1013,7 @@ public class tgfdDiscovery {
 				currSatisfyingAttrValues.add(satisfyingAttrValues.get(index)); // By axiom 4
 			} else {
 				intersections.putIfAbsent(new Pair(currMin, currMax), currSatisfyingAttrValues);
+				currSatisfyingAttrValues = new ArrayList<>();
 				currMin = 0;
 				currMax = graphs.size() - 1;
 				if (Math.max(currMin, deltaPair.min()) <= Math.min(currMax, deltaPair.max())) {
@@ -1103,27 +1092,32 @@ public class tgfdDiscovery {
 		return tgfds;
 	}
 
-	private static ArrayList<TGFD> discoverConstantTGFDs(double theta, GenTreeNode patternNode, ConstantLiteral yLiteral, Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
+	private static ArrayList<TGFD> discoverConstantTGFDs(double theta, PatternTreeNode patternNode, ConstantLiteral yLiteral, Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 		String yVertexType = yLiteral.getVertexType();
 		String yAttrName = yLiteral.getAttrName();
 		for (Entry<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entityEntry : entities.entrySet()) {
 			VF2PatternGraph newPattern = patternNode.getPattern().copy();
 			Dependency newDependency = new Dependency();
+			ArrayList<ConstantLiteral> constantPath = new ArrayList<>();
 			for (ConstantLiteral xLiteral : entityEntry.getKey()) {
 				for (Vertex v : newPattern.getPattern().vertexSet()) {
 					if (v.getTypes().contains(yVertexType)) {
 						v.addAttribute(new Attribute(yAttrName));
 						VariableLiteral newY = new VariableLiteral(yVertexType, yAttrName, yVertexType, yAttrName);
 						newDependency.addLiteralToY(newY);
+
 					}
 					String vType = new ArrayList<>(v.getTypes()).get(0);
 					if (xLiteral.getVertexType().equalsIgnoreCase(vType)) {
 						v.addAttribute(new Attribute(xLiteral.getAttrName(), xLiteral.getAttrValue()));
-						newDependency.addLiteralToX(new ConstantLiteral(vType, xLiteral.getAttrName(), xLiteral.getAttrValue()));
+						ConstantLiteral newXLiteral = new ConstantLiteral(vType, xLiteral.getAttrName(), xLiteral.getAttrValue());
+						newDependency.addLiteralToX(newXLiteral);
+						constantPath.add(newXLiteral);
 					}
 				}
 			}
+			constantPath.add(new ConstantLiteral(yVertexType, yAttrName, null));
 
 			System.out.println("Performing Constant TGFD discovery");
 			System.out.println("Pattern: " + newPattern);
@@ -1173,8 +1167,12 @@ public class tgfdDiscovery {
 					candidateDeltas.add(deltaPair);
 				}
 			}
+			if (candidateDeltas.size() == 0) {
+				System.out.println("Could not come up with any deltas for entity: " + entityEntry.getKey());
+				continue;
+			}
 
-			// Compute support
+			// Compute TGFD support
 			Delta candidateTGFDdelta = null;
 			double candidateTGFDsupport = 0.0;
 			Pair mostSupportedDelta = null;
@@ -1208,26 +1206,37 @@ public class tgfdDiscovery {
 					}
 				}
 			}
+			if (mostSupportedDelta == null) {
+				System.out.println("Could not come up with mostSupportedDelta for entity: " + entityEntry.getKey());
+				continue;
+			}
 			System.out.println("Entity satisfying attributes:" + mostSupportedSatisfyingPairs);
 			System.out.println("Entity delta = " + mostSupportedDelta);
 			System.out.println("Entity support = " + candidateTGFDsupport);
-			if (candidateTGFDsupport >= theta) {
-				int minDistance = mostSupportedDelta.min();
-				int maxDistance = mostSupportedDelta.max();
-				candidateTGFDdelta = new Delta(Period.ofDays(minDistance * 183), Period.ofDays(maxDistance * 183 + 1), Duration.ofDays(183));
-				satisfyingAttrValues.add(mostSupportedSatisfyingPairs);
-				constantXdeltas.add(mostSupportedDelta);
-				System.out.println(candidateTGFDdelta);
-			} else {
+			satisfyingAttrValues.add(mostSupportedSatisfyingPairs);
+			constantXdeltas.add(mostSupportedDelta);
+			if (candidateTGFDsupport < theta) {
 				System.out.println("Could not satisfy TGFD support threshold for entity: " + entityEntry.getKey());
 				continue;
 			}
+			int minDistance = mostSupportedDelta.min();
+			int maxDistance = mostSupportedDelta.max();
+			candidateTGFDdelta = new Delta(Period.ofDays(minDistance * 183), Period.ofDays(maxDistance * 183 + 1), Duration.ofDays(183));
+			System.out.println("Constant TGFD delta: "+candidateTGFDdelta);
 
-			//TO-DO: Only add tgfd to output set if its not a superset of a minimal TGFD
-			TGFD entityTGFD = new TGFD(newPattern, candidateTGFDdelta, newDependency, candidateTGFDsupport, "");
-			System.out.println("TGFD: " + entityTGFD);
-			tgfds.add(entityTGFD);
+			if (!isMinimalPath(constantPath, patternNode.getAllMinimalDependenciesOnThisPath())) {
+				TGFD entityTGFD = new TGFD(newPattern, candidateTGFDdelta, newDependency, candidateTGFDsupport, "");
+				System.out.println("TGFD: " + entityTGFD);
+				tgfds.add(entityTGFD);
+				patternNode.addMinimalDependency(constantPath);
+			}
 		}
+		constantXdeltas.sort(new Comparator<Pair>() {
+			@Override
+			public int compare(Pair o1, Pair o2) {
+				return o1.compareTo(o2);
+			}
+		});
 		return tgfds;
 	}
 
@@ -1243,7 +1252,7 @@ public class tgfdDiscovery {
 		}
 	}
 
-	public static ArrayList<TGFD> hSpawn2(int i, double theta, GenTreeNode patternNode) {
+	public static ArrayList<TGFD> hSpawn2(int i, double theta, PatternTreeNode patternNode) {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
 		System.out.println("Performing HSpawn for " + patternNode.getPattern());
@@ -1284,7 +1293,7 @@ public class tgfdDiscovery {
 							System.out.println("Duplicate literal path: " + newPath);
 							continue;
 						}
-						if (isZeroEntityPath(newPath, patternNode) || isMinimalPath(newPath, patternNode)) {
+						if (isZeroEntityPath(newPath, patternNode) || isMinimalPath(newPath, patternNode.getMinimalDependencies())) {
 							System.out.println("Marking literal node as pruned. Skip dependency");
 							continue;
 						}
@@ -1339,8 +1348,8 @@ public class tgfdDiscovery {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
 //		for (int i = 0; i <= k; i++) {
-		ArrayList<GenTreeNode> nodes = genTree.getLevel(i);
-		for (GenTreeNode node : nodes) {
+		ArrayList<PatternTreeNode> nodes = genTree.getLevel(i);
+		for (PatternTreeNode node : nodes) {
 
 			int numOfTGFDsAddedForThisNode = 0;
 
@@ -1947,7 +1956,7 @@ public class tgfdDiscovery {
 	public static ArrayList<TGFD> vSpawnInit(double theta) {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
-		genTree = new GenerationTree();
+		genTree = new PatternTree();
 		genTree.addLevel();
 
 		List<Entry<String, Integer>> sortedNodeHistogram = getSortedNodeHistogram();
@@ -1974,7 +1983,7 @@ public class tgfdDiscovery {
 
 			if (tgfdDiscovery.isNaive) {
 				if (patternSupport >= PATTERN_SUPPORT_THRESHOLD) {
-					GenTreeNode patternNode = genTree.createNodeAtLevel(0, candidatePattern, patternSupport, null);
+					PatternTreeNode patternNode = genTree.createNodeAtLevel(0, candidatePattern, patternSupport, null);
 					ArrayList<TGFD> hSpawnTGFDs = hSpawn2(0, theta, patternNode);
 					tgfds.addAll(hSpawnTGFDs);
 //					ArrayList<TreeSet<Dependency>> dependenciesSets = hSpawn(candidatePattern, patternSupport);
@@ -1983,7 +1992,7 @@ public class tgfdDiscovery {
 					System.out.println("Pattern support of " + patternSupport + " is below threshold.");
 				}
 			} else {
-				GenTreeNode patternNode = genTree.createNodeAtLevel(0, candidatePattern, patternSupport, null);
+				PatternTreeNode patternNode = genTree.createNodeAtLevel(0, candidatePattern, patternSupport, null);
 				ArrayList<TGFD> hSpawnTGFDs = hSpawn2(0, theta, patternNode);
 				tgfds.addAll(hSpawnTGFDs);
 //				ArrayList<TreeSet<Dependency>> dependenciesSets = hSpawn(candidatePattern, patternSupport);
@@ -1992,7 +2001,7 @@ public class tgfdDiscovery {
 			System.gc();
 		}
 		System.out.println("GenTree Level " + 0 + " size: " + genTree.getLevel(0).size());
-		for (GenTreeNode node : genTree.getLevel(0)) {
+		for (PatternTreeNode node : genTree.getLevel(0)) {
 			System.out.println("Pattern: " + node.getPattern());
 			System.out.println("Pattern Support: " + node.getPatternSupport());
 //			System.out.println("Dependency: " + node.getDependenciesSets());
@@ -2032,9 +2041,9 @@ public class tgfdDiscovery {
 //		for (int i = 1; i <= k; i++) {
 		System.out.println("VSpawn Level " + i);
 		System.gc();
-		ArrayList<GenTreeNode> previousLevel = genTree.getLevel(i - 1);
+		ArrayList<PatternTreeNode> previousLevel = genTree.getLevel(i - 1);
 		genTree.addLevel();
-		for (GenTreeNode node : previousLevel) {
+		for (PatternTreeNode node : previousLevel) {
 			System.out.println("Performing VSpawn on pattern: " + node.getPattern());
 
 			node.deleteDependenciesSets();
@@ -2055,6 +2064,11 @@ public class tgfdDiscovery {
 				}
 				String sourceVertexType = candidateEdgeString.split(" ")[0];
 				String targetVertexType = candidateEdgeString.split(" ")[2];
+				// TO-DO: We should add support for this in the future
+				if (sourceVertexType.equals(targetVertexType)) {
+					System.out.println("Candidate edge contains duplicate vertex types. Skip.");
+					continue;
+				}
 				String edgeType = candidateEdgeString.split(" ")[1];
 
 				// TO-DO: FIX label conflict. What if an edge has same vertex type on both sides?
@@ -2066,8 +2080,12 @@ public class tgfdDiscovery {
 //					if (v.getTypes().contains(sourceVertexType) || v.getTypes().contains(targetVertexType)) {
 					// Create copy of k-1 pattern
 					VF2PatternGraph newPattern = node.getPattern().copy();
-					if (!isDuplicateEdge(newPattern, edgeType, sourceVertexType, targetVertexType)) {
-//							if (v.getTypes().contains(sourceVertexType)) {
+					if (isDuplicateEdge(newPattern, edgeType, sourceVertexType, targetVertexType)) {
+						System.out.println("Candidate edge: " + candidateEdge.getKey());
+						System.out.println("already exists in pattern");
+						continue;
+					}
+//					if (v.getTypes().contains(sourceVertexType)) {
 						if (vertexTypesAttributes.get(targetVertexType).size() == 0) continue;
 						PatternVertex node2 = new PatternVertex(targetVertexType);
 						newPattern.addVertex(node2);
@@ -2079,25 +2097,22 @@ public class tgfdDiscovery {
 							}
 						}
 						newPattern.addEdge(node1, node2, newEdge);
+//					}
+					// TO-DO: Support the addition of incoming edges into new patterns
+//					else if (v.getTypes().contains(targetVertexType)) {
+//						PatternVertex node1 = new PatternVertex(sourceVertexType);
+//						newPattern.addVertex(node1);
+//						RelationshipEdge newEdge = new RelationshipEdge(edgeType);
+//						PatternVertex node2 = null;
+//						for (Vertex vertex : newPattern.getPattern().vertexSet()) {
+//							if (vertex.getTypes().contains(targetVertexType)) {
+//								node2 = (PatternVertex) vertex;
 //							}
-//							else if (v.getTypes().contains(targetVertexType)) {
-//								PatternVertex node1 = new PatternVertex(sourceVertexType);
-//								newPattern.addVertex(node1);
-//								RelationshipEdge newEdge = new RelationshipEdge(edgeType);
-//								PatternVertex node2 = null;
-//								for (Vertex vertex : newPattern.getPattern().vertexSet()) {
-//									if (vertex.getTypes().contains(targetVertexType)) {
-//										node2 = (PatternVertex) vertex;
-//									}
-//								}
-//								newPattern.addEdge(node1, node2, newEdge);
-//							}
-					} else {
-						System.out.println("Candidate edge: " + candidateEdge.getKey());
-						System.out.println("already exists in pattern");
-						continue;
-					}
+//						}
+//						newPattern.addEdge(node1, node2, newEdge);
+//					}
 					System.out.println("Created new pattern: " + newPattern);
+
 
 //						boolean isIsomorph = false;
 //						for (GenTreeNode otherNode: genTree.getLevel(i)) {
@@ -2165,14 +2180,14 @@ public class tgfdDiscovery {
 //					ArrayList<TreeSet<Dependency>> literalTreeList = hSpawn(newPattern, patternSupport);
 //					System.gc();
 //					genTree.createNodeAtLevel(i, newPattern, literalTreeList, patternSupport, node);
-					GenTreeNode patternNode = genTree.createNodeAtLevel(i, newPattern, patternSupport, node);
+					PatternTreeNode patternNode = genTree.createNodeAtLevel(i, newPattern, patternSupport, node);
 					ArrayList<TGFD> hSpawnTGFDs = hSpawn2(i, theta, patternNode);
 					tgfds.addAll(hSpawnTGFDs);
 				}
 			}
 		}
 		System.out.println("GenTree Level " + i + " size: " + genTree.getLevel(i).size());
-		for (GenTreeNode node : genTree.getLevel(i)) {
+		for (PatternTreeNode node : genTree.getLevel(i)) {
 			System.out.println("Pattern: " + node.getPattern());
 			System.out.println("Pattern Support: " + node.getPatternSupport());
 		}
@@ -2325,10 +2340,10 @@ class LiteralTree {
 	}
 }
 
-	class GenerationTree {
-		private ArrayList<ArrayList<GenTreeNode>> tree;
+	class PatternTree {
+		private ArrayList<ArrayList<PatternTreeNode>> tree;
 
-		public GenerationTree() {
+		public PatternTree() {
 			tree = new ArrayList<>();
 		}
 
@@ -2337,37 +2352,37 @@ class LiteralTree {
 			System.out.println("GenerationTree levels: " + tree.size());
 		}
 
-		public GenTreeNode createNodeAtLevel(int level, VF2PatternGraph pattern, double patternSupport, GenTreeNode parentNode) {
-			GenTreeNode node = new GenTreeNode(pattern, patternSupport, parentNode);
+		public PatternTreeNode createNodeAtLevel(int level, VF2PatternGraph pattern, double patternSupport, PatternTreeNode parentNode) {
+			PatternTreeNode node = new PatternTreeNode(pattern, patternSupport, parentNode);
 			tree.get(level).add(node);
 			return node;
 		}
 
 		public void createNodeAtLevel(int level, VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double support) {
-			GenTreeNode node = new GenTreeNode(pattern, dependenciesSets, support);
+			PatternTreeNode node = new PatternTreeNode(pattern, dependenciesSets, support);
 			tree.get(level).add(node);
 		}
 
-		public ArrayList<GenTreeNode> getLevel(int i) {
+		public ArrayList<PatternTreeNode> getLevel(int i) {
 			return tree.get(i);
 		}
 
-		public void createNodeAtLevel(int level, VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport, GenTreeNode parentNode) {
-			GenTreeNode node = new GenTreeNode(pattern, dependenciesSets, patternSupport, parentNode);
+		public void createNodeAtLevel(int level, VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport, PatternTreeNode parentNode) {
+			PatternTreeNode node = new PatternTreeNode(pattern, dependenciesSets, patternSupport, parentNode);
 			tree.get(level).add(node);
 		}
 
 		public void createNodeAtLevel(int level, VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport, boolean isPruned) {
-			GenTreeNode node = new GenTreeNode(pattern, dependenciesSets, patternSupport, isPruned);
+			PatternTreeNode node = new PatternTreeNode(pattern, dependenciesSets, patternSupport, isPruned);
 			tree.get(level).add(node);
 		}
 	}
 
-	class GenTreeNode {
+	class PatternTreeNode {
 		private VF2PatternGraph pattern;
 		private ArrayList<TreeSet<Dependency>> dependenciesSets;
 		private double patternSupport;
-		private GenTreeNode parentNode;
+		private PatternTreeNode parentNode;
 		private boolean isPruned = false;
 		private ArrayList<tgfdDiscovery.PatternDependencyPair> minimalSetOfDependencies = new ArrayList<>();
 		private ArrayList<tgfdDiscovery.PatternDependencyPair> prunedSetOfTGFDs = new ArrayList<>();
@@ -2375,27 +2390,27 @@ class LiteralTree {
 		private ArrayList<ArrayList<ConstantLiteral>> zeroEntityDependencies = new ArrayList<ArrayList<ConstantLiteral>>();
 		private ArrayList<ArrayList<ConstantLiteral>> minimalDependencies = new ArrayList<>();
 
-		public GenTreeNode(VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport) {
+		public PatternTreeNode(VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport) {
 			this.pattern = pattern;
 			this.dependenciesSets = dependenciesSets;
 			this.patternSupport = patternSupport;
 		}
 
-		public GenTreeNode(VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport, GenTreeNode parentNode) {
+		public PatternTreeNode(VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport, PatternTreeNode parentNode) {
 			this.pattern = pattern;
 			this.dependenciesSets = dependenciesSets;
 			this.patternSupport = patternSupport;
 			this.parentNode = parentNode;
 		}
 
-		public GenTreeNode(VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport, boolean isPruned) {
+		public PatternTreeNode(VF2PatternGraph pattern, ArrayList<TreeSet<Dependency>> dependenciesSets, double patternSupport, boolean isPruned) {
 			this.pattern = pattern;
 			this.dependenciesSets = dependenciesSets;
 			this.patternSupport = patternSupport;
 			this.isPruned = isPruned;
 		}
 
-		public GenTreeNode(VF2PatternGraph pattern, double patternSupport, GenTreeNode parentNode) {
+		public PatternTreeNode(VF2PatternGraph pattern, double patternSupport, PatternTreeNode parentNode) {
 			this.pattern = pattern;
 			this.patternSupport = patternSupport;
 			this.parentNode = parentNode;
@@ -2413,7 +2428,7 @@ class LiteralTree {
 			return patternSupport;
 		}
 
-		public GenTreeNode parentNode() {
+		public PatternTreeNode parentNode() {
 			return this.parentNode;
 		}
 
@@ -2474,12 +2489,32 @@ class LiteralTree {
 			return this.zeroEntityDependencies;
 		}
 
+		public ArrayList<ArrayList<ConstantLiteral>> getAllZeroEntityDependenciesOnThisPath() {
+			PatternTreeNode currPatternTreeNode = this;
+			ArrayList<ArrayList<ConstantLiteral>> zeroEntityPaths = new ArrayList<>(currPatternTreeNode.getZeroEntityDependencies());
+			while (currPatternTreeNode.parentNode() != null) {
+				currPatternTreeNode = currPatternTreeNode.parentNode();
+				zeroEntityPaths.addAll(currPatternTreeNode.getZeroEntityDependencies());
+			}
+			return zeroEntityPaths;
+		}
+
 		public void addMinimalDependency(ArrayList<ConstantLiteral> dependency) {
 			this.minimalDependencies.add(dependency);
 		}
 
 		public ArrayList<ArrayList<ConstantLiteral>> getMinimalDependencies() {
 			return this.minimalDependencies;
+		}
+
+		public ArrayList<ArrayList<ConstantLiteral>> getAllMinimalDependenciesOnThisPath() {
+			PatternTreeNode currPatternTreeNode = this;
+			ArrayList<ArrayList<ConstantLiteral>> minimalPaths = new ArrayList<>(currPatternTreeNode.getMinimalDependencies());
+			while (currPatternTreeNode.parentNode() != null) {
+				currPatternTreeNode = currPatternTreeNode.parentNode();
+				minimalPaths.addAll(currPatternTreeNode.getMinimalDependencies());
+			}
+			return minimalPaths;
 		}
 	}
 
