@@ -630,7 +630,6 @@ public class tgfdDiscovery {
 			int numOfMatches = 0;
 			if (matchesInOneTimeStamp.size() > 0) {
 				for(HashSet<ConstantLiteral> match : matchesInOneTimeStamp) {
-					if (match.size() > attributes.size()) break;
 					Set<ConstantLiteral> entity = new HashSet<>();
 					ConstantLiteral rhs = null;
 					for (ConstantLiteral literalInMatch : match) {
@@ -644,7 +643,7 @@ public class tgfdDiscovery {
 							}
 						}
 					}
-					if (entity.size() == 0 || rhs == null) continue;
+					if (entity.size() < xAttributes.size() || rhs == null) continue;
 
 					if (!entitiesWithRHSvalues.containsKey(entity)) {
 						entitiesWithRHSvalues.put(entity, new HashMap<>());
@@ -1091,15 +1090,16 @@ public class tgfdDiscovery {
 			VF2PatternGraph newPattern = patternNode.getPattern().copy();
 			Dependency newDependency = new Dependency();
 			ArrayList<ConstantLiteral> constantPath = new ArrayList<>();
-			for (ConstantLiteral xLiteral : entityEntry.getKey()) {
-				for (Vertex v : newPattern.getPattern().vertexSet()) {
-					if (v.getTypes().contains(yVertexType)) {
-						v.addAttribute(new Attribute(yAttrName));
+			for (Vertex v : newPattern.getPattern().vertexSet()) {
+				String vType = new ArrayList<>(v.getTypes()).get(0);
+				if (vType.equalsIgnoreCase(yVertexType)) { // TO-DO: What if our pattern has duplicate vertex types?
+					v.addAttribute(new Attribute(yAttrName));
+					if (newDependency.getY().size() == 0) {
 						VariableLiteral newY = new VariableLiteral(yVertexType, yAttrName, yVertexType, yAttrName);
 						newDependency.addLiteralToY(newY);
-
 					}
-					String vType = new ArrayList<>(v.getTypes()).get(0);
+				}
+				for (ConstantLiteral xLiteral : entityEntry.getKey()) {
 					if (xLiteral.getVertexType().equalsIgnoreCase(vType)) {
 						v.addAttribute(new Attribute(xLiteral.getAttrName(), xLiteral.getAttrValue()));
 						ConstantLiteral newXLiteral = new ConstantLiteral(vType, xLiteral.getAttrName(), xLiteral.getAttrValue());
@@ -1316,6 +1316,15 @@ public class tgfdDiscovery {
 		System.out.println("For pattern " + patternNode.getPattern());
 		System.out.println("HSpawn TGFD count: " + tgfds.size());
 		return tgfds;
+	}
+
+	private static boolean isUsedVertexType(String vertexType, ArrayList<ConstantLiteral> parentsPathToRoot) {
+		for (ConstantLiteral literal : parentsPathToRoot) {
+			if (literal.getVertexType().equals(vertexType)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	//	public static ArrayList<TGFD> deltaDiscovery(int k, double theta, ArrayList<DBPediaLoader> graphs) {
@@ -2034,13 +2043,15 @@ public class tgfdDiscovery {
 		System.gc();
 		ArrayList<PatternTreeNode> previousLevel = genTree.getLevel(i - 1);
 		genTree.addLevel();
-		for (PatternTreeNode node : previousLevel) {
-			System.out.println("Performing VSpawn on pattern: " + node.getPattern());
+		for (int previousLevelNodeIndex = 0; previousLevelNodeIndex < previousLevel.size(); previousLevelNodeIndex++) {
+			PatternTreeNode previousLevelNode = previousLevel.get(previousLevelNodeIndex);
+			System.out.println("Processing previous level node " + previousLevelNodeIndex + "/" + previousLevel.size());
+			System.out.println("Performing VSpawn on pattern: " + previousLevelNode.getPattern());
 
-			node.deleteDependenciesSets();
+			previousLevelNode.deleteDependenciesSets();
 
-			System.out.println("Level " + (i - 1) + " pattern: " + node.getPattern());
-			if (node.isPruned() && !tgfdDiscovery.isNaive) {
+			System.out.println("Level " + (i - 1) + " pattern: " + previousLevelNode.getPattern());
+			if (previousLevelNode.isPruned() && !tgfdDiscovery.isNaive) {
 				System.out.println("Marked as pruned. Skip.");
 				continue;
 			}
@@ -2065,14 +2076,14 @@ public class tgfdDiscovery {
 				String edgeType = candidateEdgeString.split(" ")[1];
 
 				// TO-DO: FIX label conflict. What if an edge has same vertex type on both sides?
-				for (Vertex v : node.getGraph().vertexSet()) {
+				for (Vertex v : previousLevelNode.getGraph().vertexSet()) {
 					System.out.println("Looking for type: " + v.getTypes());
 					if (!v.getTypes().contains(sourceVertexType)) {
 						continue;
 					}
 //					if (v.getTypes().contains(sourceVertexType) || v.getTypes().contains(targetVertexType)) {
 					// Create copy of k-1 pattern
-					VF2PatternGraph newPattern = node.getPattern().copy();
+					VF2PatternGraph newPattern = previousLevelNode.getPattern().copy();
 					if (isDuplicateEdge(newPattern, edgeType, sourceVertexType, targetVertexType)) {
 						System.out.println("Candidate edge: " + candidateEdge.getKey());
 						System.out.println("already exists in pattern");
@@ -2172,7 +2183,7 @@ public class tgfdDiscovery {
 //					ArrayList<TreeSet<Dependency>> literalTreeList = hSpawn(newPattern, patternSupport);
 //					System.gc();
 //					genTree.createNodeAtLevel(i, newPattern, literalTreeList, patternSupport, node);
-					PatternTreeNode patternNode = genTree.createNodeAtLevel(i, newPattern, patternSupport, node);
+					PatternTreeNode patternNode = genTree.createNodeAtLevel(i, newPattern, patternSupport, previousLevelNode);
 
 					ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps = storeMatchesForPattern(patternNode);
 
@@ -2195,7 +2206,6 @@ public class tgfdDiscovery {
 		ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps = new ArrayList<>(graphs.size());
 		HashSet<ConstantLiteral> activeAttributesInPattern = getActiveAttributesInPattern(patternNode.getGraph().vertexSet());
 		for (int year = 0; year < graphs.size(); year++) {
-			int numOfMatches = 0;
 			VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> results = new VF2SubgraphIsomorphism().execute2(graphs.get(year).getGraph(), patternNode.getPattern(), false);
 			if (!results.isomorphismExists()) continue;
 			Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = results.getMappings();
@@ -2229,7 +2239,6 @@ public class tgfdDiscovery {
 			});
 			matchesPerTimestamps.add(matches);
 		}
-//		patternNode.setMatchesPerTimestamps(matchesPerTimestamps);
 		return matchesPerTimestamps;
 	}
 
