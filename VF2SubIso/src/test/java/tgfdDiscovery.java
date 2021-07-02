@@ -2,6 +2,7 @@ import VF2Runner.VF2SubgraphIsomorphism;
 import graphLoader.DBPediaLoader;
 import infra.*;
 import org.apache.commons.cli.*;
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.jena.ext.com.google.common.collect.Sets;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -32,7 +33,10 @@ public class tgfdDiscovery {
 	public static final int NUM_OF_CHILD_PATTERNS_LIMIT = 2;
 	public static final int NUM_OF_SNAPSHOTS = 3;
 	public static final double PATTERN_SUPPORT_THRESHOLD = 0.001;
-	private static final int SIZE_OF_ACTIVE_ATTR_SET = 20;
+	public static final int DEFAULT_GAMMA = 20;
+	private static int SIZE_OF_ACTIVE_ATTR_SET = DEFAULT_GAMMA;
+	public static final int DEFAULT_K = 3;
+	public static final double DEFAULT_THETA = 0.7;
 	private static Integer NUM_OF_EDGES_IN_GRAPH;
 	public static int NUM_OF_VERTICES_IN_GRAPH;
 	public static int NUM_OF_FREQ_EDGES_TO_CONSIDER = 20;
@@ -49,6 +53,7 @@ public class tgfdDiscovery {
 	public static HashSet<String> lowPatternSupportEdges;
 	private static HashSet<String> activeAttributesSet;
 	private static ArrayList<DBPediaLoader> graphs;
+	private static boolean interestingTGFDs = false;
 
 	public static void printTGFDstoFile(String experimentName, int k, double theta, ArrayList<TGFD> tgfds) {
 		tgfds.sort(new Comparator<TGFD>() {
@@ -101,7 +106,7 @@ public class tgfdDiscovery {
 	public static void printExperimentRuntimestoFile(String experimentName, TreeMap<String, Long> runtimes) {
 		try {
 			String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
-			PrintStream printStream = new PrintStream(experimentName + "-experiments-runtimes-" + (isNaive ? "naive" : "optimized") + "-" + timeAndDateStamp + ".txt");
+			PrintStream printStream = new PrintStream(experimentName + "-experiments-runtimes-" + (isNaive ? "naive" : "optimized") + (interestingTGFDs ? "-interesting" : "") + "-" + timeAndDateStamp + ".txt");
 			for (String key : runtimes.keySet()) {
 				printStream.print(experimentName + " = " + key);
 				printStream.println(", execution time = " + (runtimes.get(key)));
@@ -204,12 +209,15 @@ public class tgfdDiscovery {
 		Options options = new Options();
 		options.addOption("console", false, "print to console");
 		options.addOption("naive", false, "run naive version of algorithm");
+		options.addOption("interesting", false, "run algorithm and only consider interesting TGFDs");
 		options.addOption("G", false, "run experiment on graph sizes 400K-1.6M");
 		options.addOption("g", true, "run experiment on a specific graph size");
-		options.addOption("Theta", false, "run experiment using support thresholds 0.1 to 0.5");
+		options.addOption("Theta", false, "run experiment using support thresholds 0.9 to 0.1");
 		options.addOption("theta", true, "run experiment using a specific support threshold");
 		options.addOption("K", false, "run experiment for k = 1 to 5");
 		options.addOption("k", true, "run experiment for k iterations");
+		options.addOption("A", "run experiment for active attribute set sizes from 10 to 50");
+		options.addOption("a", "run experiment for specified active attribute set size");
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = null;
@@ -235,6 +243,10 @@ public class tgfdDiscovery {
 			tgfdDiscovery.isNaive = true;
 		}
 
+		if (cmd.hasOption("interesting")) {
+			tgfdDiscovery.interestingTGFDs = true;
+		}
+
 		// |G| experiment
 		if (cmd.hasOption("G")) {
 			String experimentName = "G";
@@ -245,11 +257,12 @@ public class tgfdDiscovery {
 			for (long size : sizes) {
 				// Compute Statistics
 				tgfdDiscovery.fileSuffix = size;
+				tgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = cmd.getOptionValue("a") == null ? DEFAULT_GAMMA : Integer.parseInt(cmd.getOptionValue("a"));
 				histogram();
 				printHistogram();
 				System.gc();
 				double theta = cmd.getOptionValue("theta") == null ? 0.1 : Double.parseDouble(cmd.getOptionValue("theta"));
-				int k = cmd.getOptionValue("k") == null ? 2 : Integer.parseInt(cmd.getOptionValue("k"));
+				int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
 				System.out.println("Running experiment for |" + experimentName + "| = " + size);
 				final long startTime = System.currentTimeMillis();
 				discover(k, theta, experimentName + size + "-experiment");
@@ -263,7 +276,7 @@ public class tgfdDiscovery {
 			System.out.println();
 			System.out.println("Runtimes for varying |G|:");
 			for (String size : gRuntimes.keySet()) {
-				System.out.print("|G| = " + size);
+				System.out.print("|" + experimentName + "| = " + size);
 				System.out.println(", execution time = " + (gRuntimes.get(size)));
 			}
 			System.out.println();
@@ -275,6 +288,7 @@ public class tgfdDiscovery {
 			if (cmd.getOptionValue("g") != null) {
 				tgfdDiscovery.fileSuffix = Long.parseLong(cmd.getOptionValue("g"));
 			}
+			tgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = cmd.getOptionValue("a") == null ? DEFAULT_GAMMA : Integer.parseInt(cmd.getOptionValue("a"));
 			histogram();
 			printHistogram();
 			System.gc();
@@ -285,7 +299,7 @@ public class tgfdDiscovery {
 //				double theta = 0.5;
 				System.out.println("Running experiment for theta = " + String.format("%.1f", theta));
 				final long startTime = System.currentTimeMillis();
-				int k = cmd.getOptionValue("k") == null ? 1 : Integer.parseInt(cmd.getOptionValue("k"));
+				int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
 				discover(k, theta, experimentName + String.format("%.1f", theta) + "-experiment");
 				final long endTime = System.currentTimeMillis();
 				final long runTime = endTime - startTime;
@@ -297,7 +311,7 @@ public class tgfdDiscovery {
 			System.out.println();
 			System.out.println("Runtimes for varying " + experimentName + ":");
 			for (String thetaValue : thetaRuntimes.keySet()) {
-				System.out.println("theta = " + String.format("%.1f", thetaValue));
+				System.out.println(experimentName + " = " + String.format("%.1f", thetaValue));
 				System.out.println("Total execution time: " + (thetaRuntimes.get(thetaValue)));
 			}
 			System.out.println();
@@ -309,6 +323,8 @@ public class tgfdDiscovery {
 				tgfdDiscovery.fileSuffix = Long.parseLong(cmd.getOptionValue("g"));
 			}
 
+			tgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = cmd.getOptionValue("a") == null ? DEFAULT_GAMMA : Integer.parseInt(cmd.getOptionValue("a"));
+
 			// Compute Statistics
 			histogram();
 			printHistogram();
@@ -316,31 +332,68 @@ public class tgfdDiscovery {
 
 			System.out.println("Varying k");
 			int k = cmd.getOptionValue("k") == null ? 5 : Integer.parseInt(cmd.getOptionValue("k"));
-			double theta = cmd.getOptionValue("theta") == null ? 0.5 : Double.parseDouble(cmd.getOptionValue("theta"));
+			double theta = cmd.getOptionValue("theta") == null ? DEFAULT_THETA : Double.parseDouble(cmd.getOptionValue("theta"));
 			System.out.println("Running experiment for k = " + k);
 			discover(k, theta, "k" + k + "-experiment");
 		}
 
+		if (cmd.hasOption("A")) {
+			if (cmd.getOptionValue("g") != null) {
+				tgfdDiscovery.fileSuffix = Long.parseLong(cmd.getOptionValue("g"));
+			}
+			String experimentName = "gamma";
+			System.out.println("Varying " + experimentName);
+			TreeMap<String, Long> gammaRuntimes = new TreeMap<>();
+			for (int gamma = 10; gamma < 60; gamma+=10) {
+				tgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = gamma;
+				// Compute Statistics
+				histogram();
+				printHistogram();
+				System.gc();
+
+				int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
+				double theta = cmd.getOptionValue("theta") == null ? DEFAULT_THETA : Double.parseDouble(cmd.getOptionValue("theta"));
+				System.out.println("Running experiment for "+experimentName+" = " + SIZE_OF_ACTIVE_ATTR_SET);
+
+				final long startTime = System.currentTimeMillis();
+				discover(k, theta, experimentName + gamma + "-experiment");
+				final long endTime = System.currentTimeMillis();
+				final long runTime = endTime - startTime;
+				System.out.println("Total execution time for "+experimentName+" = " + gamma + " : " + runTime);
+				gammaRuntimes.put(Integer.toString(gamma), runTime);
+				System.gc();
+			}
+			printExperimentRuntimestoFile(experimentName, gammaRuntimes);
+			System.out.println();
+			System.out.println("Runtimes for varying " + experimentName + ":");
+			for (String gammaValue : gammaRuntimes.keySet()) {
+				System.out.println(experimentName + " = " + gammaValue);
+				System.out.println("Total execution time: " + (gammaRuntimes.get(gammaValue)));
+			}
+			System.out.println();
+		}
+
 		// Custom experiment
-		if (!cmd.hasOption("K") && !cmd.hasOption("G") && !cmd.hasOption("Theta")) {
+		if (!cmd.hasOption("K") && !cmd.hasOption("G") && !cmd.hasOption("Theta") && !cmd.hasOption("A")) {
 			if (cmd.getOptionValue("g") != null) {
 				tgfdDiscovery.fileSuffix = Long.parseLong(cmd.getOptionValue("g"));
 			}
 			String fileSuffix = tgfdDiscovery.fileSuffix == null ? "" : Long.toString(tgfdDiscovery.fileSuffix);
+			tgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = cmd.getOptionValue("a") == null ? DEFAULT_GAMMA : Integer.parseInt(cmd.getOptionValue("a"));
 			// Compute Statistics
 			histogram();
 			printHistogram();
 			System.gc();
 			TreeMap<String, Long> runtimes = new TreeMap<>();
-			double theta = cmd.getOptionValue("theta") == null ? 0.5 : Double.parseDouble(cmd.getOptionValue("theta"));
-			int k = cmd.getOptionValue("k") == null ? 1 : Integer.parseInt(cmd.getOptionValue("k"));
+			double theta = cmd.getOptionValue("theta") == null ? DEFAULT_THETA : Double.parseDouble(cmd.getOptionValue("theta"));
+			int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
 			System.out.println("Running experiment for |G| = " + fileSuffix + ", k = " + k + ", theta = " + String.format("%.1f", theta));
 			final long startTime = System.currentTimeMillis();
 			discover(k, theta, "G" + fileSuffix + "-k" + k + "-theta" + String.format("%.1f", theta) + "-experiment");
 			final long endTime = System.currentTimeMillis();
 			final long runTime = endTime - startTime;
-			System.out.println("Total execution time for |G| = " + fileSuffix + ", k = " + k + ", theta = " + String.format("%.1f", theta) + " : " + runTime);
-			runtimes.put("|G| = " + fileSuffix + ", k = " + k + ", theta = " + String.format("%.1f", theta), runTime);
+			System.out.println("Total execution time for |G| = " + fileSuffix + ", k = " + k + ", theta = " + String.format("%.1f", theta) + ", gamma = "+SIZE_OF_ACTIVE_ATTR_SET+" : " + runTime);
+			runtimes.put("|G| = " + fileSuffix + ", k = " + k + ", theta = " + String.format("%.1f", theta)+ ", gamma = "+SIZE_OF_ACTIVE_ATTR_SET, runTime);
 			printExperimentRuntimestoFile("custom", runtimes);
 		}
 	}
@@ -361,19 +414,19 @@ public class tgfdDiscovery {
 			Path input = Paths.get(fileName);
 			System.out.println("Reading " + fileName);
 			model.read(input.toUri().toString());
-		}
-		StmtIterator typeTriples = model.listStatements();
-		while (typeTriples.hasNext()) {
-			Statement stmt = typeTriples.nextStatement();
-			String vertexType = stmt.getObject().asResource().getLocalName().toLowerCase();
-			String vertexName = stmt.getSubject().getURI().toLowerCase();
-			if (vertexName.length() > 28) {
-				vertexName = vertexName.substring(28);
-			}
-			vertexTypeHistogram.merge(vertexType, 1, Integer::sum);
+			StmtIterator typeTriples = model.listStatements();
+			while (typeTriples.hasNext()) {
+				Statement stmt = typeTriples.nextStatement();
+				String vertexType = stmt.getObject().asResource().getLocalName().toLowerCase();
+				String vertexName = stmt.getSubject().getURI().toLowerCase();
+				if (vertexName.length() > 28) {
+					vertexName = vertexName.substring(28);
+				}
+				vertexTypeHistogram.merge(vertexType, 1, Integer::sum);
 //			tempVertexAttrFreqMap.putIfAbsent(vertexType, new HashMap<String, Integer>());
-			tempVertexAttrFreqMap.putIfAbsent(vertexType, new HashSet<String>());
-			vertexNameToTypeMap.put(vertexName, vertexType);
+				tempVertexAttrFreqMap.putIfAbsent(vertexType, new HashSet<String>());
+				vertexNameToTypeMap.putIfAbsent(vertexName, vertexType); // Every vertex in DBpedia only has one type?
+			}
 		}
 
 		tgfdDiscovery.NUM_OF_VERTICES_IN_GRAPH = 0;
@@ -464,7 +517,7 @@ public class tgfdDiscovery {
 			Set<String> attrNameSet = tempVertexAttrFreqMap.get(vertexType);
 			vertexTypesAttributes.put(vertexType, new HashSet<>());
 			for (String attrName : attrNameSet) {
-				if (mostFrequentAttributesSet.contains(attrName)) {
+				if (mostFrequentAttributesSet.contains(attrName)) { // Filters non-frequent attributes
 					vertexTypesAttributes.get(vertexType).add(attrName);
 				}
 			}
@@ -498,19 +551,20 @@ public class tgfdDiscovery {
 			Path input = Paths.get(fileName);
 			System.out.println("Reading " + fileName);
 			model.read(input.toUri().toString());
-		}
-		StmtIterator typeTriples = model.listStatements();
-		while (typeTriples.hasNext()) {
-			Statement stmt = typeTriples.nextStatement();
-			String subjectName = stmt.getSubject().getURI().toLowerCase();
-			if (subjectName.length() > 28) {
-				subjectName = subjectName.substring(28);
-			}
-			String predicateName = stmt.getPredicate().getLocalName().toLowerCase();
-			String objectName = stmt.getObject().toString().substring(stmt.getObject().toString().lastIndexOf("/") + 1).toLowerCase();
-			if (nodesRecord.get(subjectName) != null && nodesRecord.get(objectName) != null) {
-				String uniqueEdge = nodesRecord.get(subjectName) + " " + predicateName + " " + nodesRecord.get(objectName);
-				edgesHist.merge(uniqueEdge, 1, Integer::sum);
+
+			StmtIterator typeTriples = model.listStatements();
+			while (typeTriples.hasNext()) {
+				Statement stmt = typeTriples.nextStatement();
+				String subjectName = stmt.getSubject().getURI().toLowerCase();
+				if (subjectName.length() > 28) {
+					subjectName = subjectName.substring(28);
+				}
+				String predicateName = stmt.getPredicate().getLocalName().toLowerCase();
+				String objectName = stmt.getObject().toString().substring(stmt.getObject().toString().lastIndexOf("/") + 1).toLowerCase();
+				if (nodesRecord.get(subjectName) != null && nodesRecord.get(objectName) != null) {
+					String uniqueEdge = nodesRecord.get(subjectName) + " " + predicateName + " " + nodesRecord.get(objectName);
+					edgesHist.merge(uniqueEdge, 1, Integer::sum);
+				}
 			}
 		}
 
@@ -964,7 +1018,7 @@ public class tgfdDiscovery {
 		System.out.println("Discovering general TGFDs");
 
 		// Find general TGFDs
-		ArrayList<TGFD> generalTGFD = discoverGeneralTGFD(theta, patternForDependency, literalPath, entities.size(), constantXdeltas, satisfyingAttrValues);
+		ArrayList<TGFD> generalTGFD = discoverGeneralTGFD(theta, patternForDependency, patternNode.getPatternSupport(), literalPath, entities.size(), constantXdeltas, satisfyingAttrValues);
 		if (generalTGFD.size() > 0) {
 			System.out.println("Marking literal node as pruned. Discovered general TGFDs for this dependency.");
 			literalTreeNode.setIsPruned();
@@ -975,7 +1029,7 @@ public class tgfdDiscovery {
 		return tgfds;
 	}
 
-	private static ArrayList<TGFD> discoverGeneralTGFD(double theta, VF2PatternGraph patternForDependency, ArrayList<ConstantLiteral> literalPath, int entitiesSize, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
+	private static ArrayList<TGFD> discoverGeneralTGFD(double theta, VF2PatternGraph patternForDependency, double patternSupport, ArrayList<ConstantLiteral> literalPath, int entitiesSize, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
 
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
@@ -1075,7 +1129,7 @@ public class tgfdDiscovery {
 				generalDependency.addLiteralToX(varX);
 			}
 
-			TGFD tgfd = new TGFD(patternForDependency, delta, generalDependency, support, "");
+			TGFD tgfd = new TGFD(patternForDependency, delta, generalDependency, support, patternSupport, "");
 			System.out.println("TGFD: " + tgfd);
 			tgfds.add(tgfd);
 		}
@@ -1216,7 +1270,7 @@ public class tgfdDiscovery {
 			System.out.println("Constant TGFD delta: "+candidateTGFDdelta);
 
 			if (!isMinimalPath(constantPath, patternNode.getAllMinimalDependenciesOnThisPath())) {
-				TGFD entityTGFD = new TGFD(newPattern, candidateTGFDdelta, newDependency, candidateTGFDsupport, "");
+				TGFD entityTGFD = new TGFD(newPattern, candidateTGFDdelta, newDependency, candidateTGFDsupport, patternNode.getPatternSupport(), "");
 				System.out.println("TGFD: " + entityTGFD);
 				tgfds.add(entityTGFD);
 				patternNode.addMinimalDependency(constantPath);
@@ -1273,8 +1327,11 @@ public class tgfdDiscovery {
 					if (previousLevelLiteral.isPruned()) continue;
 					ArrayList<ConstantLiteral> parentsPathToRoot = previousLevelLiteral.getPathToRoot();
 					for (ConstantLiteral literal: literals) {
-						// Check if leaf node exists in path already
-						if (parentsPathToRoot.contains(literal)) continue;
+						if (tgfdDiscovery.interestingTGFDs) { // Ensures all vertices are involved in dependency
+							if (isUsedVertexType(literal.getVertexType(), parentsPathToRoot)) continue;
+						} else { // Check if leaf node exists in path already
+							if (parentsPathToRoot.contains(literal)) continue;
+						}
 
 						// Check if path to candidate leaf node is unique
 						ArrayList<ConstantLiteral> newPath = new ArrayList<>();
@@ -1926,7 +1983,7 @@ public class tgfdDiscovery {
 		if (experimentName.startsWith("k")) {
 			try {
 				String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
-				kExperimentResultsFile = new PrintStream("k-experiments-runtimes-" + (isNaive ? "naive" : "optimized") + "-" + timeAndDateStamp + ".txt");
+				kExperimentResultsFile = new PrintStream("k-experiments-runtimes-" + (isNaive ? "naive" : "optimized") + (interestingTGFDs ? "-interesting" : "") + "-" + timeAndDateStamp + ".txt");
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -2183,9 +2240,26 @@ public class tgfdDiscovery {
 //					ArrayList<TreeSet<Dependency>> literalTreeList = hSpawn(newPattern, patternSupport);
 //					System.gc();
 //					genTree.createNodeAtLevel(i, newPattern, literalTreeList, patternSupport, node);
-					PatternTreeNode patternNode = genTree.createNodeAtLevel(i, newPattern, patternSupport, previousLevelNode);
 
-					ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps = storeMatchesForPattern(patternNode);
+					// TO-DO: Should we implement pattern support here to weed out patterns with few matches in later iterations?
+					// Is there an ideal pattern support threshold after which very few TGFDs are discovered?
+					// How much does the real pattern differ from the estimate?
+					ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps = storeMatchesForPattern(newPattern);
+					if (matchesPerTimestamps.size() == 0) {
+						System.out.println("Don't create patternNode. No matches found for pattern " + newPattern);
+						continue;
+					}
+					double numberOfMatchesFound = 0;
+					for (ArrayList<HashSet<ConstantLiteral>> matchesInOneTimestamp : matchesPerTimestamps) {
+						numberOfMatchesFound += matchesInOneTimestamp.size();
+					}
+//					double denom = CombinatoricsUtils.binomialCoefficient(NUM_OF_EDGES_IN_GRAPH,i);
+
+					// TO-DO: Could define pattern support as numberOfMatchesFound / bottleneck edge
+					double realPatternSupport = numberOfMatchesFound / NUM_OF_EDGES_IN_GRAPH;
+					System.out.println("Real pattern support: " + realPatternSupport);
+
+					PatternTreeNode patternNode = genTree.createNodeAtLevel(i, newPattern, patternSupport, previousLevelNode);
 
 					ArrayList<TGFD> hSpawnTGFDs = hSpawn2(i, theta, patternNode, matchesPerTimestamps);
 					tgfds.addAll(hSpawnTGFDs);
@@ -2202,41 +2276,42 @@ public class tgfdDiscovery {
 //		}
 	}
 
-	public static ArrayList<ArrayList<HashSet<ConstantLiteral>>> storeMatchesForPattern(PatternTreeNode patternNode) {
+	public static ArrayList<ArrayList<HashSet<ConstantLiteral>>> storeMatchesForPattern(VF2PatternGraph pattern) {
 		ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps = new ArrayList<>(graphs.size());
-		HashSet<ConstantLiteral> activeAttributesInPattern = getActiveAttributesInPattern(patternNode.getGraph().vertexSet());
+		HashSet<ConstantLiteral> activeAttributesInPattern = getActiveAttributesInPattern(pattern.getPattern().vertexSet());
 		for (int year = 0; year < graphs.size(); year++) {
-			VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> results = new VF2SubgraphIsomorphism().execute2(graphs.get(year).getGraph(), patternNode.getPattern(), false);
-			if (!results.isomorphismExists()) continue;
-			Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = results.getMappings();
+			VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> results = new VF2SubgraphIsomorphism().execute2(graphs.get(year).getGraph(), pattern, false);
 			ArrayList<HashSet<ConstantLiteral>> matches = new ArrayList<>();
-			while (iterator.hasNext()) {
-				GraphMapping<Vertex, RelationshipEdge> result = iterator.next();
-				HashSet<ConstantLiteral> match = new HashSet<>();
-				for (Vertex v : patternNode.getGraph().vertexSet()) {
-					Vertex currentMatchedVertex = result.getVertexCorrespondence(v, false);
-					if (currentMatchedVertex == null) continue;
-					String patternVertexType = new ArrayList<>(currentMatchedVertex.getTypes()).get(0);
-					for (ConstantLiteral attribute : activeAttributesInPattern) {
-						if (!attribute.getVertexType().equals(patternVertexType)) continue;
-						for (String attrName : currentMatchedVertex.getAllAttributesNames()) {
-							if (!attribute.getAttrName().equals(attrName)) continue;
-							String xAttrValue = currentMatchedVertex.getAttributeValueByName(attrName);
-							ConstantLiteral xLiteral = new ConstantLiteral(patternVertexType, attrName, xAttrValue);
-							match.add(xLiteral);
+			if (results.isomorphismExists()) {
+				Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = results.getMappings();
+				while (iterator.hasNext()) {
+					GraphMapping<Vertex, RelationshipEdge> result = iterator.next();
+					HashSet<ConstantLiteral> match = new HashSet<>();
+					for (Vertex v : pattern.getPattern().vertexSet()) {
+						Vertex currentMatchedVertex = result.getVertexCorrespondence(v, false);
+						if (currentMatchedVertex == null) continue;
+						String patternVertexType = new ArrayList<>(currentMatchedVertex.getTypes()).get(0);
+						for (ConstantLiteral attribute : activeAttributesInPattern) {
+							if (!attribute.getVertexType().equals(patternVertexType)) continue;
+							for (String attrName : currentMatchedVertex.getAllAttributesNames()) {
+								if (!attribute.getAttrName().equals(attrName)) continue;
+								String xAttrValue = currentMatchedVertex.getAttributeValueByName(attrName);
+								ConstantLiteral xLiteral = new ConstantLiteral(patternVertexType, attrName, xAttrValue);
+								match.add(xLiteral);
+							}
 						}
 					}
+					if (match.size() == 0) continue;
+					matches.add(match);
 				}
-				if (match.size() == 0) continue;
-				matches.add(match);
+				System.out.println("Number of matches found in " + (2015 + year) + ": " + matches.size());
+				matches.sort(new Comparator<HashSet<ConstantLiteral>>() {
+					@Override
+					public int compare(HashSet<ConstantLiteral> o1, HashSet<ConstantLiteral> o2) {
+						return o1.size() - o2.size();
+					}
+				});
 			}
-			System.out.println("Number of matches found in " + (2015+year) + ": " + matches.size());
-			matches.sort(new Comparator<HashSet<ConstantLiteral>>() {
-				@Override
-				public int compare(HashSet<ConstantLiteral> o1, HashSet<ConstantLiteral> o2) {
-					return o1.size() - o2.size();
-				}
-			});
 			matchesPerTimestamps.add(matches);
 		}
 		return matchesPerTimestamps;
