@@ -101,8 +101,8 @@ public abstract class Vertex implements Comparable<Vertex>, Serializable {
         return isMarked;
     }
 
-    public void setMarked() {
-        isMarked = true;
+    public void setMarked(boolean isMarked) {
+        this.isMarked = isMarked;
     }
 
     // TODO: implement hashCode because Match uses vertex's hashcode as the signature [2021-02-07]

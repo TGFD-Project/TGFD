@@ -92,9 +92,10 @@ public class TgfdDiscovery {
 				return o2.getSupport().compareTo(o1.getSupport());
 			}
 		});
+		System.out.println("Printing TGFDs to file for k = " + this.currentVSpawnLevel);
 		try {
 			String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
-			PrintStream printStream = new PrintStream(experimentName + "-tgfds-" + (this.isNaive ? "naive" : "optimized") + (this.interestingTGFDs ? "-interesting" : "") + "-" + this.currentVSpawnLevel + "-" + String.format("%.1f", this.theta) + "-a" + this.activeAttributesSet + "-" + timeAndDateStamp + ".txt");
+			PrintStream printStream = new PrintStream(experimentName + "-tgfds-" + (this.isNaive ? "naive" : "optimized") + (this.interestingTGFDs ? "-interesting" : "") + "-" + this.currentVSpawnLevel + "-" + String.format("%.1f", this.theta) + "-a" + this.gamma + "-" + timeAndDateStamp + ".txt");
 			printStream.println("k = " + k);
 			printStream.println("# of TGFDs generated = " + tgfds.size());
 			for (TGFD tgfd : tgfds) {
@@ -145,7 +146,7 @@ public class TgfdDiscovery {
 		}
 
 		ArrayList<DBPediaLoader> graphs = loadDBpediaSnapshots("");
-		TgfdDiscovery tgfdDiscovery = new TgfdDiscovery(3, 0.7,20,0.001, graphs.size(), false, true);
+		TgfdDiscovery tgfdDiscovery = new TgfdDiscovery(2, 0.7,20,0.001, graphs.size(), false, true);
 		while (tgfdDiscovery.currentVSpawnLevel <= tgfdDiscovery.k) {
 
 			System.out.println("VSpawn level " + tgfdDiscovery.currentVSpawnLevel);
@@ -162,7 +163,7 @@ public class TgfdDiscovery {
 			}
 			int numOfMatchesFound = tgfdDiscovery.getMatchesForPattern(graphs, patternTreeNode, matches); // this can be called repeatedly on many graphs
 			if (numOfMatchesFound == 0) continue;
-			ArrayList<TGFD> tgfds = tgfdDiscovery.hSpawn2(patternTreeNode, matches);
+			ArrayList<TGFD> tgfds = tgfdDiscovery.hSpawn(patternTreeNode, matches);
 			tgfdDiscovery.tgfds.get(tgfdDiscovery.currentVSpawnLevel).addAll(tgfds);
 		}
 //		for (int level = 1; level < tgfdDiscovery.tgfds.size(); level++) {
@@ -730,7 +731,7 @@ public class TgfdDiscovery {
 		return false;
 	}
 
-	public ArrayList<TGFD> deltaDiscovery2(double theta, PatternTreeNode patternNode, LiteralTreeNode literalTreeNode, ArrayList<ConstantLiteral> literalPath, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
+	public ArrayList<TGFD> deltaDiscovery(double theta, PatternTreeNode patternNode, LiteralTreeNode literalTreeNode, ArrayList<ConstantLiteral> literalPath, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
 		// Add dependency attributes to pattern
@@ -1053,7 +1054,7 @@ public class TgfdDiscovery {
 		return graphs;
 	}
 
-	public ArrayList<TGFD> hSpawn2(PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
+	public ArrayList<TGFD> hSpawn(PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
 		System.out.println("Performing HSpawn for " + patternTreeNode.getPattern());
@@ -1114,7 +1115,7 @@ public class TgfdDiscovery {
 						visitedPaths.add(newPath);
 
 						System.out.println("Performing Delta Discovery at HSpawn level " + j);
-						ArrayList<TGFD> discoveredTGFDs = deltaDiscovery2(theta, patternTreeNode, literalTreeNode, newPath, matchesPerTimestamps);
+						ArrayList<TGFD> discoveredTGFDs = deltaDiscovery(theta, patternTreeNode, literalTreeNode, newPath, matchesPerTimestamps);
 						currentLevelTGFDs.addAll(discoveredTGFDs);
 					}
 				}
@@ -1319,11 +1320,16 @@ public class TgfdDiscovery {
 		}
 		String edgeType = candidateEdgeString.split(" ")[1];
 
+		PatternTreeNode patternTreeNode = null;
 		// TO-DO: FIX label conflict. What if an edge has same vertex type on both sides?
 		for (Vertex v : previousLevelNode.getGraph().vertexSet()) {
-			if (v.isMarked()) continue;
-			System.out.println("Looking for type: " + v.getTypes());
+			if (v.isMarked()) {
+				System.out.println("Skip. Already added candidate edge to vertex: " + v.getTypes());
+				continue;
+			}
+			System.out.println("Looking to add candidate edge to vertex: " + v.getTypes());
 			if (!v.getTypes().contains(sourceVertexType)) {
+				System.out.println("Candidate edge does not connect to vertex: " + v.getTypes());
 				continue;
 			}
 //					if (v.getTypes().contains(sourceVertexType) || v.getTypes().contains(targetVertexType)) {
@@ -1375,13 +1381,19 @@ public class TgfdDiscovery {
 			double estimatedPatternSupport = numerator / denominator;
 			System.out.println("Estimate Pattern Support: " + estimatedPatternSupport);
 
-			PatternTreeNode patternTreeNode = this.genTree.createNodeAtLevel(this.currentVSpawnLevel, newPattern, estimatedPatternSupport, previousLevelNode);
-			v.setMarked();
-
-			return patternTreeNode;
+			patternTreeNode = this.genTree.createNodeAtLevel(this.currentVSpawnLevel, newPattern, estimatedPatternSupport, previousLevelNode);
+			v.setMarked(true);
+			System.out.println("Marking vertex " + v.getTypes() + "as expanded.");
+			break;
 		}
-		this.candidateEdgeIndex++;
-		return null;
+		if (patternTreeNode == null) {
+			for (Vertex v : previousLevelNode.getGraph().vertexSet()) {
+				System.out.println("Unmarking all vertices in current pattern for the next candidate edge");
+				v.setMarked(false);
+			}
+			this.candidateEdgeIndex++;
+		}
+		return patternTreeNode;
 	}
 
 	public int getMatchesForPattern(ArrayList<DBPediaLoader> graphs, PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
