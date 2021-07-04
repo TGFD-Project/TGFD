@@ -8,14 +8,14 @@ import util.testRunner;
 import javax.jms.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SimpleWorker {
+public class BasicWorker {
 
     private String nodeName = "";
     private AtomicBoolean jobReceived=new AtomicBoolean(false);
     private AtomicBoolean workerDone=new AtomicBoolean(false);
     private String job="";
 
-    public SimpleWorker()  {
+    public BasicWorker()  {
         this.nodeName= Config.nodeName;
     }
 

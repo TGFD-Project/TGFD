@@ -19,7 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Thread.sleep;
 
-public class AdvancedWorker {
+public class MediumWorker {
+
+    //region --[Fields: Private]---------------------------------------
 
     private String nodeName = "";
     private AtomicBoolean jobReceived =new AtomicBoolean(false);
@@ -33,7 +35,11 @@ public class AdvancedWorker {
     private testRunner runner;
     private String workingBucketName="";
 
-    public AdvancedWorker()  {
+    //endregion
+
+    //region --[Constructor]-----------------------------------------
+
+    public MediumWorker()  {
         this.nodeName= Config.nodeName;
         workingBucketName = Config
                 .getFirstDataFilePath()
@@ -42,6 +48,10 @@ public class AdvancedWorker {
         allJobs=new HashMap<>();
         otherWorkersJobs=new HashMap<>();
     }
+
+    //endregion
+
+    //region --[Public Methods]-----------------------------------------
 
     public void start()
     {
@@ -79,6 +89,10 @@ public class AdvancedWorker {
         else
             return Status.Worker_waits_For_Job;
     }
+
+    //endregion
+
+    //region --[Private Methods]-----------------------------------------
 
     private void sendStatusToCoordinator()
     {
@@ -261,4 +275,5 @@ public class AdvancedWorker {
         }
     }
 
+    //endregion
 }

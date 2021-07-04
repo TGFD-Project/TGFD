@@ -9,7 +9,9 @@ import javax.jms.JMSException;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class AdvancedCoordinator {
+public class MediumCoordinator {
+
+    //region --[Fields: Private]---------------------------------------
 
     private String nodeName = "coordinator";
 
@@ -18,15 +20,22 @@ public class AdvancedCoordinator {
     private AtomicBoolean allDone=new AtomicBoolean(false);
 
     private HashMap<String,Boolean> workersStatus=new HashMap <>();
-
     private HashMap<String,String> results=new HashMap <>();
 
-    public AdvancedCoordinator()
+    //endregion
+
+    //region --[Constructor]-----------------------------------------
+
+    public MediumCoordinator()
     {
         for (String worker: Config.workers) {
             workersStatus.put(worker,false);
         }
     }
+
+    //endregion
+
+    //region --[Public Methods]-----------------------------------------
 
     public void start()
     {
@@ -63,7 +72,6 @@ public class AdvancedCoordinator {
             return null;
     }
 
-
     public Status getStatus()
     {
         if(workersStatusChecker.get())
@@ -75,6 +83,10 @@ public class AdvancedCoordinator {
         else
             return Status.Coordinator_Assigns_jobs_To_Workers;
     }
+
+    //endregion
+
+    //region --[Private Methods]-----------------------------------------
 
     private class Setup implements Runnable, ExceptionListener
     {
@@ -156,7 +168,7 @@ public class AdvancedCoordinator {
             System.out.println("*JOB ASSIGNER*: Jobs are received to be assigned to the workers");
             try {
                 while(getStatus()==Status.Coordinator_Waits_For_Workers_Status) {
-                    System.out.println("Coordinator waits for these workers to be online: ");
+                    System.out.println("*JOB ASSIGNER*: Coordinator waits for these workers to be online: ");
                     for (String worker : workersStatus.keySet()) {
                         if (!workersStatus.get(worker))
                             System.out.print(worker + " - ");
@@ -265,5 +277,7 @@ public class AdvancedCoordinator {
             System.out.println("*RESULTS GETTER*: JMS Exception occurred. Shutting down coordinator.");
         }
     }
+
+    //endregion
 
 }

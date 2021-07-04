@@ -8,7 +8,7 @@ import javax.jms.*;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SimpleCoordinator {
+public class BasicCoordinator {
 
     private String nodeName = "coordinator";
 
@@ -20,7 +20,7 @@ public class SimpleCoordinator {
 
     private HashMap<String,String> results=new HashMap <>();
 
-    public SimpleCoordinator()
+    public BasicCoordinator()
     {
         for (String worker: Config.workers) {
             workersStatus.put(worker,false);
