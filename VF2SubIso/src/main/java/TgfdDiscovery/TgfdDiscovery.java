@@ -37,7 +37,7 @@ public class TgfdDiscovery {
 	public Map<String, Integer> uniqueEdgesHist; // freq edges come from here
 	public PatternTree genTree;
 	public boolean isNaive;
-	public Long fileSuffix = null;
+	public Long graphSize = null;
 	private final boolean interestingTGFDs;
 	private final int k;
 	private final double theta;
@@ -48,8 +48,13 @@ public class TgfdDiscovery {
 	private int candidateEdgeIndex = 0;
 	private int currentVSpawnLevel = 1;
 	private final ArrayList<ArrayList<TGFD>> tgfds;
+	private final long startTime;
+	private ArrayList<Long> kRuntimes = new ArrayList<>();
+	private String timeAndDateStamp = null;
+	private boolean isKExperiment = false;
 
 	public TgfdDiscovery(int numOfSnapshots) {
+		this.startTime = System.currentTimeMillis();
 		this.k = DEFAULT_K;
 		this.theta = DEFAULT_THETA;
 		this.gamma = DEFAULT_GAMMA;
@@ -64,13 +69,16 @@ public class TgfdDiscovery {
 		histogram();
 		printHistogram();
 		vSpawnInit();
+		this.kRuntimes.add(System.currentTimeMillis() - this.startTime);
 		this.genTree.addLevel();
 	}
 
-	public TgfdDiscovery(int k, double theta, int gamma, double patternSupport, int numOfSnapshots, boolean isNaive, boolean interestingTGFDsOnly) {
+	public TgfdDiscovery(int k, double theta, int gamma, Long graphSize, double patternSupport, int numOfSnapshots, boolean isNaive, boolean interestingTGFDsOnly) {
+		this.startTime = System.currentTimeMillis();
 		this.k = k;
 		this.theta = theta;
 		this.gamma = gamma;
+		this.graphSize = graphSize;
 		this.numOfSnapshots = numOfSnapshots;
 		this.patternSupportThreshold = patternSupport;
 		this.isNaive = isNaive;
@@ -82,6 +90,7 @@ public class TgfdDiscovery {
 		histogram();
 		printHistogram();
 		vSpawnInit();
+		this.kRuntimes.add(System.currentTimeMillis() - this.startTime);
 		this.genTree.addLevel();
 	}
 	
@@ -94,9 +103,9 @@ public class TgfdDiscovery {
 		});
 		System.out.println("Printing TGFDs to file for k = " + this.currentVSpawnLevel);
 		try {
-			String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
-			PrintStream printStream = new PrintStream(experimentName + "-tgfds-" + (this.isNaive ? "naive" : "optimized") + (this.interestingTGFDs ? "-interesting" : "") + "-" + this.currentVSpawnLevel + "-" + String.format("%.1f", this.theta) + "-a" + this.gamma + "-" + timeAndDateStamp + ".txt");
-			printStream.println("k = " + k);
+			String timeAndDateStamp = this.timeAndDateStamp == null ? "" : this.timeAndDateStamp;
+			PrintStream printStream = new PrintStream(experimentName + "-tgfds-" + (this.isNaive ? "naive" : "optimized") + (this.interestingTGFDs ? "-interesting" : "") + (this.graphSize == null ? "" : "-G"+this.graphSize) + "-" + this.currentVSpawnLevel + "-" + String.format("%.1f", this.theta) + "-a" + this.gamma + "-" + timeAndDateStamp + ".txt");
+			printStream.println("k = " + this.currentVSpawnLevel);
 			printStream.println("# of TGFDs generated = " + tgfds.size());
 			for (TGFD tgfd : tgfds) {
 				printStream.println(tgfd);
@@ -107,13 +116,13 @@ public class TgfdDiscovery {
 		System.gc();
 	}
 
-	public void printExperimentRuntimestoFile(String experimentName, TreeMap<String, Long> runtimes) {
+	public void printExperimentRuntimestoFile(String experimentName, ArrayList<Long> runtimes) {
 		try {
-			String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
-			PrintStream printStream = new PrintStream(experimentName + "-experiments-runtimes-" + (this.isNaive ? "naive" : "optimized") + (interestingTGFDs ? "-interesting" : "") + "-" + timeAndDateStamp + ".txt");
-			for (String key : runtimes.keySet()) {
-				printStream.print(experimentName + " = " + key);
-				printStream.println(", execution time = " + (runtimes.get(key)));
+			String timeAndDateStamp = this.timeAndDateStamp == null ? "" : this.timeAndDateStamp;
+			PrintStream printStream = new PrintStream(experimentName + "-experiments-runtimes-" + (this.isNaive ? "naive" : "optimized") + (this.interestingTGFDs ? "-interesting" : "") + "-" + timeAndDateStamp + ".txt");
+			for (int i  = 0; i < runtimes.size(); i++) {
+				printStream.print("k = " + i);
+				printStream.println(", execution time = " + runtimes.get(i));
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -124,6 +133,13 @@ public class TgfdDiscovery {
 
 		Options options = new Options();
 		options.addOption("console", false, "print to console");
+		options.addOption("naive", false, "run naive version of algorithm");
+		options.addOption("interesting", false, "run algorithm and only consider interesting TGFDs");
+		options.addOption("g", true, "run experiment on a specific graph size");
+		options.addOption("k", true, "run experiment for k iterations");
+		options.addOption("a", true, "run experiment for specified active attribute set size");
+		options.addOption("theta", true, "run experiment using a specific support threshold");
+		options.addOption("K", false, "run experiment for k = 1 to 5");
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = null;
@@ -134,8 +150,8 @@ public class TgfdDiscovery {
 		}
 		assert cmd != null;
 
+		String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
 		if (!cmd.hasOption("console")) {
-			String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
 			PrintStream logStream = null;
 			try {
 				logStream = new PrintStream("tgfd-discovery-log-" + timeAndDateStamp + ".txt");
@@ -145,8 +161,29 @@ public class TgfdDiscovery {
 			System.setOut(logStream);
 		}
 
-		ArrayList<DBPediaLoader> graphs = loadDBpediaSnapshots("");
-		TgfdDiscovery tgfdDiscovery = new TgfdDiscovery(2, 0.7,20,0.001, graphs.size(), false, true);
+		boolean isNaive = false;
+		if (cmd.hasOption("naive")) {
+			isNaive = true;
+		}
+
+		boolean interestingTGFDs = false;
+		if (cmd.hasOption("interesting")) {
+			interestingTGFDs = true;
+		}
+
+		Long graphSize = null;
+		if (cmd.getOptionValue("g") != null) {
+			graphSize = Long.parseLong(cmd.getOptionValue("g"));
+		}
+		int gamma = cmd.getOptionValue("a") == null ? DEFAULT_GAMMA : Integer.parseInt(cmd.getOptionValue("a"));
+		double theta = cmd.getOptionValue("theta") == null ? DEFAULT_THETA : Double.parseDouble(cmd.getOptionValue("theta"));
+		int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
+
+		ArrayList<DBPediaLoader> graphs = loadDBpediaSnapshots(graphSize);
+
+		TgfdDiscovery tgfdDiscovery = new TgfdDiscovery(k, theta, gamma, graphSize, 0.001, graphs.size(), isNaive, interestingTGFDs);
+		tgfdDiscovery.setExperimentDateAndTimeStamp(timeAndDateStamp);
+		if (cmd.hasOption("K")) tgfdDiscovery.markAsKexperiment();
 		while (tgfdDiscovery.currentVSpawnLevel <= tgfdDiscovery.k) {
 
 			System.out.println("VSpawn level " + tgfdDiscovery.currentVSpawnLevel);
@@ -169,6 +206,14 @@ public class TgfdDiscovery {
 //		for (int level = 1; level < tgfdDiscovery.tgfds.size(); level++) {
 //			tgfdDiscovery.printTgfdsToFile("api-test", level, tgfdDiscovery.theta, tgfdDiscovery.tgfds.get(level));
 //		}
+	}
+
+	private void markAsKexperiment() {
+		this.isKExperiment = true;
+	}
+
+	private void setExperimentDateAndTimeStamp(String timeAndDateStamp) {
+		this.timeAndDateStamp = timeAndDateStamp;
 	}
 
 //	public static void main2(String[] args) {
@@ -375,7 +420,7 @@ public class TgfdDiscovery {
 		Model model = ModelFactory.createDefaultModel();
 
 		for (int i = 5; i < 8; i++) {
-			String fileSuffix = this.fileSuffix == null ? "" : "-" + this.fileSuffix;
+			String fileSuffix = this.graphSize == null ? "" : "-" + this.graphSize;
 			String fileName = "201" + i + "types" + fileSuffix + ".ttl";
 			Path input = Paths.get(fileName);
 			System.out.println("Reading " + fileName);
@@ -417,7 +462,7 @@ public class TgfdDiscovery {
 
 		Model model = ModelFactory.createDefaultModel();
 		for (int i = 5; i < 8; i++) {
-			String fileSuffix = this.fileSuffix == null ? "" : "-" + this.fileSuffix;
+			String fileSuffix = this.graphSize == null ? "" : "-" + this.graphSize;
 			String fileName = "201" + i + "literals" + fileSuffix + ".ttl";
 			Path input = Paths.get(fileName);
 			System.out.println("Reading " + fileName);
@@ -500,7 +545,7 @@ public class TgfdDiscovery {
 
 		Model model = ModelFactory.createDefaultModel();
 		for (int i = 5; i < 8; i++) {
-			String fileSuffix = this.fileSuffix == null ? "" : "-" + this.fileSuffix;
+			String fileSuffix = this.graphSize == null ? "" : "-" + this.graphSize;
 			String fileName = "201" + i + "objects" + fileSuffix + ".ttl";
 			Path input = Paths.get(fileName);
 			System.out.println("Reading " + fileName);
@@ -1041,10 +1086,10 @@ public class TgfdDiscovery {
 		return tgfds;
 	}
 
-	public static ArrayList<DBPediaLoader> loadDBpediaSnapshots(String fileSuffix) {
+	public static ArrayList<DBPediaLoader> loadDBpediaSnapshots(Long graphSize) {
 		ArrayList<DBPediaLoader> graphs = new ArrayList<>();
 		for (int year = 5; year < 8; year++) {
-//			String fileSuffix = this.fileSuffix == null ? "" : "-" + this.fileSuffix;
+			String fileSuffix = graphSize == null ? "" : "-" + graphSize;
 			String typeFileName = "201" + year + "types" + fileSuffix + ".ttl";
 			String literalsFileName = "201" + year + "literals" + fileSuffix + ".ttl";
 			String objectsFileName = "201" + year + "objects" + fileSuffix + ".ttl";
@@ -1109,7 +1154,7 @@ public class TgfdDiscovery {
 						LiteralTreeNode literalTreeNode = literalTree.createNodeAtLevel(j, literal, previousLevelLiteral);
 
 						if (j != currentVSpawnLevel) { // Ensures delta discovery only occurs at |LHS| = |Q|
-							System.out.println("|LHS| != |Q|. Skip performing Delta Discovery HSpawn level " + j);
+							System.out.println("|LHS| != |E|. Skip performing Delta Discovery HSpawn level " + j);
 							continue;
 						}
 						visitedPaths.add(newPath);
@@ -1277,7 +1322,10 @@ public class TgfdDiscovery {
 		}
 
 		if (this.previousLevelNodeIndex >= this.genTree.getLevel(this.currentVSpawnLevel -1).size()) {
-			this.printTgfdsToFile("api-test", this.tgfds.get(this.currentVSpawnLevel));
+			this.kRuntimes.add(System.currentTimeMillis() - this.startTime);
+			String experimentName = "api-test";
+			this.printTgfdsToFile(experimentName, this.tgfds.get(this.currentVSpawnLevel));
+			if (this.isKExperiment) this.printExperimentRuntimestoFile(experimentName, this.kRuntimes);
 			this.currentVSpawnLevel++;
 			this.genTree.addLevel();
 			this.previousLevelNodeIndex = 0;
@@ -1305,14 +1353,24 @@ public class TgfdDiscovery {
 		Map.Entry<String, Integer> candidateEdge = sortedUniqueEdgesHist.get(this.candidateEdgeIndex);
 		String candidateEdgeString = candidateEdge.getKey();
 		System.out.println("Candidate edge:" + candidateEdgeString);
+
+		// For naive version only - checks if candidate edge is frequent enough
 		if (this.isNaive && (1.0 * uniqueEdgesHist.get(candidateEdgeString) / NUM_OF_EDGES_IN_GRAPH) < this.patternSupportThreshold) {
 			System.out.println("Below pattern support threshold. Skip");
 			this.candidateEdgeIndex++;
 			return null;
 		}
+
 		String sourceVertexType = candidateEdgeString.split(" ")[0];
 		String targetVertexType = candidateEdgeString.split(" ")[2];
-		// TO-DO: We should add support for this in the future
+
+		if (this.vertexTypesAttributes.get(targetVertexType).size() == 0) {
+			System.out.println("Target vertex in candidate edge does not contain active attributes");
+			this.candidateEdgeIndex++;
+			return null;
+		}
+
+		// TO-DO: We should add support for duplicate vertex types in the future
 		if (sourceVertexType.equals(targetVertexType)) {
 			System.out.println("Candidate edge contains duplicate vertex types. Skip.");
 			this.candidateEdgeIndex++;
@@ -1320,52 +1378,57 @@ public class TgfdDiscovery {
 		}
 		String edgeType = candidateEdgeString.split(" ")[1];
 
+		// Check if candidate edge already exists in pattern
+		if (isDuplicateEdge(previousLevelNode.getPattern(), edgeType, sourceVertexType, targetVertexType)) {
+			System.out.println("Candidate edge: " + candidateEdge.getKey());
+			System.out.println("already exists in pattern");
+			this.candidateEdgeIndex++;
+			return null;
+		}
+
+		// Checks if target vertex type already exists in pattern
+		if (isDuplicateVertex(previousLevelNode.getPattern(), targetVertexType)) {
+			System.out.println("Target vertex in candidate edge: " + candidateEdge.getKey());
+			System.out.println("already exists in pattern");
+			this.candidateEdgeIndex++;
+			return null;
+		}
+
+		// Checks if candidate edge extends pattern
+		if (!isConnectedEdge(previousLevelNode.getPattern(), sourceVertexType)) {
+			System.out.println("Candidate edge: " + candidateEdge.getKey());
+			System.out.println("does not extend from pattern");
+			this.candidateEdgeIndex++;
+			return null;
+		}
+
 		PatternTreeNode patternTreeNode = null;
 		// TO-DO: FIX label conflict. What if an edge has same vertex type on both sides?
 		for (Vertex v : previousLevelNode.getGraph().vertexSet()) {
-			if (v.isMarked()) {
-				System.out.println("Skip. Already added candidate edge to vertex: " + v.getTypes());
-				continue;
-			}
 			System.out.println("Looking to add candidate edge to vertex: " + v.getTypes());
-			if (!v.getTypes().contains(sourceVertexType)) {
-				System.out.println("Candidate edge does not connect to vertex: " + v.getTypes());
+
+			if (v.isMarked()) {
+				System.out.println("Skip vertex. Already added candidate edge to vertex: " + v.getTypes());
 				continue;
 			}
-//					if (v.getTypes().contains(sourceVertexType) || v.getTypes().contains(targetVertexType)) {
+			if (!v.getTypes().contains(sourceVertexType)) {
+				System.out.println("Skip vertex. Candidate edge does not connect to vertex: " + v.getTypes());
+				continue;
+			}
+
 			// Create copy of k-1 pattern
 			VF2PatternGraph newPattern = previousLevelNode.getPattern().copy();
-			if (isDuplicateEdge(newPattern, edgeType, sourceVertexType, targetVertexType)) {
-				System.out.println("Candidate edge: " + candidateEdge.getKey());
-				System.out.println("already exists in pattern");
-				continue;
-			}
-//					if (v.getTypes().contains(sourceVertexType)) {
-				if (this.vertexTypesAttributes.get(targetVertexType).size() == 0) continue;
-				PatternVertex node2 = new PatternVertex(targetVertexType);
-				newPattern.addVertex(node2);
-				RelationshipEdge newEdge = new RelationshipEdge(edgeType);
-				PatternVertex node1 = null;
-				for (Vertex vertex : newPattern.getPattern().vertexSet()) {
-					if (vertex.getTypes().contains(sourceVertexType)) {
-						node1 = (PatternVertex) vertex;
-					}
+			PatternVertex node2 = new PatternVertex(targetVertexType);
+			newPattern.addVertex(node2);
+			RelationshipEdge newEdge = new RelationshipEdge(edgeType);
+			PatternVertex node1 = null;
+			for (Vertex vertex : newPattern.getPattern().vertexSet()) {
+				if (vertex.getTypes().contains(sourceVertexType)) {
+					node1 = (PatternVertex) vertex;
 				}
-				newPattern.addEdge(node1, node2, newEdge);
-//					}
-			// TO-DO: Support the addition of incoming edges into new patterns
-//					else if (v.getTypes().contains(targetVertexType)) {
-//						PatternVertex node1 = new PatternVertex(sourceVertexType);
-//						newPattern.addVertex(node1);
-//						RelationshipEdge newEdge = new RelationshipEdge(edgeType);
-//						PatternVertex node2 = null;
-//						for (Vertex vertex : newPattern.getPattern().vertexSet()) {
-//							if (vertex.getTypes().contains(targetVertexType)) {
-//								node2 = (PatternVertex) vertex;
-//							}
-//						}
-//						newPattern.addEdge(node1, node2, newEdge);
-//					}
+			}
+			newPattern.addEdge(node1, node2, newEdge);
+
 			System.out.println("Created new pattern: " + newPattern);
 
 			double numerator = Double.MAX_VALUE;
@@ -1394,6 +1457,24 @@ public class TgfdDiscovery {
 			this.candidateEdgeIndex++;
 		}
 		return patternTreeNode;
+	}
+
+	private boolean isConnectedEdge(VF2PatternGraph newPattern, String sourceVertexType) {
+		for (Vertex v: newPattern.getPattern().vertexSet()) {
+			if (v.getTypes().contains(sourceVertexType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isDuplicateVertex(VF2PatternGraph newPattern, String targetVertexType) {
+		for (Vertex v: newPattern.getPattern().vertexSet()) {
+			if (v.getTypes().contains(targetVertexType)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public int getMatchesForPattern(ArrayList<DBPediaLoader> graphs, PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
