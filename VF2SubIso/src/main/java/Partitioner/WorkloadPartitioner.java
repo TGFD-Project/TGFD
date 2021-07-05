@@ -1,5 +1,6 @@
 package Partitioner;
 
+import Workload.Joblet;
 import infra.*;
 
 import java.util.ArrayList;
@@ -10,29 +11,35 @@ public class WorkloadPartitioner {
 
     private VF2DataGraph graph;
     private List <TGFD> tgfds;
-    private String centerNodeType;
     private int numberOfPartitions;
-    private HashMap<Integer,ArrayList<FocusNode>> partitions;
+    private HashMap<Integer,ArrayList<Joblet>> partitions;
 
-    public WorkloadPartitioner(VF2DataGraph graph, List <TGFD> tgfds, String centerNodeType, int numberOfPartitiones)
+    public WorkloadPartitioner(VF2DataGraph graph, List <TGFD> tgfds, int numberOfPartitiones)
     {
         this.graph=graph;
         this.tgfds=tgfds;
-        this.centerNodeType=centerNodeType;
         this.numberOfPartitions=numberOfPartitiones;
 
         partition();
     }
 
-    public String getPartition(int partitionNumber)
-    {
-        if(!partitions.containsKey(partitionNumber))
-            return "";
-        StringBuilder sb=new StringBuilder();
-        for (FocusNode focusNode:partitions.get(partitionNumber)) {
-            sb.append(focusNode.getNodeURI()).append("#").append(focusNode.getTGFDName()).append("#").append(focusNode.getDiameter()).append("\n");
-        }
-        return sb.toString();
+//    public String getPartition(int partitionNumber)
+//    {
+//        if(!partitions.containsKey(partitionNumber))
+//            return "";
+//        StringBuilder sb=new StringBuilder();
+//        for (Joblet joblet :partitions.get(partitionNumber)) {
+//            sb.append(joblet.getCenterNode().getVertexURI()).append("#").append(joblet.getTGFDName()).append("#").append(joblet.getDiameter()).append("\n");
+//        }
+//        return sb.toString();
+//    }
+
+    public HashMap<Integer, ArrayList<Joblet>> getPartitions() {
+        return partitions;
+    }
+
+    public ArrayList<Joblet> getPartition(int partitionNumber) {
+        return partitions.get(partitionNumber);
     }
 
     private void partition()
@@ -40,7 +47,7 @@ public class WorkloadPartitioner {
         HashMap<String,ArrayList<DataVertex>> allRelevantVertices=new HashMap <>();
         for (TGFD tgfd:tgfds) {
             allRelevantVertices.put(tgfd.getName(),new ArrayList <>());
-            centerNodeType=tgfd.getPattern().getCenterVertexType();
+            String centerNodeType=tgfd.getPattern().getCenterVertexType();
             for (Vertex v:graph.getGraph().vertexSet()) {
                 if(v.getTypes().contains(centerNodeType))
                     allRelevantVertices.get(tgfd.getName()).add((DataVertex) v);
@@ -81,13 +88,13 @@ public class WorkloadPartitioner {
             for (var i = 0; i < allRelevantVertices.get(tgfdName).size(); i++) {
                 if (j < partitionSize) {
                     partitions.get(currentPartition).add(
-                            new FocusNode(allRelevantVertices.get(tgfdName).get(i).getVertexURI(),currentTGFD.getName(),currentTGFD.getPattern().getDiameter()));
+                            new Joblet(allRelevantVertices.get(tgfdName).get(i),currentTGFD.getName(),currentTGFD.getPattern().getDiameter(),currentPartition));
                 } else {
                     j++;
                     currentPartition++;
                     partitions.put(currentPartition, new ArrayList <>());
                     partitions.get(currentPartition).add(
-                            new FocusNode(allRelevantVertices.get(tgfdName).get(i).getVertexURI(),currentTGFD.getName(),currentTGFD.getPattern().getDiameter()));
+                            new Joblet(allRelevantVertices.get(tgfdName).get(i),currentTGFD.getName(),currentTGFD.getPattern().getDiameter(),currentPartition));
                 }
             }
         }

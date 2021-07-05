@@ -1,5 +1,6 @@
 package infra;
 
+import Workload.Joblet;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 
@@ -280,14 +281,14 @@ public class VF2DataGraph implements Serializable {
         return withinDiameter;
     }
 
-    public Graph<Vertex, RelationshipEdge> getFragmentedGraph(List<FocusNode> focusNodes)
+    public Graph<Vertex, RelationshipEdge> getFragmentedGraph(List<Joblet> joblets)
     {
         Graph<Vertex, RelationshipEdge> fragmentedGraph = new DefaultDirectedGraph<>(RelationshipEdge.class);
 
         HashSet<String> allVisitedVertices=new HashSet <>();
 
-        for (FocusNode focusNode:focusNodes) {
-            DataVertex centerNode= (DataVertex) this.nodeMap.get(focusNode.getNodeURI());
+        for (Joblet joblet : joblets) {
+            DataVertex centerNode= (DataVertex) this.nodeMap.get(joblet.getCenterNode().getVertexURI());
             if(centerNode==null)
                 continue;
 
@@ -321,7 +322,7 @@ public class VF2DataGraph implements Serializable {
                     if (!visited.containsKey(w.getVertexURI())) {
 
                         // Check if the vertex is within the diameter
-                        if (distance + 1 <= focusNode.getDiameter()) {
+                        if (distance + 1 <= joblet.getDiameter()) {
 
                             //Enqueue the vertex and add it to the visited set
                             visited.put(w.getVertexURI(), distance + 1);
@@ -339,7 +340,7 @@ public class VF2DataGraph implements Serializable {
                     if (!visited.containsKey(w.getVertexURI())) {
 
                         // Check if the vertex is within the diameter
-                        if (distance + 1 <= focusNode.getDiameter()) {
+                        if (distance + 1 <= joblet.getDiameter()) {
 
                             //Enqueue the vertex and add it to the visited set
                             visited.put(w.getVertexURI(), distance + 1);
