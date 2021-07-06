@@ -62,6 +62,9 @@ public class TgfdDiscovery {
 		this.patternSupportThreshold = DEFAULT_PATTERN_SUPPORT_THRESHOLD;
 		this.isNaive = false;
 		this.interestingTGFDs = true;
+
+		System.out.println("Running experiment for |G|="+this.graphSize+", k="+this.k+", theta="+this.theta+", gamma"+this.gamma+", patternSupport="+this.patternSupportThreshold+", interesting="+this.interestingTGFDs+", optimized="+!this.isNaive);
+
 		this.tgfds = new ArrayList<>();
 		for (int vSpawnLevel = 0; vSpawnLevel <= k; vSpawnLevel++) {
 			tgfds.add(new ArrayList<>());
@@ -83,6 +86,9 @@ public class TgfdDiscovery {
 		this.patternSupportThreshold = patternSupport;
 		this.isNaive = isNaive;
 		this.interestingTGFDs = interestingTGFDsOnly;
+
+		System.out.println("Running experiment for |G|="+this.graphSize+", k="+this.k+", theta="+this.theta+", gamma"+this.gamma+", patternSupport="+this.patternSupportThreshold+", interesting="+this.interestingTGFDs+", optimized="+!this.isNaive);
+
 		this.tgfds = new ArrayList<>();
 		for (int vSpawnLevel = 0; vSpawnLevel <= k; vSpawnLevel++) {
 			tgfds.add(new ArrayList<>());
@@ -662,7 +668,7 @@ public class TgfdDiscovery {
 		System.out.println();
 	}
 
-	public static Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> findMatches2(List<ConstantLiteral> attributes, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
+	public static Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> findMatches(List<ConstantLiteral> attributes, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 		String yVertexType = attributes.get(attributes.size()-1).getVertexType();
 		String yAttrName = attributes.get(attributes.size()-1).getAttrName();
 		List<ConstantLiteral> xAttributes = attributes.subList(0,attributes.size()-1);
@@ -673,6 +679,7 @@ public class TgfdDiscovery {
 			int numOfMatches = 0;
 			if (matchesInOneTimeStamp.size() > 0) {
 				for(HashSet<ConstantLiteral> match : matchesInOneTimeStamp) {
+					if (match.size() < attributes.size()) continue;
 					Set<ConstantLiteral> entity = new HashSet<>();
 					ConstantLiteral rhs = null;
 					for (ConstantLiteral literalInMatch : match) {
@@ -747,29 +754,17 @@ public class TgfdDiscovery {
 			if (visitedPath.size() == path.size()
 					&& visitedPath.subList(0,visitedPath.size()-1).containsAll(path.subList(0, path.size()-1))
 					&& visitedPath.get(visitedPath.size()-1).equals(path.get(path.size()-1))) {
-				System.out.println("This dependency was already visited.");
+				System.out.println("This literal path was already visited.");
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public static boolean isZeroEntityPath(ArrayList<ConstantLiteral> path, PatternTreeNode patternTreeNode) {
-		// Get all zero-entity paths in pattern tree
-		ArrayList<ArrayList<ConstantLiteral>> zeroEntityPaths = patternTreeNode.getAllZeroEntityDependenciesOnThisPath();
-		for (ArrayList<ConstantLiteral> zeroEntityPath : zeroEntityPaths) {
-			if (path.get(path.size()-1).equals(zeroEntityPath.get(zeroEntityPath.size()-1)) && path.subList(0, path.size()-1).containsAll(zeroEntityPath.subList(0,zeroEntityPath.size()-1))) {
-				System.out.println("Candidate dependency is a superset of zero-entity dependency: " + zeroEntityPath);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean isMinimalPath(ArrayList<ConstantLiteral> path, ArrayList<ArrayList<ConstantLiteral>> minimalPaths) {
-		for (ArrayList<ConstantLiteral> minimalPath : minimalPaths) {
-			if (path.get(path.size()-1).equals(minimalPath.get(minimalPath.size()-1)) && path.subList(0, path.size()-1).containsAll(minimalPath.subList(0,minimalPath.size()-1))) {
-				System.out.println("Candidate dependency is a superset of minimal dependency: " + minimalPath);
+	public static boolean isSupersetPath(ArrayList<ConstantLiteral> path, ArrayList<ArrayList<ConstantLiteral>> prunedPaths) {
+		for (ArrayList<ConstantLiteral> prunedPath : prunedPaths) {
+			if (path.get(path.size()-1).equals(prunedPath.get(prunedPath.size()-1)) && path.subList(0, path.size()-1).containsAll(prunedPath.subList(0,prunedPath.size()-1))) {
+				System.out.println("Candidate path " + path + " is a superset of pruned path " + prunedPath);
 				return true;
 			}
 		}
@@ -798,7 +793,7 @@ public class TgfdDiscovery {
 		System.out.println("Performing Entity Discovery");
 
 		// Discover entities
-		Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities = findMatches2(literalPath, matchesPerTimestamps);
+		Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities = findMatches(literalPath, matchesPerTimestamps);
 		if (entities == null) {
 			System.out.println("Mark as Pruned. No matches found during entity discovery.");
 			literalTreeNode.setIsPruned();
@@ -883,11 +878,11 @@ public class TgfdDiscovery {
 			System.out.println(intersection.getKey());
 		}
 
+		System.out.println("Evaluating candidate deltas for general TGFD...");
 		for (Entry<Pair, ArrayList<TreeSet<Pair>>> intersection : sortedIntersections) {
 			int generalMin = intersection.getKey().min();
 			int generalMax = intersection.getKey().max();
-			System.out.println("General min: " + generalMin);
-			System.out.println("General max: " + generalMax);
+			System.out.println("Calculating support for candidate general TGFD candidate delta: " + intersection.getKey());
 
 			// Compute general support
 			float numerator = 0;
@@ -909,6 +904,7 @@ public class TgfdDiscovery {
 			numerator = numberOfSatisfyingPairs;
 
 			float support = numerator / denominator;
+			System.out.println("Candidate general TGFD support: " + support);
 			if (support < theta) {
 				System.out.println("Support for candidate general TGFD is below support threshold");
 				continue;
@@ -930,6 +926,7 @@ public class TgfdDiscovery {
 				generalDependency.addLiteralToX(varX);
 			}
 
+			System.out.println("Creating new general TGFD...");
 			TGFD tgfd = new TGFD(patternForDependency, delta, generalDependency, support, patternSupport, "");
 			System.out.println("TGFD: " + tgfd);
 			tgfds.add(tgfd);
@@ -968,8 +965,9 @@ public class TgfdDiscovery {
 			System.out.println("Performing Constant TGFD discovery");
 			System.out.println("Pattern: " + newPattern);
 			System.out.println("Entity: " + newDependency);
-			ArrayList<Entry<ConstantLiteral, List<Integer>>> attrValuesTimestampsSortedByFreq = entityEntry.getValue();
 
+			System.out.println("Candidate RHS values for entity...");
+			ArrayList<Entry<ConstantLiteral, List<Integer>>> attrValuesTimestampsSortedByFreq = entityEntry.getValue();
 			for (Map.Entry<ConstantLiteral, List<Integer>> entry : attrValuesTimestampsSortedByFreq) {
 				System.out.println(entry.getKey() + ":" + entry.getValue());
 			}
@@ -1070,12 +1068,15 @@ public class TgfdDiscovery {
 			candidateTGFDdelta = new Delta(Period.ofDays(minDistance * 183), Period.ofDays(maxDistance * 183 + 1), Duration.ofDays(183));
 			System.out.println("Constant TGFD delta: "+candidateTGFDdelta);
 
-			if (!isMinimalPath(constantPath, patternNode.getAllMinimalDependenciesOnThisPath())) {
-				TGFD entityTGFD = new TGFD(newPattern, candidateTGFDdelta, newDependency, candidateTGFDsupport, patternNode.getPatternSupport(), "");
-				System.out.println("TGFD: " + entityTGFD);
-				tgfds.add(entityTGFD);
-				patternNode.addMinimalDependency(constantPath);
+			if (isSupersetPath(constantPath, patternNode.getAllMinimalDependenciesOnThisPath())) { // Ensures we don't expand constant TGFDs from previous iterations
+				System.out.println("Candidate constant TGFD " + constantPath + " is a superset of an existing minimal constant TGFD");
+				continue;
 			}
+			System.out.println("Creating new constant TGFD...");
+			TGFD entityTGFD = new TGFD(newPattern, candidateTGFDdelta, newDependency, candidateTGFDsupport, patternNode.getPatternSupport(), "");
+			System.out.println("TGFD: " + entityTGFD);
+			tgfds.add(entityTGFD);
+			patternNode.addMinimalDependency(constantPath);
 		}
 		constantXdeltas.sort(new Comparator<Pair>() {
 			@Override
@@ -1140,12 +1141,17 @@ public class TgfdDiscovery {
 						ArrayList<ConstantLiteral> newPath = new ArrayList<>();
 						newPath.add(literal);
 						newPath.addAll(previousLevelLiteral.getPathToRoot());
-						if (isPathVisited(newPath, visitedPaths)) {
-							System.out.println("Duplicate literal path: " + newPath);
+						System.out.println("New candidate literal path: " + newPath);
+						if (isPathVisited(newPath, visitedPaths)) { // TO-DO: Is this relevant anymore?
+							System.out.println("Skip. Duplicate literal path.");
 							continue;
 						}
-						if (isZeroEntityPath(newPath, patternTreeNode) || isMinimalPath(newPath, patternTreeNode.getMinimalDependencies())) {
-							System.out.println("Marking literal node as pruned. Skip dependency");
+						if (isSupersetPath(newPath, patternTreeNode.getAllZeroEntityDependenciesOnThisPath())) { // Ensures we don't re-explore dependencies whose subsets have no entities
+							System.out.println("Skip. Candidate literal path is a superset of zero-entity dependency.");
+							continue;
+						}
+						if (isSupersetPath(newPath, patternTreeNode.getAllMinimalDependenciesOnThisPath())) { // Ensures we don't re-explore dependencies whose subsets have already have a general dependency
+							System.out.println("Skip. Candidate literal path is a superset of minimal dependency.");
 							continue;
 						}
 						System.out.println("Newly created unique literal path: " + newPath);
