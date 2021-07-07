@@ -197,9 +197,10 @@ public class TgfdDiscovery {
 			System.out.println("Candidate edge index " + tgfdDiscovery.candidateEdgeIndex);
 
 			PatternTreeNode patternTreeNode = null;
-			while (patternTreeNode == null) {
+			while (patternTreeNode == null && tgfdDiscovery.currentVSpawnLevel <= tgfdDiscovery.k) {
 				patternTreeNode = tgfdDiscovery.vSpawn();
 			}
+			if (tgfdDiscovery.currentVSpawnLevel > tgfdDiscovery.k) break;
 			ArrayList<ArrayList<HashSet<ConstantLiteral>>> matches = new ArrayList<>();
 			for (int timestamp = 0; timestamp < tgfdDiscovery.numOfSnapshots; timestamp++) {
 				matches.add(new ArrayList<>());
@@ -209,9 +210,6 @@ public class TgfdDiscovery {
 			ArrayList<TGFD> tgfds = tgfdDiscovery.hSpawn(patternTreeNode, matches);
 			tgfdDiscovery.tgfds.get(tgfdDiscovery.currentVSpawnLevel).addAll(tgfds);
 		}
-//		for (int level = 1; level < tgfdDiscovery.tgfds.size(); level++) {
-//			tgfdDiscovery.printTgfdsToFile("api-test", level, tgfdDiscovery.theta, tgfdDiscovery.tgfds.get(level));
-//		}
 	}
 
 	private void markAsKexperiment() {
@@ -1333,6 +1331,9 @@ public class TgfdDiscovery {
 			this.printTgfdsToFile(experimentName, this.tgfds.get(this.currentVSpawnLevel));
 			if (this.isKExperiment) this.printExperimentRuntimestoFile(experimentName, this.kRuntimes);
 			this.currentVSpawnLevel++;
+			if (this.currentVSpawnLevel > this.k) {
+				return null;
+			}
 			this.genTree.addLevel();
 			this.previousLevelNodeIndex = 0;
 			this.candidateEdgeIndex = 0;
