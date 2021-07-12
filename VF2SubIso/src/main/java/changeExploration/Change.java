@@ -1,6 +1,7 @@
 package changeExploration;
 
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,7 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** This is a base class for the changes  */
-public class Change {
+public class Change implements Serializable {
 
     //region --[Fields: Private]---------------------------------------
 
