@@ -51,7 +51,7 @@ public class WorkloadEstimator {
         jobletsByID=new HashMap<>();
         jobletsByFragmentID= new HashMap<>();
         int jobletID=0;
-        IntStream.rangeClosed(1, numberOfProcessors)
+        IntStream.range(0, numberOfProcessors)
                 .forEach(i -> jobletsByFragmentID.put(i, new ArrayList<>()));
 
         for (TGFD tgfd:tgfds) {
@@ -264,6 +264,19 @@ public class WorkloadEstimator {
         return changesByFragmentID;
     }
 
+    public HashMap<Integer, String> sendChangesToWorkers(HashMap<Integer,List<Change>> changes, int snapshotID)
+    {
+        HashMap<Integer, String> listOfFiles=new HashMap<>();
+        LocalDateTime now = LocalDateTime.now();
+        String date=now.getHour() + "_" + now.getMinute() + "_" + now.getSecond();
+
+        for (int id:changes.keySet()) {
+            S3Storage.upload(Config.S3BucketName, date + "_Change[" + snapshotID + "]_" + id + ".ser", changes.get(id));
+            listOfFiles.put(id, date + "_Change[" + snapshotID + "]_" + id + ".ser");
+        }
+        return listOfFiles;
+    }
+
     public HashMap<Integer, ArrayList<String>> sendEdgesToWorkersForShipment(HashMap<Integer, HashMap<Integer,ArrayList<SimpleEdge>>> dataToBeShipped)
     {
         HashMap<Integer, ArrayList<String>> listOfFiles=new HashMap<>();
@@ -279,7 +292,7 @@ public class WorkloadEstimator {
                     for (SimpleEdge edge : dataToBeShipped.get(id).get(key))
                         sb.append(edge.getSrc()).append("\t").append(edge.getDst()).append("\n");
                     S3Storage.upload(Config.S3BucketName,date + "_F" + id + "_to_" +key + ".txt",sb.toString());
-                    listOfFiles.get(id).add("F" + id + "_to_" +key + ".txt");
+                    listOfFiles.get(id).add(date + "_F" + id + "_to_" +key + ".txt");
                     //saveEdges("./Fragment" + id + "_to_" +key + ".txt", sb);
                 }
             }
