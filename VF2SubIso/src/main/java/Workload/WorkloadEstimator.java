@@ -4,7 +4,7 @@ import AmazonStorage.S3Storage;
 import Infra.*;
 import Partitioner.RangeBasedPartitioner;
 import changeExploration.*;
-import GraphLoader.GraphLoader;
+import Loader.GraphLoader;
 import Util.Config;
 
 import java.io.FileWriter;

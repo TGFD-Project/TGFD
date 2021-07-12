@@ -1,5 +1,5 @@
-import GraphLoader.GraphLoader;
-import GraphLoader.IMDBLoader;
+import Loader.GraphLoader;
+import Loader.IMDBLoader;
 import Infra.TGFD;
 
 import java.util.ArrayList;

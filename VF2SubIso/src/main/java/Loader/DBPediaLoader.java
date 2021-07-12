@@ -1,9 +1,10 @@
-package GraphLoader;
+package Loader;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import Infra.Attribute;
 import Infra.DataVertex;
 import Infra.RelationshipEdge;
 import Infra.TGFD;
@@ -17,9 +18,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimpleDBPediaLoader extends GraphLoader {
-
-    // This loader will only load the nodes, their types and the edges. No attributes will be loaded.
+public class DBPediaLoader extends GraphLoader {
 
     //region --[Methods: Private]---------------------------------------
 
@@ -28,7 +27,7 @@ public class SimpleDBPediaLoader extends GraphLoader {
      * @param typesPath Path to the DBPedia type file
      * @param dataPath Path to the DBPedia graph file
      */
-    public SimpleDBPediaLoader(List<TGFD> alltgfd, ArrayList<String> typesPath, ArrayList<String> dataPath)
+    public DBPediaLoader(List<TGFD> alltgfd,ArrayList<String> typesPath, ArrayList<String> dataPath)
     {
         super(alltgfd);
 
@@ -180,15 +179,13 @@ public class SimpleDBPediaLoader extends GraphLoader {
 
                 String predicate = stmt.getPredicate().getLocalName().toLowerCase();
                 RDFNode object = stmt.getObject();
-                String objectNodeURI="";
+                String objectNodeURI;
 
-                if (!object.isLiteral()) {
+                if (object.isLiteral()) {
+                    objectNodeURI = object.asLiteral().getString().toLowerCase();
+                } else {
                     objectNodeURI = object.toString().substring(object.toString().lastIndexOf("/")+1).toLowerCase();
                 }
-                else {
-                    //objectNodeURI = object.asLiteral().getString().toLowerCase();
-                }
-
 
                 DataVertex subjVertex= (DataVertex) graph.getNode(subjectNodeURI);
 
@@ -214,14 +211,14 @@ public class SimpleDBPediaLoader extends GraphLoader {
                     graph.addEdge(subjVertex, objVertex, new RelationshipEdge(predicate));
                     graphSize++;
                 }
-//                else
-//                {
-//                    if(!Config.optimizedLoadingBasedOnTGFD || validAttributes.contains(predicate))
-//                    {
-//                        subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
-//                        graphSize++;
-//                    }
-//                }
+                else
+                {
+                    if(!Config.optimizedLoadingBasedOnTGFD || validAttributes.contains(predicate))
+                    {
+                        subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
+                        graphSize++;
+                    }
+                }
             }
             System.out.println("Subjects and Objects not found: " + numberOfSubjectsNotFound + " ** " + numberOfObjectsNotFound);
             System.out.println("Done. Nodes: " + graph.getGraph().vertexSet().size() + ",  Edges: " +graph.getGraph().edgeSet().size());

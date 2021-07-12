@@ -1,4 +1,4 @@
-package GraphLoader;
+package Loader;
 
 import changeExploration.*;
 import Infra.*;

@@ -1,5 +1,5 @@
 import Partitioner.IMDBPartitioner;
-import GraphLoader.IMDBLoader;
+import Loader.IMDBLoader;
 import Infra.TGFD;
 import Util.Config;
 

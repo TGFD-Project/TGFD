@@ -7,10 +7,10 @@ import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;
-import GraphLoader.DBPediaLoader;
-import GraphLoader.GraphLoader;
-import GraphLoader.IMDBLoader;
-import GraphLoader.SyntheticLoader;
+import Loader.DBPediaLoader;
+import Loader.GraphLoader;
+import Loader.IMDBLoader;
+import Loader.SyntheticLoader;
 import Infra.*;
 import org.jgrapht.GraphMapping;
 

@@ -5,7 +5,7 @@ import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;
-import GraphLoader.SyntheticLoader;
+import Loader.SyntheticLoader;
 import Infra.*;
 import org.jgrapht.GraphMapping;
 import Util.Config;

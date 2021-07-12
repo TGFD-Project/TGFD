@@ -1,12 +1,18 @@
 package ParalleRunner;
 
+import Loader.GraphLoader;
+import Loader.SimpleDBPediaLoader;
+import Loader.SimpleIMDBLoader;
+import Infra.TGFD;
 import MPI.Consumer;
 import MPI.Producer;
+import TGFDLoader.TGFDGenerator;
 import Util.Config;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AdvancedCoordinatorNoReBalance {
@@ -14,6 +20,9 @@ public class AdvancedCoordinatorNoReBalance {
     //region --[Fields: Private]---------------------------------------
 
     private String nodeName = "coordinator";
+
+    private GraphLoader loader=null;
+    private List<TGFD> tgfds;
 
     private AtomicBoolean workersStatusChecker=new AtomicBoolean(true);
     private AtomicBoolean workersResultsChecker =new AtomicBoolean(false);
@@ -66,7 +75,20 @@ public class AdvancedCoordinatorNoReBalance {
 
     private void loadTheWorkload()
     {
+        TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
+        tgfds=generator.getTGFDs();
 
+        if(Config.dataset.equals("dbpedia"))
+        {
+            loader = new SimpleDBPediaLoader(tgfds, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
+        }
+        else if(Config.dataset.equals("synthetic")) {
+//            loader = new SyntheticLoader(tgfds, Config.getFirstDataFilePath());
+        }
+        else // default is imdb
+        {
+            loader = new SimpleIMDBLoader(tgfds, Config.getFirstDataFilePath());
+        }
     }
 
     public HashMap<String,String> getResults()

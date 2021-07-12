@@ -1,7 +1,7 @@
 import TGFDLoader.TGFDGenerator;
 import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import GraphLoader.DBPediaLoader;
+import Loader.DBPediaLoader;
 import Infra.TGFD;
 import Util.Config;
 

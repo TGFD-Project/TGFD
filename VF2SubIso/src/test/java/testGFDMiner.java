@@ -1,4 +1,4 @@
-import GraphLoader.DBPediaLoader;
+import Loader.DBPediaLoader;
 import Infra.*;
 
 import java.io.FileWriter;

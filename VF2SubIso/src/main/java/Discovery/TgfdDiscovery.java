@@ -1,7 +1,7 @@
 package Discovery;
 
 import VF2Runner.VF2SubgraphIsomorphism;
-import GraphLoader.DBPediaLoader;
+import Loader.DBPediaLoader;
 import Infra.*;
 import org.apache.commons.cli.*;
 import org.apache.jena.rdf.model.Model;

@@ -1,7 +1,7 @@
 package SyntheticGraph;
 
 import changeExploration.*;
-import GraphLoader.SyntheticLoader;
+import Loader.SyntheticLoader;
 import Infra.Attribute;
 import Infra.DataVertex;
 import Infra.RelationshipEdge;

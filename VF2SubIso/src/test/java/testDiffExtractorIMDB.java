@@ -1,8 +1,8 @@
 import TGFDLoader.TGFDGenerator;
 import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import GraphLoader.GraphLoader;
-import GraphLoader.IMDBLoader;
+import Loader.GraphLoader;
+import Loader.IMDBLoader;
 import Infra.TGFD;
 import Util.Config;
 

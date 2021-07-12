@@ -1,6 +1,6 @@
 package changeExploration;
 
-import GraphLoader.GraphLoader;
+import Loader.GraphLoader;
 import Infra.*;
 
 import java.util.*;
