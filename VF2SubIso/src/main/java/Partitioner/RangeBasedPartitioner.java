@@ -23,7 +23,7 @@ public class RangeBasedPartitioner {
         int numberOfVertices=graph.getSize();
         int partitionSize=numberOfVertices/numberOfPartitions;
         partitionSize+=2;
-        int i=0, partitionID=1;
+        int i=0, partitionID=0;
         for (Vertex v:graph.getGraph().vertexSet()) {
             if(++i>partitionSize)
             {
