@@ -3,7 +3,7 @@ package AmazonStorage;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
-import util.Config;
+import Util.Config;
 
 import java.io.*;
 
@@ -44,12 +44,12 @@ public class S3Storage {
 
     public static void upload(String bucketName, String key, String textToBeUploaded)
     {
-        String fileName="./tempGraph.ser";
+        String fileName="./tmp.txt";
         try {
             FileWriter file = new FileWriter(fileName);
             file.write(textToBeUploaded);
             file.close();
-            System.out.println("Text has been stored in the file.");
+            System.out.println("Text has been stored in a temporary file.");
 
             System.out.println("Uploading to Amazon S3");
 

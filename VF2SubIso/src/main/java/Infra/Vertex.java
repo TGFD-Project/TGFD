@@ -1,4 +1,4 @@
-package infra;
+package Infra;
 
 import java.io.Serializable;
 import java.util.*;
@@ -6,6 +6,10 @@ import java.util.*;
 public abstract class Vertex implements Comparable<Vertex>, Serializable {
 
     private Set<String> types=new HashSet<>();
+
+    private Set<Integer> jobletID=new HashSet<>();
+
+    private boolean isMarked = false;
 
     // Map of attributes using attribute name as a key
     //TODO: Check the efficiency if we just store the attributes in a set (the attribute retrieval cannot be done in O(1) and takes O(n))
@@ -88,11 +92,33 @@ public abstract class Vertex implements Comparable<Vertex>, Serializable {
         return attributes.containsKey(name.toLowerCase());
     }
 
+    public void addJobletID(int jobletID)
+    {
+        this.jobletID.add(jobletID);
+    }
+
+    public void removeJobletID(int jobletID)
+    {
+        this.jobletID.remove(jobletID);
+    }
+
+    public Set<Integer> getJobletID() {
+        return jobletID;
+    }
+
     // The function to check if two vertices can be mapped to each other in subgraph isomorphism
     // This needs to be overridden in DataVertex and PatternVertex
     public boolean isMapped(Vertex v)
     {
         return false;
+    }
+
+    public boolean isMarked() {
+        return isMarked;
+    }
+
+    public void setMarked(boolean isMarked) {
+        this.isMarked = isMarked;
     }
 
     // TODO: implement hashCode because Match uses vertex's hashcode as the signature [2021-02-07]

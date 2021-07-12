@@ -1,6 +1,6 @@
 package changeExploration;
 
-import infra.DataVertex;
+import Infra.DataVertex;
 
 public class VertexChange extends Change {
 

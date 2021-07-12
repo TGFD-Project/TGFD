@@ -1,6 +1,6 @@
 package BatchViolation;
 
-import infra.*;
+import Infra.*;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -44,6 +44,11 @@ public class NaiveBatchTED {
                                 {
                                     //Violation happened.
                                     violations.add(new Violation(first,second,intv));
+                                    // counter of violations
+                                }
+                                else
+                                {
+                                    // counter of satisfied matches
                                 }
                             }
                         }

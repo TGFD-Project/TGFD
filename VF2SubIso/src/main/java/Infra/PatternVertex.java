@@ -1,6 +1,8 @@
-package infra;
+package Infra;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 
 public class PatternVertex extends Vertex{
 
@@ -8,6 +10,14 @@ public class PatternVertex extends Vertex{
         super(type.toLowerCase());
     }
     private boolean isPatternNode=true;
+
+    public PatternVertex copy(){
+        PatternVertex newV = new PatternVertex(new ArrayList<>(this.getTypes()).get(0));
+        for (Attribute attr : this.getAllAttributesList()) {
+            newV.addAttribute(attr.getAttrName(), attr.getAttrValue());
+        }
+        return newV;
+    }
 
     @Override
     public String toString() {

@@ -1,14 +1,14 @@
 package VF2Runner;
 
-import infra.RelationshipEdge;
-import infra.VF2DataGraph;
-import infra.VF2PatternGraph;
-import infra.Vertex;
+import Infra.RelationshipEdge;
+import Infra.VF2DataGraph;
+import Infra.VF2PatternGraph;
+import Infra.Vertex;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
 import org.jgrapht.alg.isomorphism.VF2SubgraphIsomorphismInspector;
-import util.Config;
+import Util.Config;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -76,6 +76,16 @@ public class VF2SubgraphIsomorphism {
             System.out.println("No Matches for the query!");
             return null;
         }
+    }
+
+    public VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> execute2(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean cacheEdges) {
+        System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
+        long startTime = System.currentTimeMillis();
+        inspector = new VF2SubgraphIsomorphismInspector<>(
+                dataGraph.getGraph(), pattern.getPattern(),
+                myVertexComparator, myEdgeComparator, cacheEdges);
+        System.out.println("Search Cost: " + (System.currentTimeMillis() - startTime));
+        return inspector;
     }
 
     public Iterator<GraphMapping<Vertex, RelationshipEdge>> execute(Graph<Vertex, RelationshipEdge> dataGraph, VF2PatternGraph pattern, boolean cacheEdges)

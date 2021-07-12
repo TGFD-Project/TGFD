@@ -1,4 +1,4 @@
-package infra;
+package Infra;
 
 public class ConstantLiteral extends Literal {
 

@@ -1,6 +1,6 @@
 package changeExploration;
 
-import infra.Attribute;
+import Infra.Attribute;
 
 public class AttributeChange extends Change {
 
@@ -22,7 +22,7 @@ public class AttributeChange extends Change {
                 '}';
     }
 
-    public infra.Attribute getAttribute() {
+    public Infra.Attribute getAttribute() {
         return attribute;
     }
 

@@ -4,10 +4,10 @@ import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;
-import graphLoader.IMDBLoader;
-import infra.*;
+import GraphLoader.IMDBLoader;
+import Infra.*;
 import org.jgrapht.GraphMapping;
-import util.Config;
+import Util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;

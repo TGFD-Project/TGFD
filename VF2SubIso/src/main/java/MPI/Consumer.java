@@ -1,7 +1,7 @@
 package MPI;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import util.Config;
+import Util.Config;
 
 import javax.jms.*;
 

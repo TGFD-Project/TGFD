@@ -1,8 +1,8 @@
-package graphLoader;
+package GraphLoader;
 
 import changeExploration.*;
-import infra.*;
-import util.Config;
+import Infra.*;
+import Util.Config;
 
 import java.util.HashSet;
 import java.util.List;

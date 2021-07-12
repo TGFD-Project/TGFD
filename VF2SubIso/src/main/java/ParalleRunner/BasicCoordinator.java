@@ -2,7 +2,7 @@ package ParalleRunner;
 
 import MPI.Consumer;
 import MPI.Producer;
-import util.Config;
+import Util.Config;
 
 import javax.jms.*;
 import java.util.HashMap;

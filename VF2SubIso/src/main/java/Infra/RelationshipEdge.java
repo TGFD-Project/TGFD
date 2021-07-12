@@ -1,4 +1,4 @@
-package infra;
+package Infra;
 
 import org.jgrapht.graph.DefaultEdge;
 
@@ -33,7 +33,6 @@ public class RelationshipEdge extends DefaultEdge {
 
         RelationshipEdge edge = (RelationshipEdge) obj;
         return label.equals(edge.label) && getSource().equals(edge.getSource()) && getTarget().equals(edge.getTarget());
-
     }
 
     public String getLabel() {

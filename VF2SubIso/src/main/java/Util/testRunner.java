@@ -1,4 +1,4 @@
-package util;
+package Util;
 
 import BatchViolation.OptBatchTED;
 import IncrementalRunner.IncUpdates;
@@ -7,11 +7,11 @@ import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;
-import graphLoader.DBPediaLoader;
-import graphLoader.GraphLoader;
-import graphLoader.IMDBLoader;
-import graphLoader.SyntheticLoader;
-import infra.*;
+import GraphLoader.DBPediaLoader;
+import GraphLoader.GraphLoader;
+import GraphLoader.IMDBLoader;
+import GraphLoader.SyntheticLoader;
+import Infra.*;
 import org.jgrapht.GraphMapping;
 
 import java.time.LocalDate;

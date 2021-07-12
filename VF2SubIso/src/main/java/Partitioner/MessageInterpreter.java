@@ -1,23 +1,25 @@
 package Partitioner;
 
-import infra.FocusNode;
+import Workload.Joblet;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MessageInterpreter {
 
-    public static List <FocusNode> getFocusNodes(String message)
+    public static List <Joblet> getFocusNodes(String message)
     {
-        List <FocusNode> allFocusNodes=new ArrayList <>();
+        List <Joblet> allJoblets =new ArrayList <>();
         for (String focusNodeMessage:message.split("\n")) {
             String []res=focusNodeMessage.split("#");
-            if(res.length==3)
+            if(res.length==4)
             {
-                allFocusNodes.add(new FocusNode(res[0],res[1],Integer.parseInt(res[2])));
+                //TODO: null is entered as centerNode. It has to be DataVertex from an input Graph.
+                //TODO: null is entered for the TGFD as well
+                allJoblets.add(new Joblet(0,null,null,Integer.parseInt(res[2]),Integer.parseInt(res[3])));
             }
         }
-        return allFocusNodes;
+        return allJoblets;
     }
 
 }

@@ -1,6 +1,6 @@
 import ParalleRunner.BasicCoordinator;
 import ParalleRunner.BasicWorker;
-import util.Config;
+import Util.Config;
 
 import java.io.FileNotFoundException;
 

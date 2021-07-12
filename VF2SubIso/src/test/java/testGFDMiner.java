@@ -1,11 +1,9 @@
-import graphLoader.DBPediaLoader;
-import graphLoader.IMDBLoader;
-import infra.*;
+import GraphLoader.DBPediaLoader;
+import Infra.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class testGFDMiner {
 

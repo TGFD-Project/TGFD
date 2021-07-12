@@ -2,7 +2,7 @@ package ParalleRunner;
 
 import MPI.Consumer;
 import MPI.Producer;
-import util.Config;
+import Util.Config;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;

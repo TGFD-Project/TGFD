@@ -1,10 +1,10 @@
 package SyntheticGraph;
 
 import changeExploration.*;
-import graphLoader.SyntheticLoader;
-import infra.Attribute;
-import infra.DataVertex;
-import infra.RelationshipEdge;
+import GraphLoader.SyntheticLoader;
+import Infra.Attribute;
+import Infra.DataVertex;
+import Infra.RelationshipEdge;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.*;

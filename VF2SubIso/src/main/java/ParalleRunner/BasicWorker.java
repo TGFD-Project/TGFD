@@ -2,8 +2,8 @@ package ParalleRunner;
 
 import MPI.Consumer;
 import MPI.Producer;
-import util.Config;
-import util.testRunner;
+import Util.Config;
+import Util.testRunner;
 
 import javax.jms.*;
 import java.util.concurrent.atomic.AtomicBoolean;

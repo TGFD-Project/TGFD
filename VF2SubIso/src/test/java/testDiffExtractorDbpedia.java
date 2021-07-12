@@ -1,9 +1,9 @@
 import TGFDLoader.TGFDGenerator;
 import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import graphLoader.DBPediaLoader;
-import infra.TGFD;
-import util.Config;
+import GraphLoader.DBPediaLoader;
+import Infra.TGFD;
+import Util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;

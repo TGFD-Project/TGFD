@@ -1,4 +1,4 @@
-package util;
+package Util;
 
 import com.amazonaws.regions.Regions;
 import org.apache.activemq.ActiveMQConnection;
@@ -26,6 +26,7 @@ public class Config {
     public static String ActiveMQPassword= "";
     public static String nodeName="";
     public static boolean Amazon=false;
+    public static String S3BucketName="imdb-141031";
     public static Regions region=Regions.US_EAST_2;
     public static String language="N-Triples";
     public static HashMap<String,String> jobs=new HashMap <>();

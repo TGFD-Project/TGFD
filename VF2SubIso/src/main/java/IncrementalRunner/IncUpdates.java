@@ -2,7 +2,7 @@ package IncrementalRunner;
 
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.*;
-import infra.*;
+import Infra.*;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 
@@ -56,7 +56,7 @@ public class IncUpdates {
             else if(edgeChange.getTypeOfChange()== ChangeType.deleteEdge)
                 return updateGraphByEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()),change.getTGFDs(),tgfdsByName,false);
             else
-                throw new IllegalArgumentException("The change is instnace of EdgeChange, but type of change is: " + edgeChange.getTypeOfChange());
+                throw new IllegalArgumentException("The change is instance of EdgeChange, but type of change is: " + edgeChange.getTypeOfChange());
         }
         else if(change instanceof AttributeChange)
         {

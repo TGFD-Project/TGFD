@@ -4,9 +4,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import graphLoader.GraphLoader;
-import graphLoader.IMDBLoader;
-import util.Config;
+import GraphLoader.GraphLoader;
+import GraphLoader.IMDBLoader;
+import Infra.DataVertex;
+import Util.Config;
 
 import java.io.*;
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class IMDBPartitioner {
     {
         System.out.println("Start partitioning...");
         RangeBasedPartitioner partitioner=new RangeBasedPartitioner(imdb.getGraph());
-        HashMap<String,Integer> partitionMapping=partitioner.partition(numberOfPartitions);
+        HashMap<DataVertex,Integer> partitionMapping=partitioner.fragment(numberOfPartitions);
         System.out.println("Partitioning done.");
         imdb=null;
         try
@@ -78,8 +79,9 @@ public class IMDBPartitioner {
                         var temp2=subjectNodeURL.split("/");
                         if(temp2.length==2) {
                             String subjectID = temp2[1];
-                            if (partitionMapping.containsKey(subjectID)) {
-                                int partitionID = partitionMapping.get(subjectID);
+                            DataVertex v= (DataVertex) imdb.getGraph().getNode(subjectID);
+                            if (partitionMapping.containsKey(v)) {
+                                int partitionID = partitionMapping.get(v);
                                 writers[partitionID - 1].write(line + "\n");
                                 //partitionData.get(partitionID).append(line).append("\n");
                             }

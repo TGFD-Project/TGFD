@@ -1,10 +1,10 @@
 import TGFDLoader.TGFDGenerator;
 import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import graphLoader.GraphLoader;
-import graphLoader.IMDBLoader;
-import infra.TGFD;
-import util.Config;
+import GraphLoader.GraphLoader;
+import GraphLoader.IMDBLoader;
+import Infra.TGFD;
+import Util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;

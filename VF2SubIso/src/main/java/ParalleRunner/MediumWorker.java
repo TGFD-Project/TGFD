@@ -4,11 +4,11 @@ import AmazonStorage.S3Storage;
 import MPI.Consumer;
 import MPI.Producer;
 import TGFDLoader.TGFDGenerator;
-import infra.TGFD;
-import infra.VF2DataGraph;
+import Infra.TGFD;
+import Infra.VF2DataGraph;
 import org.apache.commons.lang3.RandomStringUtils;
-import util.Config;
-import util.testRunner;
+import Util.Config;
+import Util.testRunner;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;

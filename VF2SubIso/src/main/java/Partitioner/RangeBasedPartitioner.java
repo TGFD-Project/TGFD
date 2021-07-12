@@ -1,7 +1,8 @@
 package Partitioner;
 
-import graphLoader.GraphLoader;
-import infra.VF2DataGraph;
+import Infra.DataVertex;
+import Infra.VF2DataGraph;
+import Infra.Vertex;
 
 import java.util.HashMap;
 
@@ -14,22 +15,22 @@ public class RangeBasedPartitioner {
         this.graph=graph;
     }
 
-    public HashMap<String,Integer> partition(int numberOfPartitions)
+    public HashMap<DataVertex,Integer> fragment(int numberOfPartitions)
     {
         if(numberOfPartitions<1)
             return null;
-        HashMap<String,Integer> mapping=new HashMap<>();
+        HashMap<DataVertex,Integer> mapping=new HashMap<>();
         int numberOfVertices=graph.getSize();
         int partitionSize=numberOfVertices/numberOfPartitions;
         partitionSize+=2;
         int i=0, partitionID=1;
-        for (String vertexURI:graph.getNodeMap().keySet()) {
+        for (Vertex v:graph.getGraph().vertexSet()) {
             if(++i>partitionSize)
             {
                 i=0;
                 partitionID++;
             }
-            mapping.put(vertexURI,partitionID);
+            mapping.put((DataVertex) v,partitionID);
         }
         return mapping;
     }

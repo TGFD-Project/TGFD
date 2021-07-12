@@ -1,4 +1,4 @@
-package infra;
+package Infra;
 
 /**
  * A variable literal to assert that a value of an attribute of a pair of vertices are the same.

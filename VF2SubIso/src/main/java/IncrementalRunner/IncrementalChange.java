@@ -1,9 +1,9 @@
 package IncrementalRunner;
 
-import infra.Match;
-import infra.RelationshipEdge;
-import infra.VF2PatternGraph;
-import infra.Vertex;
+import Infra.Match;
+import Infra.RelationshipEdge;
+import Infra.VF2PatternGraph;
+import Infra.Vertex;
 import org.jgrapht.GraphMapping;
 
 import java.util.*;

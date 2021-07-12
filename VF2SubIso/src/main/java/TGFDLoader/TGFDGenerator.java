@@ -4,8 +4,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import infra.*;
-import util.Config;
+import Infra.*;
+import Util.Config;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -32,6 +32,7 @@ public class TGFDGenerator {
 
     private void loadGraphPattern(String path) {
 
+        System.out.println("Loading TGFDs from the path: " + path);
         if(path.equals(""))
             return;
         HashMap<String, PatternVertex> allVertices=new HashMap<>();
@@ -149,6 +150,7 @@ public class TGFDGenerator {
                 fullObject.close();
             }
             br.close();
+            System.out.println("Number of TGFDs loaded: " + tgfds.size());
         }
         catch (Exception e)
         {
