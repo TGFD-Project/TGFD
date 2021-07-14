@@ -146,6 +146,35 @@ public class Util {
                 });
     }
 
+    public static void mergeGraphs(VF2DataGraph base, Graph<Vertex, RelationshipEdge> inputGraph)
+    {
+        inputGraph.vertexSet()
+                .stream()
+                .map(v -> (DataVertex) v)
+                .forEach(v -> {
+                    DataVertex currentVertex = (DataVertex) base.getNode(v.getVertexURI());
+                    if (currentVertex == null) {
+                        base.addVertex(v);
+                    } else {
+                        currentVertex.deleteAllAttributes();
+                        currentVertex.setAllAttributes(v.getAllAttributesList());
+                        v.getTypes().forEach(currentVertex::addType);
+                    }
+                });
+        inputGraph.edgeSet()
+                .forEach(e -> {
+                    DataVertex src = (DataVertex) e.getSource();
+                    DataVertex dst = (DataVertex) e.getTarget();
+                    boolean exist = base.getGraph()
+                            .outgoingEdgesOf(e.getSource())
+                            .stream()
+                            .anyMatch(edge -> edge.getLabel().equals(e.getLabel()) &&
+                                    ((DataVertex) edge.getTarget()).getVertexURI().equals(dst.getVertexURI()));
+                    if (!exist)
+                        base.addEdge(src, dst, e);
+                });
+    }
+
     public static int communicationCost(VF2DataGraph graph, HashMap<String,Integer> mapping, int assignedPartition, List<TGFD> assignedTGFDs)
     {
         int cost;
