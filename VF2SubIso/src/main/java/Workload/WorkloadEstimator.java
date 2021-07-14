@@ -163,7 +163,7 @@ public class WorkloadEstimator {
                         {
                             dataToBeShipped.get(fragments.get(dst))
                                     .get(fragments.get(src))
-                                    .add(new SimpleEdge(src.getVertexURI(),dst.getVertexURI()));
+                                    .add(new SimpleEdge(src.getVertexURI(),dst.getVertexURI(),edgeChange.getLabel()));
                             if(!dst.getJobletID().isEmpty())
                             {
                                 if(!copiedVertices.containsKey(dst))
@@ -175,7 +175,7 @@ public class WorkloadEstimator {
                         {
                             dataToBeShipped.get(fragments.get(src))
                                     .get(fragments.get(dst))
-                                    .add(new SimpleEdge(src.getVertexURI(),dst.getVertexURI()));
+                                    .add(new SimpleEdge(src.getVertexURI(),dst.getVertexURI(),edgeChange.getLabel()));
                             if(!src.getJobletID().isEmpty())
                             {
                                 if(!copiedVertices.containsKey(src))
