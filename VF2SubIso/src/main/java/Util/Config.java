@@ -32,6 +32,7 @@ public class Config {
     public static HashMap<String,String> jobs=new HashMap <>();
     public static String dataset="imdb";
     public static long threadsIdleTime=3000;// in ms
+    public static int supersteps=0;
 
     public static boolean optimizedLoadingBasedOnTGFD=false;
     public static boolean saveViolations=false;
@@ -60,6 +61,7 @@ public class Config {
                      -job <worker name>,<job> // For example: -job worker1,pattern1.txt
                      -dataset <dataset name> // Options: imdb (default), dbpedia, synthetic
                      -idletime <time> // idle time in threads (in ms)
+                     -superstep <integer> // number of supersteps
                     """.indent(5));
         } else
             parseInputParams(input);
@@ -92,6 +94,8 @@ public class Config {
                     ActiveMQPassword=conf[1];
                 }else if(conf[0].equals("-nodename")) {
                     nodeName=conf[1];
+                }else if(conf[0].equals("-superstep")) {
+                    supersteps=Integer.parseInt(conf[1]);
                 } else if (conf[0].equals("-workers")) {
                     String[] temp = conf[1].split(",");
                     workers.addAll(Arrays.asList(temp));
