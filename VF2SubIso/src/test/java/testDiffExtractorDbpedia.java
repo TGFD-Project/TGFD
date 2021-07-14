@@ -1,6 +1,6 @@
 import TGFDLoader.TGFDGenerator;
 import changeExploration.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import graphLoader.DBPediaLoader;
 import infra.TGFD;
 import util.Config;
@@ -149,12 +149,14 @@ public class testDiffExtractorDbpedia {
         }
 
         final StringWriter sw =new StringWriter();
-        final ObjectMapper mapper = new ObjectMapper();
         try
         {
-            mapper.writeValue(sw, allChanges);
             FileWriter file = new FileWriter("./changes_t"+t1+"_t"+t2+"_"+tgfdName+".json");
-            file.write(sw.toString());
+            for (Change change : allChanges) {
+                Gson gson = new Gson();
+                String json = gson.toJson(change);
+                file.write(json);
+            }
             file.close();
             System.out.println("Successfully wrote to the file.");
             sw.close();
