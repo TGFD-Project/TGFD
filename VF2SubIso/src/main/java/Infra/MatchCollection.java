@@ -126,13 +126,13 @@ public class MatchCollection
             var mapping = mappingIterator.next();
             addMatch(timestamp, mapping);
             addVertices(timestamp, mapping);
-            if(matchCount++%1000==0) {
-                System.out.println("Retrived " + matchCount + " matches in " +
-                        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-start) +  "(sec) ** " +
-                        TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()-start) + "(min)");
-                start=System.currentTimeMillis();
-
-            }
+//            if(matchCount++%1000==0) {
+//                System.out.println("Retrived " + matchCount + " matches in " +
+//                        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-start) +  "(sec) ** " +
+//                        TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()-start) + "(min)");
+//                start=System.currentTimeMillis();
+//
+//            }
         }
         System.out.println("Total Number of matches: " + matchCount);
         return matchCount;
