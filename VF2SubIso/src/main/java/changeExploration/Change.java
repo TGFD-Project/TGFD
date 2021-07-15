@@ -21,6 +21,9 @@ public class Change implements Serializable {
 
     /** Unique id of a change log. */
     private int id;
+
+    /** Set of joblets that are affected by this change. */
+    private Set<Integer> jobletIDs=new HashSet<>();
     //endregion
 
     /**
@@ -77,6 +80,16 @@ public class Change implements Serializable {
     /** Gets the name of the set of of relevant TGFDs. */
     public Set <String> getTGFDs() {
         return TGFDs;
+    }
+
+    public void addJobletID(int jobletID)
+    {
+        this.jobletIDs.add(jobletID);
+    }
+
+    public void addJobletID(Set<Integer> jobletIDs)
+    {
+        this.jobletIDs.addAll(jobletIDs);
     }
 
     /** Gets the id of the change. */
