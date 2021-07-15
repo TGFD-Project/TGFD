@@ -220,7 +220,7 @@ public class AdvancedWorkerNoRebalance {
         }
         consumer.close();
 
-        runner.runTheNextTimestamp(changes);
+        runner.runTheNextTimestamp(changes, superstepNumber);
 
         Producer messageProducer=new Producer();
         messageProducer.connect();
