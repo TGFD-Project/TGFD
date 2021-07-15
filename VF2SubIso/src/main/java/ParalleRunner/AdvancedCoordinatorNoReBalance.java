@@ -233,7 +233,6 @@ public class AdvancedCoordinatorNoReBalance {
                 }
                 Producer messageProducer=new Producer();
                 messageProducer.connect();
-                new StringBuilder();
                 StringBuilder message;
                 for (int workerID:estimator.getJobletsByFragmentID().keySet()) {
                     message= new StringBuilder();
@@ -329,11 +328,12 @@ public class AdvancedCoordinatorNoReBalance {
 
                     HashMap<Integer,HashMap<Integer,ArrayList<SimpleEdge>>> dataToBeShipped=estimator.dataToBeShipped(changes);
                     HashMap<Integer, ArrayList<String>> filesOnS3Storage = estimator.sendEdgesToWorkersForShipment(dataToBeShipped);
-                    edgesToBeShippedToOtherWorkers.put(i+2,filesOnS3Storage);
 
                     HashMap<Integer,List<Change>> changesToBeSent=estimator.changesToBeSent(changes);
                     HashMap<Integer, String> changesOnS3Storage = estimator.sendChangesToWorkers(changesToBeSent,i+2);
+
                     changesToBeSentToOtherWorkers.put(i+2,changesOnS3Storage);
+                    edgesToBeShippedToOtherWorkers.put(i+2,filesOnS3Storage);
 
                 }
             } catch (Exception e) {
