@@ -169,6 +169,7 @@ public class WorkloadEstimator {
                                 if(!copiedVertices.containsKey(dst))
                                     copiedVertices.put(dst,new HashSet<>());
                                 copiedVertices.get(dst).add(fragments.get(src));
+                                change.addJobletID(dst.getJobletID());
                             }
                         }
                         if(!dst.getJobletID().isEmpty())
@@ -181,6 +182,7 @@ public class WorkloadEstimator {
                                 if(!copiedVertices.containsKey(src))
                                     copiedVertices.put(src,new HashSet<>());
                                 copiedVertices.get(src).add(fragments.get(dst));
+                                change.addJobletID(src.getJobletID());
                             }
                         }
                     }
@@ -203,9 +205,15 @@ public class WorkloadEstimator {
                 DataVertex src = (DataVertex) loader.getGraph().getNode(edgeChange.getSrc());
                 DataVertex dst = (DataVertex) loader.getGraph().getNode(edgeChange.getSrc());
                 if (!src.getJobletID().isEmpty())
+                {
+                    change.addJobletID(src.getJobletID());
                     changesByFragmentID.get(fragments.get(src)).add(change);
+                }
                 if (!dst.getJobletID().isEmpty())
+                {
+                    change.addJobletID(dst.getJobletID());
                     changesByFragmentID.get(fragments.get(dst)).add(change);
+                }
                 if(copiedVertices.containsKey(src))
                 {
                     copiedVertices
@@ -230,7 +238,10 @@ public class WorkloadEstimator {
                 AttributeChange attributeChange = (AttributeChange) change;
                 DataVertex vertex = (DataVertex) loader.getGraph().getNode(attributeChange.getUri());
                 if (!vertex.getJobletID().isEmpty())
+                {
+                    change.addJobletID(vertex.getJobletID());
                     changesByFragmentID.get(fragments.get(vertex)).add(change);
+                }
                 if(copiedVertices.containsKey(vertex))
                 {
                     copiedVertices
@@ -238,16 +249,20 @@ public class WorkloadEstimator {
                             .stream()
                             .mapToInt(f -> f)
                             .filter(f -> fragments.get(vertex) != f)
-                            .forEach(f -> changesByFragmentID.get(f).add(change));
+                            .forEach(f -> {
+                                changesByFragmentID.get(f).add(change);
+                            } );
                 }
             }
             else if(change instanceof VertexChange)
             {
                 VertexChange vertexChange = (VertexChange) change;
-                if(vertexChange.getTypeOfChange()==ChangeType.deleteVertex)
-                {
+                if(vertexChange.getTypeOfChange()==ChangeType.deleteVertex) {
                     if (!vertexChange.getVertex().getJobletID().isEmpty())
+                    {
+                        change.addJobletID(vertexChange.getVertex().getJobletID());
                         changesByFragmentID.get(fragments.get(vertexChange.getVertex())).add(change);
+                    }
                     if(copiedVertices.containsKey(vertexChange.getVertex()))
                     {
                         copiedVertices
