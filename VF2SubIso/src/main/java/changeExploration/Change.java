@@ -92,6 +92,10 @@ public class Change implements Serializable {
         this.jobletIDs.addAll(jobletIDs);
     }
 
+    public Set<Integer> getJobletIDs() {
+        return jobletIDs;
+    }
+
     /** Gets the id of the change. */
     public int getId() {
         return id;
