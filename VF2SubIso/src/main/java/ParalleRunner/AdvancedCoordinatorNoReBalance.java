@@ -238,7 +238,10 @@ public class AdvancedCoordinatorNoReBalance {
                     message= new StringBuilder();
                     message.append("#joblets").append("\n");
                     for (Joblet joblet:estimator.getJobletsByFragmentID().get(workerID)) {
-                        message.append(joblet.getCenterNode()).append("#").append(joblet.getTGFD().getName()).append("\n");
+                        message.append(joblet.getId()).append("#")
+                                .append(joblet.getCenterNode()).append("#")
+                                .append(joblet.getTGFD().getName())
+                                .append("\n");
                     }
                     messageProducer.send(Config.workers.get(workerID),message.toString());
                     System.out.println("*JOBLET ASSIGNER*: joblets assigned to '" + Config.workers.get(workerID) + "' successfully");
