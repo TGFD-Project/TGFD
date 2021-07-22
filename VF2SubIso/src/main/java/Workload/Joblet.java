@@ -9,9 +9,9 @@ public class Joblet {
 
     private int id;
     private int diameter;
-    private DataVertex centerNode;
-    private TGFD tgfd;
-    private int fragmentID;
+    private DataVertex centerNode; //a ->b //10,000 joblets -> 10,000 instances of a// 50 of them had a match
+    private TGFD tgfd;             //a->b a->c //10,000 joblets -> 50 joblets and check if there is any match of the new pattern
+    private int fragmentID;        //a->b and b->c -> start off with 50 joblets, then extract the subgraph within diameter 2 and then do the matching
     private ArrayList<RelationshipEdge> edges;
     private VF2DataGraph subgraph;
 

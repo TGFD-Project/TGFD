@@ -29,7 +29,6 @@ public class IMDBPartitioner {
         RangeBasedPartitioner partitioner=new RangeBasedPartitioner(imdb.getGraph());
         HashMap<DataVertex,Integer> partitionMapping=partitioner.fragment(numberOfPartitions);
         System.out.println("Partitioning done.");
-        imdb=null;
         try
         {
             FileWriter []writers=new FileWriter[numberOfPartitions];

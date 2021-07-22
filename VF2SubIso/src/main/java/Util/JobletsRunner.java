@@ -104,7 +104,6 @@ public class JobletsRunner {
 
         startTime=System.currentTimeMillis();
         for (Joblet joblet:assignedJoblets.values()) {
-
             Graph<Vertex, RelationshipEdge> subgraph = loader.getGraph().getSubGraphWithinDiameter(joblet.getCenterNode(), joblet.getDiameter());
             joblet.setSubgraph(subgraph);
             Iterator <GraphMapping <Vertex, RelationshipEdge>> results= VF2.execute(subgraph, joblet.getTGFD().getPattern(),false);
@@ -150,7 +149,7 @@ public class JobletsRunner {
                         newMatchesSignaturesByTGFD.get(tgfdName).addAll(incrementalChangeHashMap.get(tgfdName).getNewMatches().keySet());
                         removedMatchesSignaturesByTGFD.get(tgfdName).addAll(incrementalChangeHashMap.get(tgfdName).getRemovedMatchesSignatures());
                         matchCollectionHashMap.get(tgfdName).addMatches(currentSnapshotDate,incrementalChangeHashMap.get(tgfdName).getNewMatches());
-                    }
+                    } //a -> b -> c ->d ->e
                 }
             }
         }
