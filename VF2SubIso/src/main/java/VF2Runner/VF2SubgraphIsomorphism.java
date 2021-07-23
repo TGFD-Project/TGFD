@@ -79,9 +79,18 @@ public class VF2SubgraphIsomorphism {
 
     public VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> execute2(VF2DataGraph dataGraph, VF2PatternGraph pattern, boolean cacheEdges) {
         System.out.println("Graph Size :" + dataGraph.getGraph().vertexSet().size());
-        long startTime = System.currentTimeMillis();
         inspector = new VF2SubgraphIsomorphismInspector<>(
                 dataGraph.getGraph(), pattern.getPattern(),
+                myVertexComparator, myEdgeComparator, cacheEdges);
+        return inspector;
+    }
+
+    // For checking isomorphic patterns
+    public VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> execute2(Graph<Vertex, RelationshipEdge> dataGraph, VF2PatternGraph pattern, boolean cacheEdges) {
+        System.out.println("Graph Size :" + dataGraph.vertexSet().size());
+        long startTime = System.currentTimeMillis();
+        inspector = new VF2SubgraphIsomorphismInspector<>(
+                dataGraph, pattern.getPattern(),
                 myVertexComparator, myEdgeComparator, cacheEdges);
         System.out.println("Search Cost: " + (System.currentTimeMillis() - startTime));
         return inspector;

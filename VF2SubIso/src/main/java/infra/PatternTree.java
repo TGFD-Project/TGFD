@@ -14,6 +14,12 @@ public class PatternTree {
         System.out.println("GenerationTree levels: " + tree.size());
     }
 
+    public PatternTreeNode createNodeAtLevel(int level, VF2PatternGraph pattern, double patternSupport, PatternTreeNode parentNode, String candidateEdgeString) {
+        PatternTreeNode node = new PatternTreeNode(pattern, patternSupport, parentNode, candidateEdgeString);
+        tree.get(level).add(node);
+        return node;
+    }
+
     public PatternTreeNode createNodeAtLevel(int level, VF2PatternGraph pattern, double patternSupport, PatternTreeNode parentNode) {
         PatternTreeNode node = new PatternTreeNode(pattern, patternSupport, parentNode);
         tree.get(level).add(node);
