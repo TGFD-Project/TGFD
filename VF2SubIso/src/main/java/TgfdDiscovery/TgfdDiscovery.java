@@ -1777,7 +1777,8 @@ public class TgfdDiscovery {
 //				removedMatchesSignaturesByTGFD.put(tgfd.getName(), new ArrayList<>());
 				tgfdsByName.put(tgfd.getName(), tgfd);
 			}
-			ArrayList<HashSet<ConstantLiteral>> matches = new ArrayList<>();
+			ArrayList<HashSet<ConstantLiteral>> newMatches = new ArrayList<>();
+			ArrayList<HashSet<ConstantLiteral>> removedMatches = new ArrayList<>();
 			int numOfMatchesFoundInSnapshot = 0;
 			for (Change change : changes) {
 
@@ -1793,16 +1794,29 @@ public class TgfdDiscovery {
 						numOfMatchesFoundInSnapshot++;
 						HashSet<ConstantLiteral> match = new HashSet<>();
 						extractMatch(mapping, patternTreeNode, match);
-						matches.add(match);
+						newMatches.add(match);
+					}
+
+					for (GraphMapping <Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getRemovedMatches().values()) {
+						HashSet<ConstantLiteral> match = new HashSet<>();
+						extractMatch(mapping, patternTreeNode, match);
+						removedMatches.add(match);
 					}
 					// TO-DO: getRemovedMatchesSignatures
 				}
 			}
 			System.out.println("Number of matches found: " + numOfMatchesFoundInSnapshot);
-			System.out.println("Number of matches found that contain active attributes: " + matches.size());
-			numberOfMatchesFound += matches.size();
+			System.out.println("Number of matches found that contain active attributes: " + newMatches.size());
+			numberOfMatchesFound += newMatches.size();
 			// TO-DO: check matchesPerTimestamps.get(i) against getNewMatches and getRemovedMatchesSignatures
-			matchesPerTimestamps.get(i+1).addAll(matches);
+			matchesPerTimestamps.get(i+1).addAll(newMatches);
+
+			for (HashSet<ConstantLiteral> previousMatch:matchesPerTimestamps.get(i)) {
+				if(true/*previousMatch not in newMatches && previousMatch not in removedMatches*/)
+				{
+					matchesPerTimestamps.get(i+1).add(previousMatch);
+				}
+			}
 //			for (TGFD tgfd : tgfds) {
 //				matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,
 //						newMatchesSignaturesByTGFD.get(tgfd.getName()), removedMatchesSignaturesByTGFD.get(tgfd.getName()));

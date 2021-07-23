@@ -13,9 +13,10 @@ public class IncrementalChange {
     //region Fields: Private
     private VF2PatternGraph pattern;
     private HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches;
+    private HashMap <String, GraphMapping <Vertex, RelationshipEdge>> removedMatches;
     private ArrayList <String> removedMatchesSignatures;
     private HashMap<String, GraphMapping<Vertex, RelationshipEdge>> afterMatches;
-    private HashSet<String> beforeMatchesSignatures;
+    private HashMap<String, GraphMapping<Vertex, RelationshipEdge>> beforeMatches;
     //endregion
 
     //region Constructors
@@ -23,6 +24,7 @@ public class IncrementalChange {
     {
         newMatches=new HashMap<>();
         removedMatchesSignatures=new ArrayList <>();
+        removedMatches=new HashMap<>();
         this.pattern=pattern;
         computeBeforeMatches(beforeMatchIterator);
     }
@@ -43,14 +45,17 @@ public class IncrementalChange {
         }
 
         for (String key:afterMatches.keySet()) {
-            if(!beforeMatchesSignatures.contains(key))
+            if(!beforeMatches.containsKey(key))
                 newMatches.put(key,afterMatches.get(key));
         }
-        for (String key:beforeMatchesSignatures) {
+        for (String key:beforeMatches.keySet()) {
             if(!afterMatches.containsKey(key))
+            {
                 removedMatchesSignatures.add(key);
+                removedMatches.put(key,beforeMatches.get(key));
+            }
         }
-        return beforeMatchesSignatures.size() + " - " +afterMatches.size();
+        return beforeMatches.size() + " - " +afterMatches.size();
         //System.out.print(beforeMatchesSignatures.size() + " -- " + newMatches.size() + " -- " + removedMatchesSignatures.size());
     }
     //endregion
@@ -58,12 +63,14 @@ public class IncrementalChange {
     //region Private Functions
     private void computeBeforeMatches(Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeMatchIterator)
     {
-        beforeMatchesSignatures=new HashSet <>();
+        beforeMatches=new HashMap<>();
         if (beforeMatchIterator!=null)
         {
             while (beforeMatchIterator.hasNext())
             {
-                beforeMatchesSignatures.add(Match.signatureFromPattern(pattern, beforeMatchIterator.next()));
+                var mapping = beforeMatchIterator.next();
+                var signatureFromPattern = Match.signatureFromPattern(pattern, mapping);
+                beforeMatches.put(signatureFromPattern, mapping);
             }
         }
     }
@@ -76,6 +83,10 @@ public class IncrementalChange {
 
     public ArrayList<String> getRemovedMatchesSignatures() {
         return removedMatchesSignatures;
+    }
+
+    public HashMap<String, GraphMapping<Vertex, RelationshipEdge>> getRemovedMatches() {
+        return removedMatches;
     }
 
     //endregion
