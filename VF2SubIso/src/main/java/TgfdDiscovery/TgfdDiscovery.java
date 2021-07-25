@@ -100,7 +100,20 @@ public class TgfdDiscovery {
 		this.kRuntimes.add(System.currentTimeMillis() - this.startTime);
 		this.patternTree.addLevel();
 	}
-	
+
+	@Override
+	public String toString() {
+		return (this.isNaive ? "naive" : "optimized") +
+				(this.graphSize == null ? "" : "-G"+this.graphSize) +
+				(this.interestingTGFDs ? "-interesting" : "") +
+				"-k" + this.currentVSpawnLevel +
+				"-theta" + String.format("%.1f", this.theta) +
+				"-a" + this.gamma +
+				"-pTheta" + this.patternSupportThreshold +
+				(this.useChangeFile ? "-changefile" : "") +
+				(this.timeAndDateStamp == null ? "" : ("-"+this.timeAndDateStamp));
+	}
+
 	public void printTgfdsToFile(String experimentName, ArrayList<TGFD> tgfds) {
 		tgfds.sort(new Comparator<TGFD>() {
 			@Override
@@ -110,8 +123,7 @@ public class TgfdDiscovery {
 		});
 		System.out.println("Printing TGFDs to file for k = " + this.currentVSpawnLevel);
 		try {
-			String timeAndDateStamp = this.timeAndDateStamp == null ? "" : this.timeAndDateStamp;
-			PrintStream printStream = new PrintStream(experimentName + "-tgfds-" + (this.isNaive ? "naive" : "optimized") + (this.interestingTGFDs ? "-interesting" : "") + (this.graphSize == null ? "" : "-G"+this.graphSize) + "-" + this.currentVSpawnLevel + "-" + String.format("%.1f", this.theta) + "-a" + this.gamma + "-" + timeAndDateStamp + ".txt");
+			PrintStream printStream = new PrintStream(experimentName + "-tgfds-" + this + ".txt");
 			printStream.println("k = " + this.currentVSpawnLevel);
 			printStream.println("# of TGFDs generated = " + tgfds.size());
 			for (TGFD tgfd : tgfds) {
@@ -125,8 +137,7 @@ public class TgfdDiscovery {
 
 	public void printExperimentRuntimestoFile(String experimentName, ArrayList<Long> runtimes) {
 		try {
-			String timeAndDateStamp = this.timeAndDateStamp == null ? "" : this.timeAndDateStamp;
-			PrintStream printStream = new PrintStream(experimentName + "-experiments-runtimes-" + (this.isNaive ? "naive" : "optimized") + (this.interestingTGFDs ? "-interesting" : "") + "-" + timeAndDateStamp + ".txt");
+			PrintStream printStream = new PrintStream(experimentName + "-experiments-runtimes-" + this + ".txt");
 			for (int i  = 0; i < runtimes.size(); i++) {
 				printStream.print("k = " + i);
 				printStream.println(", execution time = " + runtimes.get(i));
