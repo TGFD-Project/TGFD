@@ -213,17 +213,21 @@ public class TgfdDiscovery {
 			if (graphs != null) { // TO-DO: Investigate - why is there a slight discrepancy between the # of matches found via snapshot vs. changefile?
 				realPatternSupport = tgfdDiscovery.getMatchesForPattern(graphs, patternTreeNode, matches); // this can be called repeatedly on many graphs
 			}
-			else {
+//			else {
+				matches = new ArrayList<>();
+				for (int timestamp = 0; timestamp < tgfdDiscovery.numOfSnapshots; timestamp++) {
+					matches.add(new ArrayList<>());
+				}
 				realPatternSupport = tgfdDiscovery.getMatchesForPattern2(patternTreeNode, matches);
-			}
-//			return;
-			if (realPatternSupport < tgfdDiscovery.patternSupportThreshold) {
-				System.out.println("Mark as pruned. Real pattern support too low for pattern " + patternTreeNode.getPattern());
-				patternTreeNode.setIsPruned();
-				continue;
-			}
-			ArrayList<TGFD> tgfds = tgfdDiscovery.hSpawn(patternTreeNode, matches);
-			tgfdDiscovery.tgfds.get(tgfdDiscovery.currentVSpawnLevel).addAll(tgfds);
+//			}
+			return;
+//			if (realPatternSupport < tgfdDiscovery.patternSupportThreshold) {
+//				System.out.println("Mark as pruned. Real pattern support too low for pattern " + patternTreeNode.getPattern());
+//				patternTreeNode.setIsPruned();
+//				continue;
+//			}
+//			ArrayList<TGFD> tgfds = tgfdDiscovery.hSpawn(patternTreeNode, matches);
+//			tgfdDiscovery.tgfds.get(tgfdDiscovery.currentVSpawnLevel).addAll(tgfds);
 		}
 	}
 
