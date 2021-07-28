@@ -91,8 +91,6 @@ public class AdvancedCoordinatorNoReBalance {
         Thread dataShipperThread = new Thread(new DataShipper());
         dataShipperThread.setDaemon(false);
         dataShipperThread.start();
-
-
     }
 
     public void waitForResults()
@@ -100,31 +98,6 @@ public class AdvancedCoordinatorNoReBalance {
         Thread ResultsGetterThread = new Thread(new ResultsGetter());
         ResultsGetterThread.setDaemon(false);
         ResultsGetterThread.start();
-    }
-
-    private void loadTheWorkload()
-    {
-        TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
-        tgfds=generator.getTGFDs();
-
-        if(Config.dataset.equals("dbpedia"))
-            loader = new SimpleDBPediaLoader(tgfds, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
-        else if(Config.dataset.equals("synthetic")) {
-            //loader = new SyntheticLoader(tgfds, Config.getFirstDataFilePath());
-        }
-        else // default is imdb
-            loader = new SimpleIMDBLoader(tgfds, Config.getFirstDataFilePath());
-
-
-        System.out.println("Number of edges: " + loader.getGraph().getGraph().edgeSet().size());
-
-        estimator=new WorkloadEstimator(loader,Config.workers.size());
-        estimator.defineJoblets(generator.getTGFDs());
-        estimator.partitionWorkload();
-        //System.out.println("Number of edges to be shipped: " + estimator.communicationCost());
-        HashMap<Integer, HashMap<Integer, ArrayList<SimpleEdge>>> dataToBeShipped = estimator.dataToBeShipped();
-        HashMap<Integer, ArrayList<String>> filesOnS3Storage = estimator.sendEdgesToWorkersForShipment(dataToBeShipped);
-        edgesToBeShippedToOtherWorkers.put(1,filesOnS3Storage);
     }
 
     public HashMap<String,List<String>> getResults()
@@ -150,6 +123,31 @@ public class AdvancedCoordinatorNoReBalance {
     //endregion
 
     //region --[Private Methods]-----------------------------------------
+
+    private void loadTheWorkload()
+    {
+        TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
+        tgfds=generator.getTGFDs();
+
+        if(Config.dataset.equals("dbpedia"))
+            loader = new SimpleDBPediaLoader(tgfds, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
+        else if(Config.dataset.equals("synthetic")) {
+            //loader = new SyntheticLoader(tgfds, Config.getFirstDataFilePath());
+        }
+        else // default is imdb
+            loader = new SimpleIMDBLoader(tgfds, Config.getFirstDataFilePath());
+
+
+        System.out.println("Number of edges: " + loader.getGraph().getGraph().edgeSet().size());
+
+        estimator=new WorkloadEstimator(loader,Config.workers.size());
+        estimator.defineJoblets(generator.getTGFDs());
+        estimator.partitionWorkload();
+        //System.out.println("Number of edges to be shipped: " + estimator.communicationCost());
+        HashMap<Integer, HashMap<Integer, ArrayList<SimpleEdge>>> dataToBeShipped = estimator.dataToBeShipped();
+        HashMap<Integer, ArrayList<String>> filesOnS3Storage = estimator.sendEdgesToWorkersForShipment(dataToBeShipped);
+        edgesToBeShippedToOtherWorkers.put(1,filesOnS3Storage);
+    }
 
     private class Setup implements Runnable, ExceptionListener
     {
