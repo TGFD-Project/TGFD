@@ -13,31 +13,35 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class generateCustomDBpedia {
-    public static void main(long[] sizes) {
-        String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
-        PrintStream logStream = null;
-        try {
-            logStream = new PrintStream("graph-creation-log-" + timeAndDateStamp + ".txt");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        System.setOut(logStream);
+    public static void main(String[] args) {
+//        String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
+//        PrintStream logStream = null;
+//        try {
+//            logStream = new PrintStream("graph-creation-log-" + timeAndDateStamp + ".txt");
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        System.setOut(logStream);
         String[] fileTypes = {"types", "literals", "objects"};
-        for (long size : sizes) {
-            for (int i = 5; i < 8; i++) {
-                for (String fileType : fileTypes) {
-                    Model model = ModelFactory.createDefaultModel();
-                    String fileName = "201" + i + fileType + ".ttl";
-                    System.out.println("Processing " + fileName);
-                    Path input = Paths.get(fileName);
-                    model.read(input.toUri().toString());
-                    StmtIterator stmtIterator = model.listStatements();
-                    List<Statement> statements;
-//					if (fileType.equals(fileTypes[0])) {
-                    statements = stmtIterator.toList().subList(0, Math.toIntExact(size));
-//					} else {
-//						statements = stmtIterator.toList().subList(0, Math.toIntExact(size*2));
-//					}
+        long[] sizes = new long[args.length];
+        for (int index = 0; index < sizes.length; index++) {
+            sizes[index] = Long.parseLong(args[index]);
+        }
+        for (int i = 5; i < 8; i++) {
+            for (String fileType : fileTypes) {
+                Model model = ModelFactory.createDefaultModel();
+                String fileName = "201" + i + fileType + ".ttl";
+                System.out.println("Processing " + fileName);
+                Path input = Paths.get(fileName);
+                model.read(input.toUri().toString());
+                StmtIterator stmtIterator = model.listStatements();
+                List<Statement> fullList = stmtIterator.toList();
+                System.out.println("Number of statements = " + fullList.size());
+                for (long size : sizes) {
+                    System.out.println("Outputting size: " + size);
+                    int limit = Math.min(fullList.size(), (fileType.equals("types") ? Math.toIntExact(size) : (Math.toIntExact(size)*3)));
+                    List<Statement> statements = fullList.subList(0, limit);
+                    System.out.println("Number of statements = " + statements.size());
                     Model newModel = ModelFactory.createDefaultModel();
                     newModel.add(statements);
                     try {
@@ -49,6 +53,7 @@ public class generateCustomDBpedia {
                     }
                     System.gc();
                 }
+                System.gc();
             }
         }
     }
