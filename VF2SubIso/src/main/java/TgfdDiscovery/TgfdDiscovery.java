@@ -55,6 +55,7 @@ public class TgfdDiscovery {
 	private String timeAndDateStamp = null;
 	private boolean isKExperiment = false;
 	private boolean useChangeFile;
+	private ArrayList<Model> models = new ArrayList<>();
 
 	public TgfdDiscovery(int numOfSnapshots) {
 		this.startTime = System.currentTimeMillis();
@@ -200,6 +201,8 @@ public class TgfdDiscovery {
 		ArrayList<DBPediaLoader> graphs = null;
 		if (!tgfdDiscovery.useChangeFile) {
 			graphs = tgfdDiscovery.loadDBpediaSnapshots(graphSize);
+		} else {
+			tgfdDiscovery.loadModels(graphSize);
 		}
 
 		tgfdDiscovery.setExperimentDateAndTimeStamp(timeAndDateStamp);
@@ -955,12 +958,24 @@ public class TgfdDiscovery {
 		return dummyTGFDs;
 	}
 
+
+	private void loadModels(Long graphSize) {
+		String fileSuffix = graphSize == null ? "" : "-" + graphSize;
+		for (String pathString : Arrays.asList("2015types" + fileSuffix + ".ttl", "2015literals" + fileSuffix + ".ttl", "2015objects" + fileSuffix + ".ttl")) {
+			System.out.println("Reading " + pathString);
+			Model model = ModelFactory.createDefaultModel();
+			Path input = Paths.get(pathString);
+			model.read(input.toUri().toString());
+			this.models.add(model);
+		}
+	}
+
 	public ArrayList<DBPediaLoader> loadDBpediaSnapshots(Long graphSize) {
 		ArrayList<TGFD> dummyTGFDs = new ArrayList<>();
 		System.out.println("Number of dummy TGFDs: " + dummyTGFDs.size());
 		ArrayList<DBPediaLoader> graphs = new ArrayList<>();
+		String fileSuffix = graphSize == null ? "" : "-" + graphSize;
 		for (int year = 5; year < 8; year++) {
-			String fileSuffix = graphSize == null ? "" : "-" + graphSize;
 			String typeFileName = "201" + year + "types" + fileSuffix + ".ttl";
 			String literalsFileName = "201" + year + "literals" + fileSuffix + ".ttl";
 			String objectsFileName = "201" + year + "objects" + fileSuffix + ".ttl";
@@ -1516,8 +1531,7 @@ public class TgfdDiscovery {
 		List<TGFD> tgfds = Collections.singletonList(dummyTgfd);
 		int numberOfMatchesFound = 0;
 //		LocalDate currentSnapshotDate = LocalDate.parse("2015-10-01");
-		String fileSuffix = graphSize == null ? "" : "-" + graphSize;
-		DBPediaLoader dbpedia = new DBPediaLoader(tgfds, new ArrayList<>(Collections.singletonList("2015types" + fileSuffix + ".ttl")), new ArrayList<>(Arrays.asList("2015literals" + fileSuffix + ".ttl", "2015objects" + fileSuffix + ".ttl")));
+		DBPediaLoader dbpedia = new DBPediaLoader(tgfds, this.models.get(0), this.models.subList(1, this.models.size()));
 
 		printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
