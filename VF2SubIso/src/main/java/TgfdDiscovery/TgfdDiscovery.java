@@ -15,8 +15,11 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.jetbrains.annotations.NotNull;
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
 
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,6 +59,7 @@ public class TgfdDiscovery {
 	private boolean isKExperiment = false;
 	private boolean useChangeFile;
 	private ArrayList<Model> models = new ArrayList<>();
+	private HashMap<String, org.json.simple.JSONArray> changeFilesMap = new HashMap<>();
 
 	public TgfdDiscovery(int numOfSnapshots) {
 		this.startTime = System.currentTimeMillis();
@@ -249,7 +253,7 @@ public class TgfdDiscovery {
 		this.timeAndDateStamp = timeAndDateStamp;
 	}
 
-	public void computeNodeHistogram() {
+	public void computeVertexHistogram() {
 
 		System.out.println("Computing Node Histogram");
 
@@ -465,7 +469,7 @@ public class TgfdDiscovery {
 	}
 
 	public void histogram() {
-		computeNodeHistogram();
+		computeVertexHistogram();
 		printHistogram();
 	}
 
@@ -569,6 +573,7 @@ public class TgfdDiscovery {
 		}
 		HashSet<ConstantLiteral> literals = new HashSet<>();
 		for (String vertexType : patternVerticesAttributes.keySet()) {
+			literals.add(new ConstantLiteral(vertexType,"uri",null));
 			for (String attrName : patternVerticesAttributes.get(vertexType)) {
 				ConstantLiteral literal = new ConstantLiteral(vertexType, attrName, null);
 				literals.add(literal);
@@ -1360,7 +1365,7 @@ public class TgfdDiscovery {
 				System.out.println("Skip. Candidate pattern is a supergraph of pruned pattern");
 				continue;
 			}
-
+			newPattern.setDiameter(this.currentVSpawnLevel);
 			patternTreeNode = this.patternTree.createNodeAtLevel(this.currentVSpawnLevel, newPattern, estimatedPatternSupport, previousLevelNode, candidateEdgeString);
 			System.out.println("Marking vertex " + v.getTypes() + "as expanded.");
 			break;
@@ -1435,37 +1440,7 @@ public class TgfdDiscovery {
 			VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> results = new VF2SubgraphIsomorphism().execute2(graphs.get(year).getGraph(), patternTreeNode.getPattern(), false);
 			ArrayList<HashSet<ConstantLiteral>> matches = new ArrayList<>();
 			if (results.isomorphismExists()) {
-				Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = results.getMappings();
-				int numOfMatches = 0;
-				while (iterator.hasNext()) {
-					numOfMatches++;
-					GraphMapping<Vertex, RelationshipEdge> result = iterator.next();
-					HashSet<ConstantLiteral> match = new HashSet<>();
-					for (Vertex v : patternTreeNode.getGraph().vertexSet()) {
-						Vertex currentMatchedVertex = result.getVertexCorrespondence(v, false);
-						if (currentMatchedVertex == null) continue;
-						String patternVertexType = new ArrayList<>(currentMatchedVertex.getTypes()).get(0);
-						for (ConstantLiteral activeAttribute : activeAttributesInPattern) {
-							if (!activeAttribute.getVertexType().equals(patternVertexType)) continue;
-							for (String matchedAttrName : currentMatchedVertex.getAllAttributesNames()) {
-								if (!activeAttribute.getAttrName().equals(matchedAttrName)) continue;
-								String matchedAttrValue = currentMatchedVertex.getAttributeValueByName(matchedAttrName);
-								ConstantLiteral xLiteral = new ConstantLiteral(patternVertexType, matchedAttrName, matchedAttrValue);
-								match.add(xLiteral);
-							}
-						}
-					}
-					if (match.size() == 0) continue;
-					matches.add(match);
-				}
-				System.out.println("Number of matches found in " + (2015 + year) + ": " + numOfMatches);
-				System.out.println("Number of matches found in " + (2015 + year) + " that contain active attribuets: " + matches.size());
-				matches.sort(new Comparator<HashSet<ConstantLiteral>>() {
-					@Override
-					public int compare(HashSet<ConstantLiteral> o1, HashSet<ConstantLiteral> o2) {
-						return o1.size() - o2.size();
-					}
-				});
+				extractMatches(results.getMappings(), matches, patternTreeNode);
 			}
 			matchesPerTimestamps.get(year).addAll(matches);
 			System.out.println("Search Cost: " + (System.currentTimeMillis() - searchStartTime));
@@ -1478,8 +1453,8 @@ public class TgfdDiscovery {
 			numberOfMatchesFound += matchesInOneTimestamp.size();
 		}
 
-		double realPatternSupport = numberOfMatchesFound / NUM_OF_EDGES_IN_GRAPH;
-		System.out.println("Real Pattern Support: " + realPatternSupport);
+		double realPatternSupport = numberOfMatchesFound / this.NUM_OF_EDGES_IN_GRAPH;
+		System.out.println("Real Pattern Support: "+numberOfMatchesFound+" / "+this.NUM_OF_EDGES_IN_GRAPH+" = " + realPatternSupport);
 		return numberOfMatchesFound;
 	}
 
@@ -1523,7 +1498,7 @@ public class TgfdDiscovery {
 	public double getMatchesForPattern2(PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 
 		TGFD dummyTgfd = new TGFD();
-		dummyTgfd.setName(patternTreeNode.getPattern().toString());
+		dummyTgfd.setName(patternTreeNode.getEdgeString());
 		dummyTgfd.setPattern(patternTreeNode.getPattern());
 
 		System.out.println("-----------Snapshot (1)-----------");
@@ -1577,8 +1552,21 @@ public class TgfdDiscovery {
 			List<Change> changes = new ArrayList<>();
 			for (String edgeString : patternTreeNode.getAllEdgeStrings()) {
 				String path = "changes_t"+(i+1)+"_t"+(i+2)+"_"+edgeString.replace(" ", "_")+"_"+this.graphSize+"_full_test.json";
+				if (!this.changeFilesMap.containsKey(path)) {
+					JSONParser parser = new JSONParser();
+					Object json;
+					org.json.simple.JSONArray jsonArray = new JSONArray();
+					try {
+						json = parser.parse(new FileReader(path));
+						jsonArray = (org.json.simple.JSONArray) json;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					System.out.println("Storing " + path + " in memory");
+					this.changeFilesMap.put(path, jsonArray);
+				}
 				startTime = System.currentTimeMillis();
-				ChangeLoader changeLoader = new ChangeLoader(path);
+				ChangeLoader changeLoader = new ChangeLoader(this.changeFilesMap.get(path));
 				List<Change> newChanges = changeLoader.getAllChanges();
 				printWithTime("Load changes (" + path + ")", System.currentTimeMillis()-startTime);
 				System.out.println("Total number of changes in changefile: " + newChanges.size());
@@ -1631,18 +1619,12 @@ public class TgfdDiscovery {
 						if (match.size() == 0) continue;
 						removedMatches.add(match);
 					}
-					// TO-DO: getRemovedMatchesSignatures
 				}
 			}
 			System.out.println("Number of new matches found: " + numOfNewMatchesFoundInSnapshot);
 			System.out.println("Number of new matches found that contain active attributes: " + newMatches.size());
+			System.out.println("Number of removed matched: " + removedMatches.size());
 
-			newMatches.sort(new Comparator<HashSet<ConstantLiteral>>() {
-				@Override
-				public int compare(HashSet<ConstantLiteral> o1, HashSet<ConstantLiteral> o2) {
-					return o1.size() - o2.size();
-				}
-			});
 			matchesPerTimestamps.get(i+1).addAll(newMatches);
 
 			int numOfOldMatchesFoundInSnapshot = 0;
@@ -1652,13 +1634,15 @@ public class TgfdDiscovery {
 //				}
 				boolean skip = false;
 				for (HashSet<ConstantLiteral> removedMatch : removedMatches) {
-					if (removedMatch.equals(previousMatch)) {
+//					if (removedMatch.equals(previousMatch)) {
+					if (equalsLiteral(removedMatch, previousMatch)) {
 						skip = true;
 					}
 				}
 				if (skip) continue;
 				for (HashSet<ConstantLiteral> newMatch : newMatches) {
-					if (newMatch.equals(previousMatch)) {
+//					if (newMatch.equals(previousMatch)) {
+					if (equalsLiteral(newMatch, previousMatch)) {
 						skip = true;
 					}
 				}
@@ -1666,9 +1650,16 @@ public class TgfdDiscovery {
 				matchesPerTimestamps.get(i+1).add(previousMatch);
 				numOfOldMatchesFoundInSnapshot++;
 			}
-			System.out.println("Number of old matches found that contain active attributes: " + numOfOldMatchesFoundInSnapshot);
-			System.out.println("Total number of matches with active attributes found in this snapshot: " + (numOfNewMatchesFoundInSnapshot+numOfOldMatchesFoundInSnapshot));
+			System.out.println("Number of valid old matches that are not new or removed: " + numOfOldMatchesFoundInSnapshot);
+			System.out.println("Total number of matches with active attributes found in this snapshot: " + matchesPerTimestamps.get(i+1).size());
 			numberOfMatchesFound += matchesPerTimestamps.get(i+1).size();
+
+			matchesPerTimestamps.get(i+1).sort(new Comparator<HashSet<ConstantLiteral>>() {
+				@Override
+				public int compare(HashSet<ConstantLiteral> o1, HashSet<ConstantLiteral> o2) {
+					return o1.size() - o2.size();
+				}
+			});
 //			for (TGFD tgfd : tgfds) {
 //				matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,
 //						newMatchesSignaturesByTGFD.get(tgfd.getName()), removedMatchesSignaturesByTGFD.get(tgfd.getName()));
@@ -1680,10 +1671,26 @@ public class TgfdDiscovery {
 		}
 
 		System.out.println("-------------------------------------");
-		System.out.println("Total number of matches found in all snaphsots: " + numberOfMatchesFound);
-		double realPatternSupport = 1.0 * numberOfMatchesFound / NUM_OF_EDGES_IN_GRAPH;
-		System.out.println("Real Pattern Support: "+numberOfMatchesFound+" / "+NUM_OF_EDGES_IN_GRAPH+" = " + realPatternSupport);
+		System.out.println("Total number of matches found in all snapshots: " + numberOfMatchesFound);
+		double realPatternSupport = 1.0 * numberOfMatchesFound / this.NUM_OF_EDGES_IN_GRAPH;
+		System.out.println("Real Pattern Support: "+numberOfMatchesFound+" / "+this.NUM_OF_EDGES_IN_GRAPH+" = " + realPatternSupport);
 		return numberOfMatchesFound;
+	}
+
+	private boolean equalsLiteral(HashSet<ConstantLiteral> match1, HashSet<ConstantLiteral> match2) {
+		HashSet<String> uris1 = new HashSet<>();
+		for (ConstantLiteral match1Attr : match1) {
+			if (match1Attr.getAttrName().equals("uri")) {
+				uris1.add(match1Attr.getAttrValue());
+			}
+		}
+		HashSet<String> uris2 = new HashSet<>();
+		for (ConstantLiteral match2Attr: match2) {
+			if (match2Attr.getAttrName().equals("uri")) {
+				uris2.add(match2Attr.getAttrValue());
+			}
+		}
+		return uris1.equals(uris2);
 	}
 
 	private static void printWithTime(String message, long runTimeInMS)
