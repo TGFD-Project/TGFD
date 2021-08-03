@@ -560,7 +560,7 @@ public class TgfdDiscovery {
 		return entitiesWithSortedRHSvalues;
 	}
 
-	public HashSet<ConstantLiteral> getActiveAttributesInPattern(Set<Vertex> vertexSet) {
+	public HashSet<ConstantLiteral> getActiveAttributesInPattern(Set<Vertex> vertexSet, boolean considerURI) {
 		HashMap<String, HashSet<String>> patternVerticesAttributes = new HashMap<>();
 		for (Vertex vertex : vertexSet) {
 			for (String vertexType : vertex.getTypes()) {
@@ -573,7 +573,7 @@ public class TgfdDiscovery {
 		}
 		HashSet<ConstantLiteral> literals = new HashSet<>();
 		for (String vertexType : patternVerticesAttributes.keySet()) {
-			literals.add(new ConstantLiteral(vertexType,"uri",null));
+			if (considerURI) literals.add(new ConstantLiteral(vertexType,"uri",null));
 			for (String attrName : patternVerticesAttributes.get(vertexType)) {
 				ConstantLiteral literal = new ConstantLiteral(vertexType, attrName, null);
 				literals.add(literal);
@@ -995,7 +995,7 @@ public class TgfdDiscovery {
 
 		System.out.println("Performing HSpawn for " + patternTreeNode.getPattern());
 
-		HashSet<ConstantLiteral> literals = getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet());
+		HashSet<ConstantLiteral> literals = getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet(), false);
 
 		LiteralTree literalTree = new LiteralTree();
 		for (int j = 0; j < literals.size(); j++) {
@@ -1463,7 +1463,7 @@ public class TgfdDiscovery {
 			Vertex currentMatchedVertex = result.getVertexCorrespondence(v, false);
 			if (currentMatchedVertex == null) continue;
 			String patternVertexType = new ArrayList<>(currentMatchedVertex.getTypes()).get(0);
-			for (ConstantLiteral activeAttribute : getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet())) {
+			for (ConstantLiteral activeAttribute : getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet(),true)) {
 				if (!activeAttribute.getVertexType().equals(patternVertexType)) continue;
 				for (String matchedAttrName : currentMatchedVertex.getAllAttributesNames()) {
 					if (!activeAttribute.getAttrName().equals(matchedAttrName)) continue;
