@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class generateCustomDBpedia {
-    public static void main(long[] sizes) {
+    public static void main(String[] sizes) {
         String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
         PrintStream logStream = null;
         try {
@@ -23,25 +23,25 @@ public class generateCustomDBpedia {
         }
         System.setOut(logStream);
         String[] fileTypes = {"types", "literals", "objects"};
-        for (long size : sizes) {
+        for (String size : sizes) {
             for (int i = 5; i < 8; i++) {
                 for (String fileType : fileTypes) {
                     Model model = ModelFactory.createDefaultModel();
-                    String fileName = "201" + i + fileType + ".ttl";
+                    String fileName = "201" + i+ "/201" + i + fileType + ".ttl";
                     System.out.println("Processing " + fileName);
                     Path input = Paths.get(fileName);
                     model.read(input.toUri().toString());
                     StmtIterator stmtIterator = model.listStatements();
                     List<Statement> statements;
 //					if (fileType.equals(fileTypes[0])) {
-                    statements = stmtIterator.toList().subList(0, Math.toIntExact(size));
+                    statements = stmtIterator.toList().subList(0, Math.toIntExact(Long.valueOf(size)));
 //					} else {
 //						statements = stmtIterator.toList().subList(0, Math.toIntExact(size*2));
 //					}
                     Model newModel = ModelFactory.createDefaultModel();
                     newModel.add(statements);
                     try {
-                        String newFileName = "201" + i + fileType + "-" + size + ".ttl";
+                        String newFileName = "201" + i+ "/201" + i + fileType + "-" + size + ".ttl";
                         newModel.write(new PrintStream(newFileName), "N3");
                         System.out.println("Wrote to " + newFileName);
                     } catch (FileNotFoundException e) {
