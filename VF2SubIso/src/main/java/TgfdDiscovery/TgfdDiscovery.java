@@ -1502,6 +1502,7 @@ public class TgfdDiscovery {
 
 		TGFD dummyTgfd = new TGFD();
 		dummyTgfd.setName(patternTreeNode.getPattern().toString());
+		patternTreeNode.getPattern().setDiameter(1);
 		dummyTgfd.setPattern(patternTreeNode.getPattern());
 
 		System.out.println("-----------Snapshot (1)-----------");
@@ -1633,12 +1634,14 @@ public class TgfdDiscovery {
 				for (HashSet<ConstantLiteral> removedMatch : removedMatches) {
 					if (removedMatch.equals(previousMatch)) {
 						skip = true;
+						break;
 					}
 				}
 				if (skip) continue;
 				for (HashSet<ConstantLiteral> newMatch : newMatches) {
 					if (newMatch.equals(previousMatch)) {
 						skip = true;
+						break;
 					}
 				}
 				if (skip) continue;
