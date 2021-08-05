@@ -15,8 +15,11 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.jetbrains.annotations.NotNull;
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
 
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,6 +58,8 @@ public class TgfdDiscovery {
 	private String timeAndDateStamp = null;
 	private boolean isKExperiment = false;
 	private boolean useChangeFile;
+	private ArrayList<Model> models = new ArrayList<>();
+	private HashMap<String, org.json.simple.JSONArray> changeFilesMap = new HashMap<>();
 
 	public TgfdDiscovery(int numOfSnapshots) {
 		this.startTime = System.currentTimeMillis();
@@ -100,7 +105,20 @@ public class TgfdDiscovery {
 		this.kRuntimes.add(System.currentTimeMillis() - this.startTime);
 		this.patternTree.addLevel();
 	}
-	
+
+	@Override
+	public String toString() {
+		return (this.isNaive ? "naive" : "optimized") +
+				(this.graphSize == null ? "" : "-G"+this.graphSize) +
+				(this.interestingTGFDs ? "-interesting" : "") +
+				"-k" + this.currentVSpawnLevel +
+				"-theta" + String.format("%.1f", this.theta) +
+				"-a" + this.gamma +
+				"-pTheta" + this.patternSupportThreshold +
+				(this.useChangeFile ? "-changefile" : "") +
+				(this.timeAndDateStamp == null ? "" : ("-"+this.timeAndDateStamp));
+	}
+
 	public void printTgfdsToFile(String experimentName, ArrayList<TGFD> tgfds) {
 		tgfds.sort(new Comparator<TGFD>() {
 			@Override
@@ -110,8 +128,7 @@ public class TgfdDiscovery {
 		});
 		System.out.println("Printing TGFDs to file for k = " + this.currentVSpawnLevel);
 		try {
-			String timeAndDateStamp = this.timeAndDateStamp == null ? "" : this.timeAndDateStamp;
-			PrintStream printStream = new PrintStream(experimentName + "-tgfds-" + (this.isNaive ? "naive" : "optimized") + (this.interestingTGFDs ? "-interesting" : "") + (this.graphSize == null ? "" : "-G"+this.graphSize) + "-" + this.currentVSpawnLevel + "-" + String.format("%.1f", this.theta) + "-a" + this.gamma + "-" + timeAndDateStamp + ".txt");
+			PrintStream printStream = new PrintStream(experimentName + "-tgfds-" + this + ".txt");
 			printStream.println("k = " + this.currentVSpawnLevel);
 			printStream.println("# of TGFDs generated = " + tgfds.size());
 			for (TGFD tgfd : tgfds) {
@@ -125,8 +142,7 @@ public class TgfdDiscovery {
 
 	public void printExperimentRuntimestoFile(String experimentName, ArrayList<Long> runtimes) {
 		try {
-			String timeAndDateStamp = this.timeAndDateStamp == null ? "" : this.timeAndDateStamp;
-			PrintStream printStream = new PrintStream(experimentName + "-experiments-runtimes-" + (this.isNaive ? "naive" : "optimized") + (this.interestingTGFDs ? "-interesting" : "") + "-" + timeAndDateStamp + ".txt");
+			PrintStream printStream = new PrintStream(experimentName + "-experiments-runtimes-" + this + ".txt");
 			for (int i  = 0; i < runtimes.size(); i++) {
 				printStream.print("k = " + i);
 				printStream.println(", execution time = " + runtimes.get(i));
@@ -186,7 +202,12 @@ public class TgfdDiscovery {
 		TgfdDiscovery tgfdDiscovery = new TgfdDiscovery(k, theta, gamma, graphSize, patternSupportThreshold, 3, isNaive, interestingTGFDs, useChangeFile);
 		tgfdDiscovery.histogram();
 
-		ArrayList<DBPediaLoader> graphs = tgfdDiscovery.loadDBpediaSnapshots(graphSize);
+		ArrayList<DBPediaLoader> graphs = null;
+		if (!tgfdDiscovery.useChangeFile) {
+			graphs = tgfdDiscovery.loadDBpediaSnapshots(graphSize);
+		} else {
+			tgfdDiscovery.loadModels(graphSize);
+		}
 
 		tgfdDiscovery.setExperimentDateAndTimeStamp(timeAndDateStamp);
 		tgfdDiscovery.initialize();
@@ -207,11 +228,11 @@ public class TgfdDiscovery {
 				matches.add(new ArrayList<>());
 			}
 			double realPatternSupport;
-			if (!tgfdDiscovery.useChangeFile) { // TO-DO: Investigate - why is there a slight discrepancy between the # of matches found via snapshot vs. changefile?
+			if (graphs != null) { // TO-DO: Investigate - why is there a slight discrepancy between the # of matches found via snapshot vs. changefile?
 				realPatternSupport = tgfdDiscovery.getMatchesForPattern(graphs, patternTreeNode, matches); // this can be called repeatedly on many graphs
 			}
 			else {
-				realPatternSupport = tgfdDiscovery.getMatchesForPattern2(graphs.get(0), patternTreeNode, matches);
+				realPatternSupport = tgfdDiscovery.getMatchesForPattern2(patternTreeNode, matches);
 			}
 //			return;
 			if (realPatternSupport < tgfdDiscovery.patternSupportThreshold) {
@@ -232,200 +253,7 @@ public class TgfdDiscovery {
 		this.timeAndDateStamp = timeAndDateStamp;
 	}
 
-//	public static void main2(String[] args) {
-//
-//		Options options = new Options();
-//		options.addOption("console", false, "print to console");
-//		options.addOption("naive", false, "run naive version of algorithm");
-//		options.addOption("interesting", false, "run algorithm and only consider interesting TGFDs");
-//		options.addOption("G", false, "run experiment on graph sizes 400K-1.6M");
-//		options.addOption("g", true, "run experiment on a specific graph size");
-//		options.addOption("Theta", false, "run experiment using support thresholds 0.9 to 0.1");
-//		options.addOption("theta", true, "run experiment using a specific support threshold");
-//		options.addOption("K", false, "run experiment for k = 1 to 5");
-//		options.addOption("k", true, "run experiment for k iterations");
-//		options.addOption("A", "run experiment for active attribute set sizes from 10 to 50");
-//		options.addOption("a", "run experiment for specified active attribute set size");
-//
-//		CommandLineParser parser = new DefaultParser();
-//		CommandLine cmd = null;
-//		try {
-//			cmd = parser.parse(options, args);
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
-//		assert cmd != null;
-//
-//		if (!cmd.hasOption("console")) {
-//			String timeAndDateStamp = ZonedDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("uuuu.MM.dd.HH.mm.ss"));
-//			PrintStream logStream = null;
-//			try {
-//				logStream = new PrintStream("tgfd-discovery-log-" + timeAndDateStamp + ".txt");
-//			} catch (FileNotFoundException e) {
-//				e.printStackTrace();
-//			}
-//			System.setOut(logStream);
-//		}
-//
-//		if (cmd.hasOption("naive")) {
-//			TgfdDiscovery.TgfdDiscovery.isNaive = true;
-//		}
-//
-//		if (cmd.hasOption("interesting")) {
-//			TgfdDiscovery.TgfdDiscovery.interestingTGFDs = true;
-//		}
-//
-//		// |G| experiment
-//		if (cmd.hasOption("G")) {
-//			String experimentName = "G";
-//			TgfdDiscovery.TgfdDiscovery.isNaive = false;
-//			long[] sizes = {400000, 800000, 1200000, 1600000};
-//			TreeMap<String, Long> gRuntimes = new TreeMap<>();
-//			for (long size : sizes) {
-//				// Compute Statistics
-//				TgfdDiscovery.TgfdDiscovery.fileSuffix = size;
-//				TgfdDiscovery.TgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = cmd.getOptionValue("a") == null ? DEFAULT_GAMMA : Integer.parseInt(cmd.getOptionValue("a"));
-//				histogram();
-//				printHistogram();
-//				System.gc();
-//				double theta = cmd.getOptionValue("theta") == null ? 0.1 : Double.parseDouble(cmd.getOptionValue("theta"));
-//				int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
-//				System.out.println("Running experiment for |" + experimentName + "| = " + size);
-//				final long startTime = System.currentTimeMillis();
-//				discover(k, theta, experimentName + size + "-experiment");
-//				final long endTime = System.currentTimeMillis();
-//				final long runTime = endTime - startTime;
-//				System.out.println("Total execution time for |" + experimentName + "| = " + size + " : " + runTime);
-//				gRuntimes.put(Long.toString(size), runTime);
-//				System.gc();
-//			}
-//			printExperimentRuntimestoFile(experimentName, gRuntimes);
-//			System.out.println();
-//			System.out.println("Runtimes for varying |G|:");
-//			for (String size : gRuntimes.keySet()) {
-//				System.out.print("|" + experimentName + "| = " + size);
-//				System.out.println(", execution time = " + (gRuntimes.get(size)));
-//			}
-//			System.out.println();
-//		}
-//
-//		// theta-experiments
-//		// Compute Statistics
-//		if (cmd.hasOption("Theta")) {
-//			if (cmd.getOptionValue("g") != null) {
-//				TgfdDiscovery.TgfdDiscovery.fileSuffix = Long.parseLong(cmd.getOptionValue("g"));
-//			}
-//			TgfdDiscovery.TgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = cmd.getOptionValue("a") == null ? DEFAULT_GAMMA : Integer.parseInt(cmd.getOptionValue("a"));
-//			histogram();
-//			printHistogram();
-//			System.gc();
-//			String experimentName = "theta";
-//			System.out.println("Varying " + experimentName);
-//			TreeMap<String, Long> thetaRuntimes = new TreeMap<>();
-//			for (double theta = 0.9; theta > 0.0; theta -= 0.1) {
-////				double theta = 0.5;
-//				System.out.println("Running experiment for theta = " + String.format("%.1f", theta));
-//				final long startTime = System.currentTimeMillis();
-//				int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
-//				discover(k, theta, experimentName + String.format("%.1f", theta) + "-experiment");
-//				final long endTime = System.currentTimeMillis();
-//				final long runTime = endTime - startTime;
-//				System.out.println("Total execution time for theta = " + String.format("%.1f", theta) + " : " + runTime);
-//				thetaRuntimes.put(String.format("%.1f", theta), runTime);
-//				System.gc();
-//			}
-//			printExperimentRuntimestoFile(experimentName, thetaRuntimes);
-//			System.out.println();
-//			System.out.println("Runtimes for varying " + experimentName + ":");
-//			for (String thetaValue : thetaRuntimes.keySet()) {
-//				System.out.println(experimentName + " = " + thetaValue);
-//				System.out.println("Total execution time: " + (thetaRuntimes.get(thetaValue)));
-//			}
-//			System.out.println();
-//		}
-//
-//		// k-experiments
-//		if (cmd.hasOption("K")) {
-//			if (cmd.getOptionValue("g") != null) {
-//				TgfdDiscovery.TgfdDiscovery.fileSuffix = Long.parseLong(cmd.getOptionValue("g"));
-//			}
-//
-//			TgfdDiscovery.TgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = cmd.getOptionValue("a") == null ? DEFAULT_GAMMA : Integer.parseInt(cmd.getOptionValue("a"));
-//
-//			// Compute Statistics
-//			histogram();
-//			printHistogram();
-//			System.gc();
-//
-//			System.out.println("Varying k");
-//			int k = cmd.getOptionValue("k") == null ? 5 : Integer.parseInt(cmd.getOptionValue("k"));
-//			double theta = cmd.getOptionValue("theta") == null ? DEFAULT_THETA : Double.parseDouble(cmd.getOptionValue("theta"));
-//			System.out.println("Running experiment for k = " + k);
-//			discover(k, theta, "k" + k + "-experiment");
-//		}
-//
-//		if (cmd.hasOption("A")) {
-//			if (cmd.getOptionValue("g") != null) {
-//				TgfdDiscovery.TgfdDiscovery.fileSuffix = Long.parseLong(cmd.getOptionValue("g"));
-//			}
-//			String experimentName = "gamma";
-//			System.out.println("Varying " + experimentName);
-//			TreeMap<String, Long> gammaRuntimes = new TreeMap<>();
-//			for (int gamma = 10; gamma < 60; gamma+=10) {
-//				TgfdDiscovery.TgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = gamma;
-//				// Compute Statistics
-//				histogram();
-//				printHistogram();
-//				System.gc();
-//
-//				int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
-//				double theta = cmd.getOptionValue("theta") == null ? DEFAULT_THETA : Double.parseDouble(cmd.getOptionValue("theta"));
-//				System.out.println("Running experiment for "+experimentName+" = " + SIZE_OF_ACTIVE_ATTR_SET);
-//
-//				final long startTime = System.currentTimeMillis();
-//				discover(k, theta, experimentName + gamma + "-experiment");
-//				final long endTime = System.currentTimeMillis();
-//				final long runTime = endTime - startTime;
-//				System.out.println("Total execution time for "+experimentName+" = " + gamma + " : " + runTime);
-//				gammaRuntimes.put(Integer.toString(gamma), runTime);
-//				System.gc();
-//			}
-//			printExperimentRuntimestoFile(experimentName, gammaRuntimes);
-//			System.out.println();
-//			System.out.println("Runtimes for varying " + experimentName + ":");
-//			for (String gammaValue : gammaRuntimes.keySet()) {
-//				System.out.println(experimentName + " = " + gammaValue);
-//				System.out.println("Total execution time: " + (gammaRuntimes.get(gammaValue)));
-//			}
-//			System.out.println();
-//		}
-//
-//		// Custom experiment
-//		if (!cmd.hasOption("K") && !cmd.hasOption("G") && !cmd.hasOption("Theta") && !cmd.hasOption("A")) {
-//			if (cmd.getOptionValue("g") != null) {
-//				TgfdDiscovery.TgfdDiscovery.fileSuffix = Long.parseLong(cmd.getOptionValue("g"));
-//			}
-//			String fileSuffix = TgfdDiscovery.TgfdDiscovery.fileSuffix == null ? "" : Long.toString(TgfdDiscovery.TgfdDiscovery.fileSuffix);
-//			TgfdDiscovery.TgfdDiscovery.SIZE_OF_ACTIVE_ATTR_SET = cmd.getOptionValue("a") == null ? DEFAULT_GAMMA : Integer.parseInt(cmd.getOptionValue("a"));
-//			// Compute Statistics
-//			histogram();
-//			printHistogram();
-//			System.gc();
-//			TreeMap<String, Long> runtimes = new TreeMap<>();
-//			double theta = cmd.getOptionValue("theta") == null ? DEFAULT_THETA : Double.parseDouble(cmd.getOptionValue("theta"));
-//			int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
-//			System.out.println("Running experiment for |G| = " + fileSuffix + ", k = " + k + ", theta = " + String.format("%.1f", theta));
-//			final long startTime = System.currentTimeMillis();
-//			discover(k, theta, "G" + fileSuffix + "-k" + k + "-theta" + String.format("%.1f", theta) + "-experiment");
-//			final long endTime = System.currentTimeMillis();
-//			final long runTime = endTime - startTime;
-//			System.out.println("Total execution time for |G| = " + fileSuffix + ", k = " + k + ", theta = " + String.format("%.1f", theta) + ", gamma = "+SIZE_OF_ACTIVE_ATTR_SET+" : " + runTime);
-//			runtimes.put("|G| = " + fileSuffix + ", k = " + k + ", theta = " + String.format("%.1f", theta)+ ", gamma = "+SIZE_OF_ACTIVE_ATTR_SET, runTime);
-//			printExperimentRuntimestoFile("custom", runtimes);
-//		}
-//	}
-
-	public void computeNodeHistogram() {
+	public void computeVertexHistogram() {
 
 		System.out.println("Computing Node Histogram");
 
@@ -641,7 +469,7 @@ public class TgfdDiscovery {
 	}
 
 	public void histogram() {
-		computeNodeHistogram();
+		computeVertexHistogram();
 		printHistogram();
 	}
 
@@ -732,7 +560,7 @@ public class TgfdDiscovery {
 		return entitiesWithSortedRHSvalues;
 	}
 
-	public HashSet<ConstantLiteral> getActiveAttributesInPattern(Set<Vertex> vertexSet) {
+	public HashSet<ConstantLiteral> getActiveAttributesInPattern(Set<Vertex> vertexSet, boolean considerURI) {
 		HashMap<String, HashSet<String>> patternVerticesAttributes = new HashMap<>();
 		for (Vertex vertex : vertexSet) {
 			for (String vertexType : vertex.getTypes()) {
@@ -745,6 +573,7 @@ public class TgfdDiscovery {
 		}
 		HashSet<ConstantLiteral> literals = new HashSet<>();
 		for (String vertexType : patternVerticesAttributes.keySet()) {
+			if (considerURI) literals.add(new ConstantLiteral(vertexType,"uri",null));
 			for (String attrName : patternVerticesAttributes.get(vertexType)) {
 				ConstantLiteral literal = new ConstantLiteral(vertexType, attrName, null);
 				literals.add(literal);
@@ -1134,25 +963,29 @@ public class TgfdDiscovery {
 		return dummyTGFDs;
 	}
 
+
+	private void loadModels(Long graphSize) {
+		String fileSuffix = graphSize == null ? "" : "-" + graphSize;
+		for (String pathString : Arrays.asList("2015types" + fileSuffix + ".ttl", "2015literals" + fileSuffix + ".ttl", "2015objects" + fileSuffix + ".ttl")) {
+			System.out.println("Reading " + pathString);
+			Model model = ModelFactory.createDefaultModel();
+			Path input = Paths.get(pathString);
+			model.read(input.toUri().toString());
+			this.models.add(model);
+		}
+	}
+
 	public ArrayList<DBPediaLoader> loadDBpediaSnapshots(Long graphSize) {
 		ArrayList<TGFD> dummyTGFDs = new ArrayList<>();
-//		if (this.useChangeFile) {
-//			Config.optimizedLoadingBasedOnTGFD = true;
-//			System.out.println("Enabled optimized loading based on TGFDs");
-//			dummyTGFDs = getDummyTGFDs();
-//		}
 		System.out.println("Number of dummy TGFDs: " + dummyTGFDs.size());
 		ArrayList<DBPediaLoader> graphs = new ArrayList<>();
+		String fileSuffix = graphSize == null ? "" : "-" + graphSize;
 		for (int year = 5; year < 8; year++) {
-			String fileSuffix = graphSize == null ? "" : "-" + graphSize;
 			String typeFileName = "201" + year + "types" + fileSuffix + ".ttl";
 			String literalsFileName = "201" + year + "literals" + fileSuffix + ".ttl";
 			String objectsFileName = "201" + year + "objects" + fileSuffix + ".ttl";
 			DBPediaLoader dbpedia = new DBPediaLoader(dummyTGFDs, new ArrayList<>(Collections.singletonList(typeFileName)), new ArrayList<>(Arrays.asList(literalsFileName, objectsFileName)));
 			graphs.add(dbpedia);
-			if (this.useChangeFile) {
-				break;
-			}
 		}
 		return graphs;
 	}
@@ -1162,7 +995,7 @@ public class TgfdDiscovery {
 
 		System.out.println("Performing HSpawn for " + patternTreeNode.getPattern());
 
-		HashSet<ConstantLiteral> literals = getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet());
+		HashSet<ConstantLiteral> literals = getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet(), false);
 
 		LiteralTree literalTree = new LiteralTree();
 		for (int j = 0; j < literals.size(); j++) {
@@ -1532,7 +1365,7 @@ public class TgfdDiscovery {
 				System.out.println("Skip. Candidate pattern is a supergraph of pruned pattern");
 				continue;
 			}
-
+			newPattern.setDiameter(this.currentVSpawnLevel);
 			patternTreeNode = this.patternTree.createNodeAtLevel(this.currentVSpawnLevel, newPattern, estimatedPatternSupport, previousLevelNode, candidateEdgeString);
 			System.out.println("Marking vertex " + v.getTypes() + "as expanded.");
 			break;
@@ -1607,37 +1440,7 @@ public class TgfdDiscovery {
 			VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> results = new VF2SubgraphIsomorphism().execute2(graphs.get(year).getGraph(), patternTreeNode.getPattern(), false);
 			ArrayList<HashSet<ConstantLiteral>> matches = new ArrayList<>();
 			if (results.isomorphismExists()) {
-				Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = results.getMappings();
-				int numOfMatches = 0;
-				while (iterator.hasNext()) {
-					numOfMatches++;
-					GraphMapping<Vertex, RelationshipEdge> result = iterator.next();
-					HashSet<ConstantLiteral> match = new HashSet<>();
-					for (Vertex v : patternTreeNode.getGraph().vertexSet()) {
-						Vertex currentMatchedVertex = result.getVertexCorrespondence(v, false);
-						if (currentMatchedVertex == null) continue;
-						String patternVertexType = new ArrayList<>(currentMatchedVertex.getTypes()).get(0);
-						for (ConstantLiteral activeAttribute : activeAttributesInPattern) {
-							if (!activeAttribute.getVertexType().equals(patternVertexType)) continue;
-							for (String matchedAttrName : currentMatchedVertex.getAllAttributesNames()) {
-								if (!activeAttribute.getAttrName().equals(matchedAttrName)) continue;
-								String matchedAttrValue = currentMatchedVertex.getAttributeValueByName(matchedAttrName);
-								ConstantLiteral xLiteral = new ConstantLiteral(patternVertexType, matchedAttrName, matchedAttrValue);
-								match.add(xLiteral);
-							}
-						}
-					}
-					if (match.size() == 0) continue;
-					matches.add(match);
-				}
-				System.out.println("Number of matches found in " + (2015 + year) + ": " + numOfMatches);
-				System.out.println("Number of matches found in " + (2015 + year) + " that contain active attribuets: " + matches.size());
-				matches.sort(new Comparator<HashSet<ConstantLiteral>>() {
-					@Override
-					public int compare(HashSet<ConstantLiteral> o1, HashSet<ConstantLiteral> o2) {
-						return o1.size() - o2.size();
-					}
-				});
+				extractMatches(results.getMappings(), matches, patternTreeNode);
 			}
 			matchesPerTimestamps.get(year).addAll(matches);
 			System.out.println("Search Cost: " + (System.currentTimeMillis() - searchStartTime));
@@ -1650,8 +1453,8 @@ public class TgfdDiscovery {
 			numberOfMatchesFound += matchesInOneTimestamp.size();
 		}
 
-		double realPatternSupport = numberOfMatchesFound / NUM_OF_EDGES_IN_GRAPH;
-		System.out.println("Real Pattern Support: " + realPatternSupport);
+		double realPatternSupport = numberOfMatchesFound / this.NUM_OF_EDGES_IN_GRAPH;
+		System.out.println("Real Pattern Support: "+numberOfMatchesFound+" / "+this.NUM_OF_EDGES_IN_GRAPH+" = " + realPatternSupport);
 		return numberOfMatchesFound;
 	}
 
@@ -1660,7 +1463,7 @@ public class TgfdDiscovery {
 			Vertex currentMatchedVertex = result.getVertexCorrespondence(v, false);
 			if (currentMatchedVertex == null) continue;
 			String patternVertexType = new ArrayList<>(currentMatchedVertex.getTypes()).get(0);
-			for (ConstantLiteral activeAttribute : getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet())) {
+			for (ConstantLiteral activeAttribute : getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet(),true)) {
 				if (!activeAttribute.getVertexType().equals(patternVertexType)) continue;
 				for (String matchedAttrName : currentMatchedVertex.getAllAttributesNames()) {
 					if (!activeAttribute.getAttrName().equals(matchedAttrName)) continue;
@@ -1692,10 +1495,10 @@ public class TgfdDiscovery {
 		});
 	}
 
-	public double getMatchesForPattern2(DBPediaLoader dbpedia, PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
+	public double getMatchesForPattern2(PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 
 		TGFD dummyTgfd = new TGFD();
-		dummyTgfd.setName(patternTreeNode.getPattern().toString());
+		dummyTgfd.setName(patternTreeNode.getEdgeString());
 		dummyTgfd.setPattern(patternTreeNode.getPattern());
 
 		System.out.println("-----------Snapshot (1)-----------");
@@ -1703,8 +1506,7 @@ public class TgfdDiscovery {
 		List<TGFD> tgfds = Collections.singletonList(dummyTgfd);
 		int numberOfMatchesFound = 0;
 //		LocalDate currentSnapshotDate = LocalDate.parse("2015-10-01");
-		String fileSuffix = graphSize == null ? "" : "-" + graphSize;
-		dbpedia = new DBPediaLoader(tgfds, new ArrayList<>(Collections.singletonList("2015types"+fileSuffix+".ttl")), new ArrayList<>(Arrays.asList("2015literals"+fileSuffix+".ttl", "2015objects"+fileSuffix+".ttl")));
+		DBPediaLoader dbpedia = new DBPediaLoader(tgfds, this.models.get(0), this.models.subList(1, this.models.size()));
 
 		printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
@@ -1751,8 +1553,21 @@ public class TgfdDiscovery {
 			List<Change> allChangesAsList=new ArrayList<>();
 			for (String edgeString : patternTreeNode.getAllEdgeStrings()) {
 				String path = "changes_t"+(i+1)+"_t"+(i+2)+"_"+edgeString.replace(" ", "_")+"_"+this.graphSize+"_full_test.json";
+				if (!this.changeFilesMap.containsKey(path)) {
+					JSONParser parser = new JSONParser();
+					Object json;
+					org.json.simple.JSONArray jsonArray = new JSONArray();
+					try {
+						json = parser.parse(new FileReader(path));
+						jsonArray = (org.json.simple.JSONArray) json;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					System.out.println("Storing " + path + " in memory");
+					this.changeFilesMap.put(path, jsonArray);
+				}
 				startTime = System.currentTimeMillis();
-				ChangeLoader changeLoader = new ChangeLoader(path);
+				ChangeLoader changeLoader = new ChangeLoader(this.changeFilesMap.get(path));
 				HashMap<Integer,HashSet<Change>> newChanges = changeLoader.getAllGroupedChanges();
 				printWithTime("Load changes (" + path + ")", System.currentTimeMillis()-startTime);
 				System.out.println("Total number of changes in changefile: " + newChanges.size());
@@ -1781,7 +1596,7 @@ public class TgfdDiscovery {
 			}
 			ArrayList<HashSet<ConstantLiteral>> newMatches = new ArrayList<>();
 			ArrayList<HashSet<ConstantLiteral>> removedMatches = new ArrayList<>();
-			int numOfMatchesFoundInSnapshot = 0;
+			int numOfNewMatchesFoundInSnapshot = 0;
 			for (HashMap<Integer,HashSet<Change>> changesByFile:changes) {
 				for (int changeID : changesByFile.keySet()) {
 
@@ -1794,33 +1609,61 @@ public class TgfdDiscovery {
 //					removedMatchesSignaturesByTGFD.get(tgfdName).addAll(incrementalChangeHashMap.get(tgfdName).getRemovedMatchesSignatures());
 //					matchCollectionHashMap.get(tgfdName).addMatches(currentSnapshotDate, incrementalChangeHashMap.get(tgfdName).getNewMatches());
 						for (GraphMapping<Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getNewMatches().values()) {
-							numOfMatchesFoundInSnapshot++;
+							numOfNewMatchesFoundInSnapshot++;
 							HashSet<ConstantLiteral> match = new HashSet<>();
 							extractMatch(mapping, patternTreeNode, match);
+							if (match.size() == 0) continue;
 							newMatches.add(match);
 						}
 
 						for (GraphMapping<Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getRemovedMatches().values()) {
 							HashSet<ConstantLiteral> match = new HashSet<>();
 							extractMatch(mapping, patternTreeNode, match);
+							if (match.size() == 0) continue;
 							removedMatches.add(match);
 						}
-						// TO-DO: getRemovedMatchesSignatures
 					}
 				}
 			}
-			System.out.println("Number of matches found: " + numOfMatchesFoundInSnapshot);
-			System.out.println("Number of matches found that contain active attributes: " + newMatches.size());
-			numberOfMatchesFound += newMatches.size();
-			// TO-DO: check matchesPerTimestamps.get(i) against getNewMatches and getRemovedMatchesSignatures
+			System.out.println("Number of new matches found: " + numOfNewMatchesFoundInSnapshot);
+			System.out.println("Number of new matches found that contain active attributes: " + newMatches.size());
+			System.out.println("Number of removed matched: " + removedMatches.size());
+
 			matchesPerTimestamps.get(i+1).addAll(newMatches);
 
-			for (HashSet<ConstantLiteral> previousMatch:matchesPerTimestamps.get(i)) {
-				if(true/*previousMatch not in newMatches && previousMatch not in removedMatches*/)
-				{
-					matchesPerTimestamps.get(i+1).add(previousMatch);
+			int numOfOldMatchesFoundInSnapshot = 0;
+			for (HashSet<ConstantLiteral> previousMatch : matchesPerTimestamps.get(i)) {
+//				if(removedMatches.contains(previousMatch) || newMatches.contains(previousMatch)) { /*previousMatch not in newMatches && previousMatch not in removedMatches*/
+//					continue;
+//				}
+				boolean skip = false;
+				for (HashSet<ConstantLiteral> removedMatch : removedMatches) {
+//					if (removedMatch.equals(previousMatch)) {
+					if (equalsLiteral(removedMatch, previousMatch)) {
+						skip = true;
+					}
 				}
+				if (skip) continue;
+				for (HashSet<ConstantLiteral> newMatch : newMatches) {
+//					if (newMatch.equals(previousMatch)) {
+					if (equalsLiteral(newMatch, previousMatch)) {
+						skip = true;
+					}
+				}
+				if (skip) continue;
+				matchesPerTimestamps.get(i+1).add(previousMatch);
+				numOfOldMatchesFoundInSnapshot++;
 			}
+			System.out.println("Number of valid old matches that are not new or removed: " + numOfOldMatchesFoundInSnapshot);
+			System.out.println("Total number of matches with active attributes found in this snapshot: " + matchesPerTimestamps.get(i+1).size());
+			numberOfMatchesFound += matchesPerTimestamps.get(i+1).size();
+
+			matchesPerTimestamps.get(i+1).sort(new Comparator<HashSet<ConstantLiteral>>() {
+				@Override
+				public int compare(HashSet<ConstantLiteral> o1, HashSet<ConstantLiteral> o2) {
+					return o1.size() - o2.size();
+				}
+			});
 //			for (TGFD tgfd : tgfds) {
 //				matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,
 //						newMatchesSignaturesByTGFD.get(tgfd.getName()), removedMatchesSignaturesByTGFD.get(tgfd.getName()));
@@ -1831,9 +1674,27 @@ public class TgfdDiscovery {
 			//myConsole.print("#new matches: " + newMatchesSignatures.size()  + " - #removed matches: " + removedMatchesSignatures.size());
 		}
 
-		double realPatternSupport = 1.0 * numberOfMatchesFound / NUM_OF_EDGES_IN_GRAPH;
-		System.out.println("Real Pattern Support: " + realPatternSupport);
+		System.out.println("-------------------------------------");
+		System.out.println("Total number of matches found in all snapshots: " + numberOfMatchesFound);
+		double realPatternSupport = 1.0 * numberOfMatchesFound / this.NUM_OF_EDGES_IN_GRAPH;
+		System.out.println("Real Pattern Support: "+numberOfMatchesFound+" / "+this.NUM_OF_EDGES_IN_GRAPH+" = " + realPatternSupport);
 		return numberOfMatchesFound;
+	}
+
+	private boolean equalsLiteral(HashSet<ConstantLiteral> match1, HashSet<ConstantLiteral> match2) {
+		HashSet<String> uris1 = new HashSet<>();
+		for (ConstantLiteral match1Attr : match1) {
+			if (match1Attr.getAttrName().equals("uri")) {
+				uris1.add(match1Attr.getAttrValue());
+			}
+		}
+		HashSet<String> uris2 = new HashSet<>();
+		for (ConstantLiteral match2Attr: match2) {
+			if (match2Attr.getAttrName().equals("uri")) {
+				uris2.add(match2Attr.getAttrValue());
+			}
+		}
+		return uris1.equals(uris2);
 	}
 
 	private static void printWithTime(String message, long runTimeInMS)
