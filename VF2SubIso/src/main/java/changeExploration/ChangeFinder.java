@@ -195,17 +195,18 @@ public class ChangeFinder {
                 allChanges.add(vChange);
                 continue;
             }
+            int groupedId=changeID++;
             for (Attribute attr:v.getAllAttributesList()) {
                 if(!v2.hasAttribute(attr.getAttrName()))
                 {
-                    Change changeOfAttr=new AttributeChange(attrType,changeID++ ,v1.getVertexURI(),attr);
+                    Change changeOfAttr=new AttributeChange(attrType,groupedId ,v1.getVertexURI(),attr);
                     changeOfAttr.addTGFD(findRelaventTGFDs(v1.getTypes()));
                     allChanges.add(changeOfAttr);
                     numberOfEffectiveChanges++;
                 }
                 else if(attrChange!=null && !v2.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 {
-                    Change changeOfAttr=new AttributeChange(ChangeType.changeAttr,changeID++ ,v1.getVertexURI(),attr);
+                    Change changeOfAttr=new AttributeChange(ChangeType.changeAttr,groupedId ,v1.getVertexURI(),attr);
                     changeOfAttr.addTGFD(findRelaventTGFDs(v1.getTypes()));
                     allChanges.add(changeOfAttr);
                     numberOfEffectiveChanges++;

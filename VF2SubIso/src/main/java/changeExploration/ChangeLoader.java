@@ -13,23 +13,27 @@ import util.Config;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class ChangeLoader {
 
     private List<Change> allChanges;
 
+    private HashMap<Integer,HashSet<Change>> allGroupedChanges;
+
     public ChangeLoader(String path)
     {
         this.allChanges=new ArrayList<>();
+        allGroupedChanges=new HashMap<>();
         loadChanges(path);
     }
 
     public List<Change> getAllChanges() {
         return allChanges;
+    }
+
+    public HashMap<Integer, HashSet<Change>> getAllGroupedChanges() {
+        return allGroupedChanges;
     }
 
     private void loadChanges(String path) {
@@ -82,6 +86,9 @@ public class ChangeLoader {
                     Change change=new EdgeChange(type,id,src,dst,label);
                     change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
+                    if(!allGroupedChanges.containsKey(change.getId()))
+                        allGroupedChanges.put(change.getId(),new HashSet<>());
+                    allGroupedChanges.get(change.getId()).add(change);
                 }
                 else if(type==ChangeType.changeAttr || type==ChangeType.deleteAttr || type==ChangeType.insertAttr)
                 {
@@ -92,6 +99,9 @@ public class ChangeLoader {
                     Change change=new AttributeChange(type,id,uri,new Attribute(attrName,attrValue));
                     change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
+                    if(!allGroupedChanges.containsKey(change.getId()))
+                        allGroupedChanges.put(change.getId(),new HashSet<>());
+                    allGroupedChanges.get(change.getId()).add(change);
                 }
                 else if(type==ChangeType.deleteVertex || type==ChangeType.insertVertex)
                 {
@@ -121,6 +131,9 @@ public class ChangeLoader {
                     Change change=new VertexChange(type,id,dataVertex);
                     change.addTGFD(relevantTGFDs);
                     allChanges.add(change);
+                    if(!allGroupedChanges.containsKey(change.getId()))
+                        allGroupedChanges.put(change.getId(),new HashSet<>());
+                    allGroupedChanges.get(change.getId()).add(change);
                 }
             }
             if (fullObject != null) {

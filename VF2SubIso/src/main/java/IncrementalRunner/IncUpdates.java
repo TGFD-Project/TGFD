@@ -89,6 +89,66 @@ public class IncUpdates {
             return null;
     }
 
+    public HashMap<String,IncrementalChange> updateGraphByGroupOfChanges(HashSet<Change> changes, HashMap<String,TGFD> tgfdsByName)
+    {
+        // Remove TGFDs from the Affected TGFD lists of the change if that TGFD is not loaded.
+        changes.forEach(change -> change
+                        .getTGFDs()
+                        .removeIf(TGFDName -> !tgfdsByName.containsKey(TGFDName)));
+
+        if(changes.size()==0)
+            return null;
+
+        Change change=changes.iterator().next();
+
+        if(change instanceof EdgeChange)
+        {
+            EdgeChange edgeChange=(EdgeChange) change;
+            DataVertex v1= (DataVertex) baseGraph.getNode(edgeChange.getSrc());
+            DataVertex v2= (DataVertex) baseGraph.getNode(edgeChange.getDst());
+            if(v1==null || v2==null)
+            {
+                // Node doesn't exist in the base graph, we need to igonre the change
+                // We keep the number of these ignored edges in a variable
+                return null;
+            }
+            // If TGFD list in the change is empty (specifically for synthetic graph),
+            // we need to find the relevant TGFDs and add to the TGFD list
+            if(change.getTGFDs().size()==0)
+            {
+                findRelevantTGFDs(edgeChange,v1);
+                findRelevantTGFDs(edgeChange,v2);
+            }
+
+            if(edgeChange.getTypeOfChange()== ChangeType.insertEdge)
+                return updateGraphByEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()),change.getTGFDs(),tgfdsByName,true);
+            else if(edgeChange.getTypeOfChange()== ChangeType.deleteEdge)
+                return updateGraphByEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()),change.getTGFDs(),tgfdsByName,false);
+            else
+                throw new IllegalArgumentException("The change is instnace of EdgeChange, but type of change is: " + edgeChange.getTypeOfChange());
+        }
+        else if(change instanceof AttributeChange)
+        {
+            AttributeChange attributeChange=(AttributeChange) change;
+            DataVertex v1=(DataVertex) baseGraph.getNode(attributeChange.getUri());
+            if(v1==null)
+            {
+                // Node doesn't exist in the base graph, we need to igonre the change
+                // We store the number of these ignored changes
+                return null;
+            }
+            // If TGFD list in the change is empty (specifically for synthetic graph),
+            // we need to find the relevant TGFDs and add to the TGFD list
+            if(change.getTGFDs().size()==0)
+            {
+                findRelevantTGFDs(attributeChange,v1);
+            }
+            return updateGraphBySetOfAttributes(v1,changes,change.getTGFDs(),tgfdsByName);
+        }
+        else
+            return null;
+    }
+
     public void AddNewVertices(List<Change> allChange)
     {
         for (Change change:allChange) {
@@ -180,6 +240,45 @@ public class IncUpdates {
             v1.deleteAttribute(attribute);
         }
 
+
+        // Run VF2 again...
+        for (String tgfdName:affectedTGFDNames) {
+            Iterator<GraphMapping<Vertex, RelationshipEdge>> afterChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
+            String res = incrementalChangeHashMap.get(tgfdsByName.get(tgfdName).getName()).addAfterMatches(afterChange);
+
+            //System.out.print("  ** Upd: " + (System.currentTimeMillis()-runtime) + " - " + res + " \n");
+        }
+        return incrementalChangeHashMap;
+    }
+
+    private HashMap<String,IncrementalChange> updateGraphBySetOfAttributes(DataVertex v1, HashSet<Change> changes,Set <String> affectedTGFDNames, HashMap<String,TGFD> tgfdsByName)
+    {
+        //long runtime=System.currentTimeMillis();
+
+        HashMap<String,IncrementalChange> incrementalChangeHashMap=new HashMap <>();
+        Graph<Vertex, RelationshipEdge> subgraph= baseGraph.getSubGraphWithinDiameter(v1,getDiameter(affectedTGFDNames,tgfdsByName));
+
+        //System.out.print("Load: " + (System.currentTimeMillis()-runtime));
+        //runtime=System.currentTimeMillis();
+
+        // run VF2
+        for (String tgfdName:affectedTGFDNames) {
+            Iterator<GraphMapping<Vertex, RelationshipEdge>> beforeChange = VF2.execute(subgraph,tgfdsByName.get(tgfdName).getPattern(),false);
+            IncrementalChange incrementalChange=new IncrementalChange(beforeChange,tgfdsByName.get(tgfdName).getPattern());
+            incrementalChangeHashMap.put(tgfdsByName.get(tgfdName).getName(),incrementalChange);
+
+        }
+
+        // Apply all the changes
+        for (Change change:changes) {
+            AttributeChange attributeChange = (AttributeChange) change;
+
+            if (attributeChange.getTypeOfChange() == ChangeType.changeAttr || attributeChange.getTypeOfChange() == ChangeType.insertAttr) {
+                v1.setOrAddAttribute(attributeChange.getAttribute());
+            } else if (attributeChange.getTypeOfChange() == ChangeType.deleteAttr) {
+                v1.deleteAttribute(attributeChange.getAttribute());
+            }
+        }
 
         // Run VF2 again...
         for (String tgfdName:affectedTGFDNames) {

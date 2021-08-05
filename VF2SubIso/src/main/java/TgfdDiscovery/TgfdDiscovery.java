@@ -1747,15 +1747,17 @@ public class TgfdDiscovery {
 //			currentSnapshotDate = snapshotDates.get(i);
 //			ChangeLoader changeLoader = new ChangeLoader(paths.get(i));
 //			List<Change> changes = changeLoader.getAllChanges();
-			List<Change> changes = new ArrayList<>();
+			List<HashMap<Integer,HashSet<Change>>> changes = new ArrayList<>();
+			List<Change> allChangesAsList=new ArrayList<>();
 			for (String edgeString : patternTreeNode.getAllEdgeStrings()) {
 				String path = "changes_t"+(i+1)+"_t"+(i+2)+"_"+edgeString.replace(" ", "_")+"_"+this.graphSize+"_full_test.json";
 				startTime = System.currentTimeMillis();
 				ChangeLoader changeLoader = new ChangeLoader(path);
-				List<Change> newChanges = changeLoader.getAllChanges();
+				HashMap<Integer,HashSet<Change>> newChanges = changeLoader.getAllGroupedChanges();
 				printWithTime("Load changes (" + path + ")", System.currentTimeMillis()-startTime);
 				System.out.println("Total number of changes in changefile: " + newChanges.size());
-				changes.addAll(newChanges);
+				changes.add(newChanges);
+				allChangesAsList.addAll(changeLoader.getAllChanges());
 			}
 
 //			printWithTime("Load changes ("+paths.get(i) + ")", System.currentTimeMillis()-startTime);
@@ -1767,7 +1769,7 @@ public class TgfdDiscovery {
 			startTime=System.currentTimeMillis();
 			System.out.println("Updating the graph");
 			IncUpdates incUpdatesOnDBpedia = new IncUpdates(dbpedia.getGraph(), tgfds);
-			incUpdatesOnDBpedia.AddNewVertices(changes);
+			incUpdatesOnDBpedia.AddNewVertices(allChangesAsList);
 
 //			HashMap<String, ArrayList<String>> newMatchesSignaturesByTGFD = new HashMap<>();
 //			HashMap<String, ArrayList<String>> removedMatchesSignaturesByTGFD = new HashMap<>();
@@ -1780,29 +1782,31 @@ public class TgfdDiscovery {
 			ArrayList<HashSet<ConstantLiteral>> newMatches = new ArrayList<>();
 			ArrayList<HashSet<ConstantLiteral>> removedMatches = new ArrayList<>();
 			int numOfMatchesFoundInSnapshot = 0;
-			for (Change change : changes) {
+			for (HashMap<Integer,HashSet<Change>> changesByFile:changes) {
+				for (int changeID : changesByFile.keySet()) {
 
-				//System.out.print("\n" + change.getId() + " --> ");
-				HashMap<String, IncrementalChange> incrementalChangeHashMap = incUpdatesOnDBpedia.updateGraph(change, tgfdsByName);
-				if (incrementalChangeHashMap == null)
-					continue;
-				for (String tgfdName : incrementalChangeHashMap.keySet()) {
+					//System.out.print("\n" + change.getId() + " --> ");
+					HashMap<String, IncrementalChange> incrementalChangeHashMap = incUpdatesOnDBpedia.updateGraphByGroupOfChanges(changesByFile.get(changeID), tgfdsByName);
+					if (incrementalChangeHashMap == null)
+						continue;
+					for (String tgfdName : incrementalChangeHashMap.keySet()) {
 //					newMatchesSignaturesByTGFD.get(tgfdName).addAll(incrementalChangeHashMap.get(tgfdName).getNewMatches().keySet());
 //					removedMatchesSignaturesByTGFD.get(tgfdName).addAll(incrementalChangeHashMap.get(tgfdName).getRemovedMatchesSignatures());
 //					matchCollectionHashMap.get(tgfdName).addMatches(currentSnapshotDate, incrementalChangeHashMap.get(tgfdName).getNewMatches());
-					for (GraphMapping <Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getNewMatches().values()) {
-						numOfMatchesFoundInSnapshot++;
-						HashSet<ConstantLiteral> match = new HashSet<>();
-						extractMatch(mapping, patternTreeNode, match);
-						newMatches.add(match);
-					}
+						for (GraphMapping<Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getNewMatches().values()) {
+							numOfMatchesFoundInSnapshot++;
+							HashSet<ConstantLiteral> match = new HashSet<>();
+							extractMatch(mapping, patternTreeNode, match);
+							newMatches.add(match);
+						}
 
-					for (GraphMapping <Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getRemovedMatches().values()) {
-						HashSet<ConstantLiteral> match = new HashSet<>();
-						extractMatch(mapping, patternTreeNode, match);
-						removedMatches.add(match);
+						for (GraphMapping<Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getRemovedMatches().values()) {
+							HashSet<ConstantLiteral> match = new HashSet<>();
+							extractMatch(mapping, patternTreeNode, match);
+							removedMatches.add(match);
+						}
+						// TO-DO: getRemovedMatchesSignatures
 					}
-					// TO-DO: getRemovedMatchesSignatures
 				}
 			}
 			System.out.println("Number of matches found: " + numOfMatchesFoundInSnapshot);
