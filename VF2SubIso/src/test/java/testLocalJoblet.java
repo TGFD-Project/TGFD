@@ -13,9 +13,7 @@ import org.jgrapht.GraphMapping;
 
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class testLocalJoblet {
 
@@ -37,6 +35,12 @@ public class testLocalJoblet {
         DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
 
         HashMap<Integer, Joblet> joblets=defineJoblets(dbpedia,allTGFDs);
+    }
+
+    public static void addNewVertices(List<Change> changes, GraphLoader loader, List<TGFD> tgfds)
+    {
+        IncUpdates incUpdatesOnDBpedia = new IncUpdates(loader.getGraph(), tgfds);
+        incUpdatesOnDBpedia.AddNewVertices(changes);
     }
 
     public static HashMap<Integer, Joblet> defineJoblets(GraphLoader loader, List<TGFD> tgfds)
@@ -80,47 +84,55 @@ public class testLocalJoblet {
         }
     }
 
-    public void runTheNextTimestamp(GraphLoader loader, List<TGFD> tgfds, HashMap<Integer, Joblet> joblets, List<Change> changes, int superstep)
+    public void runTheNextTimestamp(GraphLoader loader, List<TGFD> tgfds, HashMap<Integer, Joblet> joblets, List<HashMap<Integer,HashSet<Change>>> changes, int superstep)
     {
-        //Load the change files
-        System.out.println("===========Snapshot "+superstep+" (" + Config.getTimestamps().get(superstep) + ")===========");
 
-        long startTime=System.currentTimeMillis();
-        LocalDate currentSnapshotDate= Config.getTimestamps().get(superstep);
-        System.out.println("Total number of changes: " + changes.size());
 
-        // Now, we need to find the matches for each snapshot.
-        HashMap<String, ArrayList <String>> newMatchesSignaturesByTGFD=new HashMap <>();
-        HashMap<String,ArrayList<String>> removedMatchesSignaturesByTGFD=new HashMap <>();
-        HashMap<String,TGFD> tgfdsByName=new HashMap <>();
-        for (TGFD tgfd:tgfds) {
-            newMatchesSignaturesByTGFD.put(tgfd.getName(), new ArrayList <>());
-            removedMatchesSignaturesByTGFD.put(tgfd.getName(), new ArrayList <>());
-            tgfdsByName.put(tgfd.getName(),tgfd);
+        List<Change> allChangesAsList=new ArrayList<>();
+        for (HashMap<Integer,HashSet<Change>> changesByFile:changes) {
+            for (HashSet<Change> c:changesByFile.values()) {
+                allChangesAsList.addAll(c);
+            }
+        }
+        System.out.println("Total number of changes: " + allChangesAsList.size());
+
+        HashMap<String, TGFD> tgfdsByName = new HashMap<>();
+        for (TGFD tgfd : tgfds) {
+            tgfdsByName.put(tgfd.getName(), tgfd);
         }
 
-        for (Change change:changes) {
-            for (int jobletID:change.getJobletIDs()) {
-                if(joblets.containsKey(jobletID))
-                {
-                    IncUpdates incUpdatesOnDBpedia=new IncUpdates(joblets.get(jobletID).getSubgraph(),tgfds);
-                    HashMap<String, IncrementalChange> incrementalChangeHashMap=incUpdatesOnDBpedia.updateGraph(change,tgfdsByName);
-                    if(incrementalChangeHashMap==null)
-                        continue;
-                    for (String tgfdName:incrementalChangeHashMap.keySet()) {
-                        newMatchesSignaturesByTGFD.get(tgfdName).addAll(incrementalChangeHashMap.get(tgfdName).getNewMatches().keySet());
-                        removedMatchesSignaturesByTGFD.get(tgfdName).addAll(incrementalChangeHashMap.get(tgfdName).getRemovedMatchesSignatures());
-                        matchCollectionHashMap.get(tgfdName).addMatches(currentSnapshotDate,incrementalChangeHashMap.get(tgfdName).getNewMatches());
+        ArrayList<HashSet<ConstantLiteral>> newMatches = new ArrayList<>();
+        ArrayList<HashSet<ConstantLiteral>> removedMatches = new ArrayList<>();
+        int numOfNewMatchesFoundInSnapshot = 0;
+
+        for (HashMap<Integer,HashSet<Change>> changesByFile:changes) {
+            for (int changeID : changesByFile.keySet()) {
+                Change change = changesByFile.get(changeID).iterator().next();
+                for (int jobletID : change.getJobletIDs()) {
+                    if (joblets.containsKey(jobletID)) {
+                        IncUpdates incUpdatesOnDBpedia=new IncUpdates(joblets.get(jobletID).getSubgraph(),tgfds);
+                        HashMap<String, IncrementalChange> incrementalChangeHashMap = incUpdatesOnDBpedia.updateGraphByGroupOfChanges(changesByFile.get(changeID), tgfdsByName);
+                        if (incrementalChangeHashMap == null)
+                            continue;
+                        for (String tgfdName : incrementalChangeHashMap.keySet()) {
+                            for (GraphMapping<Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getNewMatches().values()) {
+                                numOfNewMatchesFoundInSnapshot++;
+                                HashSet<ConstantLiteral> match = new HashSet<>();
+                                extractMatch(mapping, patternTreeNode, match);
+                                if (match.size() == 0) continue;
+                                newMatches.add(match);
+                            }
+
+                            for (GraphMapping<Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getRemovedMatches().values()) {
+                                HashSet<ConstantLiteral> match = new HashSet<>();
+                                extractMatch(mapping, patternTreeNode, match);
+                                if (match.size() == 0) continue;
+                                removedMatches.add(match);
+                            }
+                        }
                     }
                 }
             }
-        }
-        for (TGFD tgfd:tgfds) {
-            matchCollectionHashMap.get(tgfd.getName())
-                    .addTimestamp(currentSnapshotDate, newMatchesSignaturesByTGFD.get(tgfd.getName()),removedMatchesSignaturesByTGFD.get(tgfd.getName()));
-
-            System.out.println("New matches ("+tgfd.getName()+"): " +
-                    newMatchesSignaturesByTGFD.get(tgfd.getName()).size() + " ** " + removedMatchesSignaturesByTGFD.get(tgfd.getName()).size());
         }
     }
 
