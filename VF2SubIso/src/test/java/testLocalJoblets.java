@@ -9,6 +9,7 @@ import graphLoader.GraphLoader;
 import infra.*;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
+import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
 import util.Config;
 
 import java.io.FileNotFoundException;
@@ -66,13 +67,11 @@ public class testLocalJoblet {
     {
         // Now, we need to find the matches for the first snapshot.
         System.out.println("Retrieving matches for all the joblets.");
-        VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
 
         ArrayList<HashSet<ConstantLiteral>> matches = new ArrayList<>();
 
-
         for (Joblet joblet:joblets.values()) {
-            Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(joblet.getSubgraph(), joblet.getTGFD().getPattern(),false);
+            VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> results= new VF2SubgraphIsomorphism().execute2(joblet.getSubgraph(), joblet.getTGFD().getPattern(),false);
             if (results.isomorphismExists()) {
                 extractMatches(results.getMappings(), matches, patternTreeNode);
             }
