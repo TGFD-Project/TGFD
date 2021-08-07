@@ -2,6 +2,7 @@ import IncrementalRunner.IncUpdates;
 import IncrementalRunner.IncrementalChange;
 import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
+import Workload.Joblet;
 import changeExploration.Change;
 import graphLoader.DBPediaLoader;
 import graphLoader.GraphLoader;
