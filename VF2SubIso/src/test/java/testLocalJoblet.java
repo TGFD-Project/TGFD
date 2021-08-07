@@ -10,6 +10,7 @@ import Workload.Joblet;
 import changeExploration.Change;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
+import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
 
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
@@ -67,20 +68,18 @@ public class testLocalJoblet {
 
     public static void runTheFirstSnapshot(GraphLoader loader, List<TGFD> tgfds, HashMap<Integer, Joblet> joblets)
     {
-        LocalDate currentSnapshotDate= Config.getTimestamps().get(1);
-
-        //Create the match collection for all the TGFDs in the list
-        for (TGFD tgfd:tgfds) {
-            matchCollectionHashMap.put(tgfd.getName(),new MatchCollection(tgfd.getPattern(),tgfd.getDependency(),tgfd.getDelta().getGranularity()));
-        }
-
         // Now, we need to find the matches for the first snapshot.
         System.out.println("Retrieving matches for all the joblets.");
         VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
 
+        ArrayList<HashSet<ConstantLiteral>> matches = new ArrayList<>();
+
+
         for (Joblet joblet:joblets.values()) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> results= VF2.execute(joblet.getSubgraph(), joblet.getTGFD().getPattern(),false);
-            matchCollectionHashMap.get(joblet.getTGFD().getName()).addMatches(currentSnapshotDate,results);
+            if (results.isomorphismExists()) {
+                extractMatches(results.getMappings(), matches, patternTreeNode);
+            }
         }
     }
 
