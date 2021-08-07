@@ -7,6 +7,8 @@ public abstract class Vertex implements Comparable<Vertex>, Serializable {
 
     private Set<String> types=new HashSet<>();
 
+    private Set<Integer> jobletID=new HashSet<>();
+
     private boolean isMarked = false;
 
     // Map of attributes using attribute name as a key
@@ -60,6 +62,15 @@ public abstract class Vertex implements Comparable<Vertex>, Serializable {
     public void addAttribute(String name, String value)
     {
         attributes.put(name.toLowerCase(),new Attribute(name.toLowerCase(),value.toLowerCase()));
+    }
+
+    public void addJobletID(int id)
+    {
+        this.jobletID.add(id);
+    }
+
+    public Set<Integer> getJobletID() {
+        return jobletID;
     }
 
     public void setOrAddAttribute(Attribute attr)
