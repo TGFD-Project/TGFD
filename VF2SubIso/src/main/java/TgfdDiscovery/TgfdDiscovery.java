@@ -37,9 +37,7 @@ public class TgfdDiscovery {
 	public static final double DEFAULT_THETA = 0.7;
 	private Integer NUM_OF_EDGES_IN_GRAPH;
 	public int NUM_OF_VERTICES_IN_GRAPH;
-	public Map<String, Integer> uniqueVertexTypesHist; // freq nodes come from here
 	public Map<String, HashSet<String>> vertexTypesAttributes; // freq attributes come from here
-	public Map<String, Integer> uniqueEdgesHist; // freq edges come from here
 	public PatternTree patternTree;
 	public boolean isNaive;
 	public Long graphSize = null;
@@ -265,7 +263,7 @@ public class TgfdDiscovery {
 
 		System.out.println("Computing Node Histogram");
 
-		Map<String, Integer> vertexTypeHistogram = new HashMap<>();
+		Map<String, Integer> vertexTypesHistogram = new HashMap<>();
 //		Map<String, Map<String, Integer>> tempVertexAttrFreqMap = new HashMap<>();
 		Map<String, Set<String>> tempVertexAttrFreqMap = new HashMap<>();
 		Map<String, String> vertexNameToTypeMap = new HashMap<>();
@@ -285,7 +283,7 @@ public class TgfdDiscovery {
 				if (vertexName.length() > 28) {
 					vertexName = vertexName.substring(28);
 				}
-				vertexTypeHistogram.merge(vertexType, 1, Integer::sum);
+				vertexTypesHistogram.merge(vertexType, 1, Integer::sum);
 //			tempVertexAttrFreqMap.putIfAbsent(vertexType, new HashMap<String, Integer>());
 				tempVertexAttrFreqMap.putIfAbsent(vertexType, new HashSet<String>());
 				vertexNameToTypeMap.putIfAbsent(vertexName, vertexType); // Every vertex in DBpedia only has one type?
@@ -293,12 +291,12 @@ public class TgfdDiscovery {
 		}
 
 		this.NUM_OF_VERTICES_IN_GRAPH = 0;
-		for (Map.Entry<String, Integer> entry : vertexTypeHistogram.entrySet()) {
+		for (Map.Entry<String, Integer> entry : vertexTypesHistogram.entrySet()) {
 			this.NUM_OF_VERTICES_IN_GRAPH += entry.getValue();
 		}
 		System.out.println("Number of vertices in graph: " + this.NUM_OF_VERTICES_IN_GRAPH);
 
-		this.uniqueVertexTypesHist = vertexTypeHistogram;
+		this.sortedVertexHistogram = getSortedFrequentVetexTypesHistogram(vertexTypesHistogram);
 
 		computeAttrHistogram(vertexNameToTypeMap, tempVertexAttrFreqMap);
 		computeEdgeHistogram(vertexNameToTypeMap);
@@ -395,7 +393,7 @@ public class TgfdDiscovery {
 	public void computeEdgeHistogram(Map<String, String> nodesRecord) {
 		System.out.println("Computing edges histogram");
 
-		Map<String, Integer> edgesHist = new HashMap<>();
+		Map<String, Integer> edgeTypesHistogram = new HashMap<>();
 
 		Model model = ModelFactory.createDefaultModel();
 		for (int i = 5; i < 8; i++) {
@@ -416,45 +414,47 @@ public class TgfdDiscovery {
 				String objectName = stmt.getObject().toString().substring(stmt.getObject().toString().lastIndexOf("/") + 1).toLowerCase();
 				if (nodesRecord.get(subjectName) != null && nodesRecord.get(objectName) != null) {
 					String uniqueEdge = nodesRecord.get(subjectName) + " " + predicateName + " " + nodesRecord.get(objectName);
-					edgesHist.merge(uniqueEdge, 1, Integer::sum);
+					edgeTypesHistogram.merge(uniqueEdge, 1, Integer::sum);
 				}
 			}
 		}
 
 		this.NUM_OF_EDGES_IN_GRAPH = 0;
-		for (Map.Entry<String, Integer> entry : edgesHist.entrySet()) {
+		for (Map.Entry<String, Integer> entry : edgeTypesHistogram.entrySet()) {
 			this.NUM_OF_EDGES_IN_GRAPH += entry.getValue();
 		}
 		System.out.println("Number of edges in graph: " + this.NUM_OF_EDGES_IN_GRAPH);
 
-		this.uniqueEdgesHist = edgesHist;
+		this.sortedEdgeHistogram = getSortedFrequentEdgeHistogram(edgeTypesHistogram);
 	}
 
-	public List<Entry<String, Integer>> getSortedFrequentVetexTypesHistogram() {
-		ArrayList<Entry<String, Integer>> sortedVertexTypeHistogram = new ArrayList<>(this.uniqueVertexTypesHist.entrySet());
-		sortedVertexTypeHistogram.sort(new Comparator<Entry<String, Integer>>() {
+	public List<Entry<String, Integer>> getSortedFrequentVetexTypesHistogram(Map<String, Integer> vertexTypesHistogram) {
+		ArrayList<Entry<String, Integer>> sortedVertexTypesHistogram = new ArrayList<>(vertexTypesHistogram.entrySet());
+		if (this.isNaive) {
+			return sortedVertexTypesHistogram;
+		}
+		sortedVertexTypesHistogram.sort(new Comparator<Entry<String, Integer>>() {
 			@Override
 			public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
 				return o2.getValue() - o1.getValue();
 			}
 		});
 		int size = 0;
-		for (Entry<String, Integer> entry : sortedVertexTypeHistogram) {
+		for (Entry<String, Integer> entry : sortedVertexTypesHistogram) {
 			if (1.0 * entry.getValue() / NUM_OF_VERTICES_IN_GRAPH >= this.patternSupportThreshold) {
 				size++;
 			} else {
 				break;
 			}
 		}
-		if (this.isNaive) {
-//			return (new ArrayList<>(uniqueVertexTypesHist.entrySet())).subList(0, size);
-			return (new ArrayList<>(this.uniqueVertexTypesHist.entrySet()));
-		}
-		return sortedVertexTypeHistogram.subList(0, size);
+		return sortedVertexTypesHistogram.subList(0, size);
 	}
 
-	public List<Entry<String, Integer>> getSortedFrequentEdgeHistogram() {
-		ArrayList<Entry<String, Integer>> sortedEdgesHist = new ArrayList<>(this.uniqueEdgesHist.entrySet());
+	public List<Entry<String, Integer>> getSortedFrequentEdgeHistogram(Map<String, Integer> edgeTypesHist) {
+		ArrayList<Entry<String, Integer>> sortedEdgesHist = new ArrayList<>(edgeTypesHist.entrySet());
+		if (this.isNaive) {
+			return sortedEdgesHist;
+		}
 		sortedEdgesHist.sort(new Comparator<Entry<String, Integer>>() {
 			@Override
 			public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
@@ -469,10 +469,6 @@ public class TgfdDiscovery {
 				break;
 			}
 		}
-		if (this.isNaive) {
-//			return (new ArrayList<>(uniqueEdgesHist.entrySet())).subList(0, size);
-			return (new ArrayList<>(uniqueEdgesHist.entrySet()));
-		}
 		return sortedEdgesHist.subList(0, size);
 	}
 
@@ -482,12 +478,10 @@ public class TgfdDiscovery {
 	}
 
 	public void printHistogram() {
-		List<Entry<String, Integer>> sortedHistogram = getSortedFrequentVetexTypesHistogram();
-		List<Entry<String, Integer>> sortedEdgeHistogram = getSortedFrequentEdgeHistogram();
 
-		System.out.println("Number of vertex types: " + sortedHistogram.size());
+		System.out.println("Number of vertex types: " + this.sortedVertexHistogram.size());
 		System.out.println("Frequent Vertices:");
-		for (Entry<String, Integer> entry : sortedHistogram) {
+		for (Entry<String, Integer> entry : this.sortedVertexHistogram) {
 			String vertexType = entry.getKey();
 			Set<String> attributes = this.vertexTypesAttributes.get(vertexType);
 			System.out.println(vertexType + "={count=" + entry.getValue() + ", support=" + (1.0 * entry.getValue() / NUM_OF_VERTICES_IN_GRAPH) + ", attributes=" + attributes + "}");
@@ -500,9 +494,9 @@ public class TgfdDiscovery {
 			System.out.println(attrName);
 		}
 		System.out.println();
-		System.out.println("Number of edge types: " + sortedEdgeHistogram.size());
+		System.out.println("Number of edge types: " + this.sortedEdgeHistogram.size());
 		System.out.println("Frequent Edges:");
-		for (Entry<String, Integer> entry : sortedEdgeHistogram) {
+		for (Entry<String, Integer> entry : this.sortedEdgeHistogram) {
 			System.out.println("edge=\"" + entry.getKey() + "\", count=" + entry.getValue() + ", support=" +(1.0 * entry.getValue() / NUM_OF_EDGES_IN_GRAPH));
 		}
 		System.out.println();
@@ -945,7 +939,7 @@ public class TgfdDiscovery {
 //				dummyTGFDs.add(dummyTGFD);
 ////			}
 //		}
-		for (Map.Entry<String,Integer> frequentEdgeEntry : getSortedFrequentEdgeHistogram()) {
+		for (Map.Entry<String,Integer> frequentEdgeEntry : this.sortedEdgeHistogram) {
 			String frequentEdge = frequentEdgeEntry.getKey();
 			String[] info = frequentEdge.split(" ");
 			String sourceVertexType = info[0];
@@ -1163,16 +1157,14 @@ public class TgfdDiscovery {
 		this.patternTree = new PatternTree();
 		this.patternTree.addLevel();
 
-		List<Entry<String, Integer>> sortedNodeHistogram = getSortedFrequentVetexTypesHistogram();
-
 		System.out.println("VSpawn Level 0");
-		for (int i = 0; i < sortedNodeHistogram.size(); i++) {
-			String vertexType = sortedNodeHistogram.get(i).getKey();
+		for (int i = 0; i < this.sortedVertexHistogram.size(); i++) {
+			String vertexType = this.sortedVertexHistogram.get(i).getKey();
 
 			if (this.vertexTypesAttributes.get(vertexType).size() < 2)
 				continue; // TO-DO: Are we interested in TGFDs where LHS is empty?
 
-			int numOfInstancesOfVertexType = sortedNodeHistogram.get(i).getValue();
+			int numOfInstancesOfVertexType = this.sortedVertexHistogram.get(i).getValue();
 			int numOfInstancesOfAllVertexTypes = this.NUM_OF_VERTICES_IN_GRAPH;
 
 			double patternSupport = (double) numOfInstancesOfVertexType / (double) numOfInstancesOfAllVertexTypes;
@@ -1182,7 +1174,7 @@ public class TgfdDiscovery {
 			VF2PatternGraph candidatePattern = new VF2PatternGraph();
 			PatternVertex vertex = new PatternVertex(vertexType);
 			candidatePattern.addVertex(vertex);
-			System.out.println("VSpawnInit with single-node pattern " + (i+1) + "/" + sortedNodeHistogram.size() + ": " + candidatePattern);
+			System.out.println("VSpawnInit with single-node pattern " + (i+1) + "/" + this.sortedVertexHistogram.size() + ": " + candidatePattern);
 
 			if (this.isNaive) {
 				if (patternSupport >= this.patternSupportThreshold) {
@@ -1217,9 +1209,7 @@ public class TgfdDiscovery {
 
 	public PatternTreeNode vSpawn() {
 
-		List<Entry<String, Integer>> sortedUniqueEdgesHist = getSortedFrequentEdgeHistogram();
-
-		if (this.candidateEdgeIndex > sortedUniqueEdgesHist.size()-1) {
+		if (this.candidateEdgeIndex > this.sortedEdgeHistogram.size()-1) {
 			this.candidateEdgeIndex = 0;
 			this.previousLevelNodeIndex++;
 		}
@@ -1255,13 +1245,13 @@ public class TgfdDiscovery {
 			return null;
 		}
 
-		System.out.println("Processing candidate edge " + this.candidateEdgeIndex + "/" + sortedUniqueEdgesHist.size());
-		Map.Entry<String, Integer> candidateEdge = sortedUniqueEdgesHist.get(this.candidateEdgeIndex);
+		System.out.println("Processing candidate edge " + this.candidateEdgeIndex + "/" + this.sortedEdgeHistogram.size());
+		Map.Entry<String, Integer> candidateEdge = this.sortedEdgeHistogram.get(this.candidateEdgeIndex);
 		String candidateEdgeString = candidateEdge.getKey();
 		System.out.println("Candidate edge:" + candidateEdgeString);
 
 		// For naive version only - checks if candidate edge is frequent enough
-		if (this.isNaive && (1.0 * uniqueEdgesHist.get(candidateEdgeString) / NUM_OF_EDGES_IN_GRAPH) < this.patternSupportThreshold) {
+		if (this.isNaive && (1.0 * candidateEdge.getValue() / NUM_OF_EDGES_IN_GRAPH) < this.patternSupportThreshold) {
 			System.out.println("Candidate edge is below pattern support threshold. Skip");
 			this.candidateEdgeIndex++;
 			return null;
@@ -1560,7 +1550,7 @@ public class TgfdDiscovery {
 			List<HashMap<Integer,HashSet<Change>>> changes = new ArrayList<>();
 			List<Change> allChangesAsList=new ArrayList<>();
 			for (String edgeString : patternTreeNode.getAllEdgeStrings()) {
-				String path = "changes_t"+(i+1)+"_t"+(i+2)+"_"+edgeString.replace(" ", "_")+"_"+this.graphSize+"_full_test.json";
+				String path = "changes_t"+(i+1)+"_t"+(i+2)+"_"+edgeString.replace(" ", "_")+"_"+this.graphSize+".json";
 				if (!this.changeFilesMap.containsKey(path)) {
 					JSONParser parser = new JSONParser();
 					Object json;
