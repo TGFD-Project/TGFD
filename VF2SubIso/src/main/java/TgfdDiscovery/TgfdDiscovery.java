@@ -1504,7 +1504,7 @@ public class TgfdDiscovery {
 		List<TGFD> tgfds = Collections.singletonList(dummyTgfd);
 		int numberOfMatchesFound = 0;
 //		LocalDate currentSnapshotDate = LocalDate.parse("2015-10-01");
-		DBPediaLoader dbpedia = new DBPediaLoader(tgfds, this.models.get(0), this.models.subList(1, this.models.size()));
+		DBPediaLoader dbpedia = new DBPediaLoader(tgfds, this.models.subList(0, 1), this.models.subList(1, this.models.size()));
 
 		printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 

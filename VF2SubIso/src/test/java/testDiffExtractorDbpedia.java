@@ -3,9 +3,13 @@ import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphLoader.DBPediaLoader;
 import infra.TGFD;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import util.Config;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -13,16 +17,17 @@ public class testDiffExtractorDbpedia {
 
     public static void main(String []args) throws FileNotFoundException {
 
-        String graphSize = args[0];
-        String str = "-t1 2015types-"+graphSize+".ttl\n" +
-                "-d1 2015literals-"+graphSize+".ttl\n" +
-                "-d1 2015objects-"+graphSize+".ttl\n" +
-                "-t2 2016types-"+graphSize+".ttl\n" +
-                "-d2 2016literals-"+graphSize+".ttl\n" +
-                "-d2 2016objects-"+graphSize+".ttl\n" +
-                "-t3 2017types-"+graphSize+".ttl\n" +
-                "-d3 2017literals-"+graphSize+".ttl\n" +
-                "-d3 2017objects-"+graphSize+".ttl\n" +
+        Long graphSize = args.length > 0 ? Long.valueOf(args[0]) : null;
+        String graphSizeStr = graphSize == null ? "" : "-"+ graphSize;
+        String str = "-t1 2015types"+graphSizeStr+".ttl\n" +
+                "-d1 2015literals"+graphSizeStr+".ttl\n" +
+                "-d1 2015objects"+graphSizeStr+".ttl\n" +
+                "-t2 2016types"+graphSizeStr+".ttl\n" +
+                "-d2 2016literals"+graphSizeStr+".ttl\n" +
+                "-d2 2016objects"+graphSizeStr+".ttl\n" +
+                "-t3 2017types"+graphSizeStr+".ttl\n" +
+                "-d3 2017literals"+graphSizeStr+".ttl\n" +
+                "-d3 2017objects"+graphSizeStr+".ttl\n" +
                 "-s1 2015-10-01\n" +
                 "-s2 2016-04-01\n" +
                 "-s3 2016-10-01\n" +
@@ -38,16 +43,38 @@ public class testDiffExtractorDbpedia {
         Config.optimizedLoadingBasedOnTGFD = true;
         System.out.println("Test extract diffs over DBPedia graph");
 
-        Config.parse(args[1]);
+        Config.parse("conf.txt");
 
         System.out.println(Config.getAllDataPaths().keySet() + " *** " + Config.getAllDataPaths().values());
         System.out.println(Config.getAllTypesPaths().keySet() + " *** " + Config.getAllTypesPaths().values());
 
-        //Load the TGFDs.
+        HashMap<Integer, ArrayList<Model>> typeModelHashMap = new HashMap<>();
+        for (int i = 1; i <= 3; i++) {
+            typeModelHashMap.put(i, new ArrayList<>());
+            for (String pathString : Config.getAllTypesPaths().get(i)) {
+                System.out.println("Reading " + pathString);
+                Model model = ModelFactory.createDefaultModel();
+                Path input = Paths.get(pathString);
+                model.read(input.toUri().toString());
+                typeModelHashMap.get(i).add(model);
+            }
+        }
+
+        HashMap<Integer, ArrayList<Model>> dataModelHashMap = new HashMap<>();
+        for (int i = 1; i <= 3; i++) {
+            dataModelHashMap.put(i, new ArrayList<>());
+            for (String pathString : Config.getAllDataPaths().get(i)) {
+                System.out.println("Reading " + pathString);
+                Model model = ModelFactory.createDefaultModel();
+                Path input = Paths.get(pathString);
+                model.read(input.toUri().toString());
+                dataModelHashMap.get(i).add(model);
+            }
+        }
 
         // Create dummy TGFDs based on frequent nodes and edges from histogram
         TgfdDiscovery tgfdDiscovery = new TgfdDiscovery(Config.getTimestamps().size());
-        tgfdDiscovery.graphSize = Long.valueOf(graphSize);
+        tgfdDiscovery.graphSize = graphSize;
         tgfdDiscovery.histogram();
 
         ArrayList<TGFD> dummyTGFDs = tgfdDiscovery.getDummyTGFDs();
@@ -56,7 +83,7 @@ public class testDiffExtractorDbpedia {
             String name = dummyTGFD.getName().replace(' ', '_') + (tgfdDiscovery.graphSize == null ? "" : ("_" + tgfdDiscovery.graphSize));
 
             System.out.println("Generating the diff files for the TGFD: " + name);
-            Object[] ids = Config.getAllDataPaths().keySet().toArray();
+            Object[] ids = dataModelHashMap.keySet().toArray();
             Arrays.sort(ids);
             DBPediaLoader first, second = null;
             List<Change> allChanges;
@@ -67,8 +94,8 @@ public class testDiffExtractorDbpedia {
                 long startTime = System.currentTimeMillis();
 
                 t1 = (int) ids[i];
-                first = new DBPediaLoader(Collections.singletonList(dummyTGFD), Config.getAllTypesPaths().get((int) ids[i]),
-                        Config.getAllDataPaths().get((int) ids[i]));
+                first = new DBPediaLoader(Collections.singletonList(dummyTGFD), typeModelHashMap.get((int) ids[i]),
+                        dataModelHashMap.get((int) ids[i]));
 
                 printWithTime("Load graph (" + ids[i] + ")", System.currentTimeMillis() - startTime);
 
@@ -87,8 +114,8 @@ public class testDiffExtractorDbpedia {
                 startTime = System.currentTimeMillis();
 
                 t2 = (int) ids[i + 1];
-                second = new DBPediaLoader(Collections.singletonList(dummyTGFD), Config.getAllTypesPaths().get((int) ids[i + 1]),
-                        Config.getAllDataPaths().get((int) ids[i + 1]));
+                second = new DBPediaLoader(Collections.singletonList(dummyTGFD), typeModelHashMap.get((int) ids[i + 1]),
+                        dataModelHashMap.get((int) ids[i + 1]));
 
                 printWithTime("Load graph (" + ids[i + 1] + ")", System.currentTimeMillis() - startTime);
 
@@ -117,7 +144,7 @@ public class testDiffExtractorDbpedia {
 //            }
 //            else
 //            {
-                saveChanges(allChanges,timestamp1,timestamp2,TGFDsName + "_full");
+                saveChanges(allChanges,timestamp1,timestamp2,TGFDsName);
 //                return;
 //            }
 //        }
@@ -181,7 +208,7 @@ public class testDiffExtractorDbpedia {
             }
         });
         try {
-            FileWriter file = new FileWriter("./changes_t" + t1 + "_t" + t2 + "_" + tgfdName + "_test.json");
+            FileWriter file = new FileWriter("./changes_t" + t1 + "_t" + t2 + "_" + tgfdName + ".json");
             file.write("[");
             for (int index = 0; index < allChanges.size(); index++) {
                 Change change = allChanges.get(index);

@@ -40,11 +40,13 @@ public class DBPediaLoader extends GraphLoader {
         }
     }
 
-    public DBPediaLoader(List<TGFD> alltgfd, Model typeModel, List<Model> dataModels)
+    public DBPediaLoader(List<TGFD> alltgfd, List<Model> typeModels, List<Model> dataModels)
     {
         super(alltgfd);
 
-        loadNodeMap2(typeModel);
+        for (Model typeModel : typeModels) {
+            loadNodeMap2(typeModel);
+        }
 
         for (Model dataModel : dataModels) {
             loadDataGraph2(dataModel);
