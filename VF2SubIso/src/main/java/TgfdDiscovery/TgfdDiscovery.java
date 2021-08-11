@@ -60,6 +60,8 @@ public class TgfdDiscovery {
 	private boolean useChangeFile;
 	private ArrayList<Model> models = new ArrayList<>();
 	private HashMap<String, org.json.simple.JSONArray> changeFilesMap = new HashMap<>();
+	private List<Entry<String, Integer>> sortedVertexHistogram; // freq nodes come from here
+	private List<Entry<String, Integer>> sortedEdgeHistogram; // freq edges come from here
 
 	public TgfdDiscovery(int numOfSnapshots) {
 		this.startTime = System.currentTimeMillis();
@@ -227,20 +229,19 @@ public class TgfdDiscovery {
 			for (int timestamp = 0; timestamp < tgfdDiscovery.numOfSnapshots; timestamp++) {
 				matches.add(new ArrayList<>());
 			}
-			double realPatternSupport;
 			if (graphs != null) { // TO-DO: Investigate - why is there a slight discrepancy between the # of matches found via snapshot vs. changefile?
 				final long startTime = System.currentTimeMillis();
 				// TO-DO: For full-sized dbpedia, can we store the models and create an optimized graph for every search?
-				realPatternSupport = tgfdDiscovery.getMatchesForPattern(graphs, patternTreeNode, matches); // this can be called repeatedly on many graphs
+				tgfdDiscovery.getMatchesForPattern(graphs, patternTreeNode, matches); // this can be called repeatedly on many graphs
 				printWithTime("getMatchesForPattern", (System.currentTimeMillis() - startTime));
 			}
 			else {
 				final long startTime = System.currentTimeMillis();
-				realPatternSupport = tgfdDiscovery.getMatchesForPattern2(patternTreeNode, matches);
+				tgfdDiscovery.getMatchesForPattern2(patternTreeNode, matches);
 				printWithTime("getMatchesForPattern2", (System.currentTimeMillis() - startTime));
 			}
 //			return;
-			if (realPatternSupport < tgfdDiscovery.patternSupportThreshold) {
+			if (patternTreeNode.getPatternSupport() < tgfdDiscovery.patternSupportThreshold) {
 				System.out.println("Mark as pruned. Real pattern support too low for pattern " + patternTreeNode.getPattern());
 				patternTreeNode.setIsPruned();
 				continue;
@@ -1347,18 +1348,18 @@ public class TgfdDiscovery {
 
 			System.out.println("Created new pattern: " + newPattern);
 
-			double numerator = Double.MAX_VALUE;
-			double denominator = this.NUM_OF_EDGES_IN_GRAPH;
-
-			for (RelationshipEdge tempE : newPattern.getPattern().edgeSet()) {
-				String sourceType = (new ArrayList<>(tempE.getSource().getTypes())).get(0);
-				String targetType = (new ArrayList<>(tempE.getTarget().getTypes())).get(0);
-				String uniqueEdge = sourceType + " " + tempE.getLabel() + " " + targetType;
-				numerator = Math.min(numerator, uniqueEdgesHist.get(uniqueEdge));
-			}
-			assert numerator <= denominator;
-			double estimatedPatternSupport = numerator / denominator;
-			System.out.println("Estimate Pattern Support: " + estimatedPatternSupport);
+//			double numerator = Double.MAX_VALUE;
+//			double denominator = this.NUM_OF_EDGES_IN_GRAPH;
+//
+//			for (RelationshipEdge tempE : newPattern.getPattern().edgeSet()) {
+//				String sourceType = (new ArrayList<>(tempE.getSource().getTypes())).get(0);
+//				String targetType = (new ArrayList<>(tempE.getTarget().getTypes())).get(0);
+//				String uniqueEdge = sourceType + " " + tempE.getLabel() + " " + targetType;
+//				numerator = Math.min(numerator, uniqueEdgesHist.get(uniqueEdge));
+//			}
+//			assert numerator <= denominator;
+//			double estimatedPatternSupport = numerator / denominator;
+//			System.out.println("Estimate Pattern Support: " + estimatedPatternSupport);
 
 			// TO-DO: Debug - Why does this work with strings but not subgraph isomorphism???
 			if (isIsomorphPattern(newPattern, this.patternTree)) {
@@ -1373,7 +1374,7 @@ public class TgfdDiscovery {
 				continue;
 			}
 			newPattern.setDiameter(this.currentVSpawnLevel);
-			patternTreeNode = this.patternTree.createNodeAtLevel(this.currentVSpawnLevel, newPattern, estimatedPatternSupport, previousLevelNode, candidateEdgeString);
+			patternTreeNode = this.patternTree.createNodeAtLevel(this.currentVSpawnLevel, newPattern, previousLevelNode, candidateEdgeString);
 			System.out.println("Marking vertex " + v.getTypes() + "as expanded.");
 			break;
 		}
@@ -1439,7 +1440,7 @@ public class TgfdDiscovery {
 		return null;
 	}
 
-	public double getMatchesForPattern(ArrayList<DBPediaLoader> graphs, PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
+	public void getMatchesForPattern(ArrayList<DBPediaLoader> graphs, PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 		// TO-DO: Potential speed up for single-edge/single-node patterns. Iterate through all edges/nodes in graph.
 		for (int year = 0; year < this.numOfSnapshots; year++) {
 			long searchStartTime = System.currentTimeMillis();
@@ -1461,7 +1462,7 @@ public class TgfdDiscovery {
 
 		double realPatternSupport = numberOfMatchesFound / this.NUM_OF_EDGES_IN_GRAPH;
 		System.out.println("Real Pattern Support: "+numberOfMatchesFound+" / "+this.NUM_OF_EDGES_IN_GRAPH+" = " + realPatternSupport);
-		return numberOfMatchesFound;
+		patternTreeNode.setPatternSupport(realPatternSupport);
 	}
 
 	private void extractMatch(GraphMapping<Vertex, RelationshipEdge> result, PatternTreeNode patternTreeNode, HashSet<ConstantLiteral> match) {
@@ -1502,7 +1503,7 @@ public class TgfdDiscovery {
 		});
 	}
 
-	public double getMatchesForPattern2(PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
+	public void getMatchesForPattern2(PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 
 		TGFD dummyTgfd = new TGFD();
 		dummyTgfd.setName(patternTreeNode.getEdgeString());
@@ -1685,7 +1686,7 @@ public class TgfdDiscovery {
 		System.out.println("Total number of matches found in all snapshots: " + numberOfMatchesFound);
 		double realPatternSupport = 1.0 * numberOfMatchesFound / this.NUM_OF_EDGES_IN_GRAPH;
 		System.out.println("Real Pattern Support: "+numberOfMatchesFound+" / "+this.NUM_OF_EDGES_IN_GRAPH+" = " + realPatternSupport);
-		return numberOfMatchesFound;
+		patternTreeNode.setPatternSupport(realPatternSupport);
 	}
 
 	private boolean equalsLiteral(HashSet<ConstantLiteral> match1, HashSet<ConstantLiteral> match2) {
