@@ -229,10 +229,15 @@ public class TgfdDiscovery {
 			}
 			double realPatternSupport;
 			if (graphs != null) { // TO-DO: Investigate - why is there a slight discrepancy between the # of matches found via snapshot vs. changefile?
+				final long startTime = System.currentTimeMillis();
+				// TO-DO: For full-sized dbpedia, can we store the models and create an optimized graph for every search?
 				realPatternSupport = tgfdDiscovery.getMatchesForPattern(graphs, patternTreeNode, matches); // this can be called repeatedly on many graphs
+				printWithTime("getMatchesForPattern", (System.currentTimeMillis() - startTime));
 			}
 			else {
+				final long startTime = System.currentTimeMillis();
 				realPatternSupport = tgfdDiscovery.getMatchesForPattern2(patternTreeNode, matches);
+				printWithTime("getMatchesForPattern2", (System.currentTimeMillis() - startTime));
 			}
 //			return;
 			if (realPatternSupport < tgfdDiscovery.patternSupportThreshold) {
@@ -240,7 +245,9 @@ public class TgfdDiscovery {
 				patternTreeNode.setIsPruned();
 				continue;
 			}
+			final long startTime = System.currentTimeMillis();
 			ArrayList<TGFD> tgfds = tgfdDiscovery.hSpawn(patternTreeNode, matches);
+			printWithTime("hSpawn", (System.currentTimeMillis() - startTime));
 			tgfdDiscovery.tgfds.get(tgfdDiscovery.currentVSpawnLevel).addAll(tgfds);
 		}
 	}
@@ -1434,7 +1441,6 @@ public class TgfdDiscovery {
 
 	public double getMatchesForPattern(ArrayList<DBPediaLoader> graphs, PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 		// TO-DO: Potential speed up for single-edge/single-node patterns. Iterate through all edges/nodes in graph.
-		HashSet<ConstantLiteral> activeAttributesInPattern = getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet());
 		for (int year = 0; year < this.numOfSnapshots; year++) {
 			long searchStartTime = System.currentTimeMillis();
 			VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> results = new VF2SubgraphIsomorphism().execute2(graphs.get(year).getGraph(), patternTreeNode.getPattern(), false);
@@ -1443,7 +1449,7 @@ public class TgfdDiscovery {
 				extractMatches(results.getMappings(), matches, patternTreeNode);
 			}
 			matchesPerTimestamps.get(year).addAll(matches);
-			System.out.println("Search Cost: " + (System.currentTimeMillis() - searchStartTime));
+			printWithTime("Search Cost", (System.currentTimeMillis() - searchStartTime));
 		}
 		// TO-DO: Should we implement pattern support here to weed out patterns with few matches in later iterations?
 		// Is there an ideal pattern support threshold after which very few TGFDs are discovered?
@@ -1536,7 +1542,7 @@ public class TgfdDiscovery {
 			}
 			numberOfMatchesFound += matches.size();
 			matchesPerTimestamps.get(0).addAll(matches);
-			System.out.println("Search Cost: " + (System.currentTimeMillis() - searchStartTime));
+			printWithTime("Search Cost", (System.currentTimeMillis() - searchStartTime));
 		}
 
 		//Load the change files
@@ -1670,7 +1676,7 @@ public class TgfdDiscovery {
 //				System.out.println("New matches (" + tgfd.getName() + "): " +
 //						newMatchesSignaturesByTGFD.get(tgfd.getName()).size() + " ** " + removedMatchesSignaturesByTGFD.get(tgfd.getName()).size());
 //			}
-			printWithTime("Update and retrieve matches ", System.currentTimeMillis()-startTime);
+			printWithTime("Update and retrieve matches", System.currentTimeMillis()-startTime);
 			//myConsole.print("#new matches: " + newMatchesSignatures.size()  + " - #removed matches: " + removedMatchesSignatures.size());
 		}
 
