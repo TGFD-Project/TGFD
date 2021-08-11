@@ -1488,7 +1488,8 @@ public class TgfdDiscovery {
 			GraphMapping<Vertex, RelationshipEdge> result = iterator.next();
 			HashSet<ConstantLiteral> match = new HashSet<>();
 			extractMatch(result, patternTreeNode, match);
-			if (match.size() == 0) continue;
+			// ensures that the match is not empty and contains more than just the uri attribute
+			if (match.size() <= patternTreeNode.getGraph().vertexSet().size()) continue;
 			matches.add(match);
 		}
 		System.out.println("Number of matches found: " + numOfMatches);
@@ -1618,14 +1619,14 @@ public class TgfdDiscovery {
 							numOfNewMatchesFoundInSnapshot++;
 							HashSet<ConstantLiteral> match = new HashSet<>();
 							extractMatch(mapping, patternTreeNode, match);
-							if (match.size() == 0) continue;
+							if (match.size() <= patternTreeNode.getGraph().vertexSet().size()) continue;
 							newMatches.add(match);
 						}
 
 						for (GraphMapping<Vertex, RelationshipEdge> mapping : incrementalChangeHashMap.get(tgfdName).getRemovedMatches().values()) {
 							HashSet<ConstantLiteral> match = new HashSet<>();
 							extractMatch(mapping, patternTreeNode, match);
-							if (match.size() == 0) continue;
+							if (match.size() <= patternTreeNode.getGraph().vertexSet().size()) continue;
 							removedMatches.add(match);
 						}
 					}
