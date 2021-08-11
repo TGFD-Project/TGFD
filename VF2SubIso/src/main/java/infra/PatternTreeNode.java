@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class PatternTreeNode {
     private final VF2PatternGraph pattern;
-    private final double patternSupport;
+    private Double patternSupport = null;
     private final PatternTreeNode parentNode;
     private final String edgeString;
     private boolean isPruned = false;
@@ -17,9 +17,8 @@ public class PatternTreeNode {
     private ArrayList<ArrayList<ConstantLiteral>> minimalDependencies = new ArrayList<>();
     private HashMap<ArrayList<ConstantLiteral>, ArrayList<TgfdDiscovery.Pair>> lowSupportGeneralTgfdList = new HashMap<>();
 
-    public PatternTreeNode(VF2PatternGraph pattern, double patternSupport, PatternTreeNode parentNode, String edgeString) {
+    public PatternTreeNode(VF2PatternGraph pattern, PatternTreeNode parentNode, String edgeString) {
         this.pattern = pattern;
-        this.patternSupport = patternSupport;
         this.parentNode = parentNode;
         this.edgeString = edgeString;
     }
@@ -37,6 +36,10 @@ public class PatternTreeNode {
 
     public VF2PatternGraph getPattern() {
         return pattern;
+    }
+
+    public void setPatternSupport(double patternSupport) {
+        this.patternSupport = patternSupport;
     }
 
     public double getPatternSupport() {
