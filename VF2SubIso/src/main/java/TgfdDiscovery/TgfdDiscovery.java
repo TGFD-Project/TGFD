@@ -344,14 +344,14 @@ public class TgfdDiscovery {
 		System.out.println("Number of attributes in graph: " + numOfAttributes);
 
 		ArrayList<Entry<String,Set<String>>> sortedAttrDistributionMap = new ArrayList<>(attrDistributionMap.entrySet());
-		if (!this.isNaive) {
+//		if (!this.isNaive) {
 			sortedAttrDistributionMap.sort(new Comparator<Entry<String, Set<String>>>() {
 				@Override
 				public int compare(Entry<String, Set<String>> o1, Entry<String, Set<String>> o2) {
 					return o2.getValue().size() - o1.getValue().size();
 				}
 			});
-		}
+//		}
 		HashSet<String> mostDistributedAttributesSet = new HashSet<>();
 		for (Entry<String, Set<String>> attrNameEntry : sortedAttrDistributionMap.subList(0, Math.min(this.gamma, sortedAttrDistributionMap.size()))) {
 			mostDistributedAttributesSet.add(attrNameEntry.getKey());
