@@ -1,6 +1,4 @@
-package infra;
-
-import org.jetbrains.annotations.NotNull;
+package Infra;
 
 import java.util.Objects;
 

@@ -1,7 +1,7 @@
 package Partitioner;
 
 import graphLoader.GraphLoader;
-import infra.*;
+import Infra.*;
 import org.jgrapht.Graph;
 
 import java.util.List;

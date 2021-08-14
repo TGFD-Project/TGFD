@@ -1,6 +1,6 @@
 package Partitioner;
 
-import infra.*;
+import Infra.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;

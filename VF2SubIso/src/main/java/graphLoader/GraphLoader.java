@@ -1,7 +1,7 @@
 package graphLoader;
 
 import changeExploration.*;
-import infra.*;
+import Infra.*;
 import util.Config;
 
 import java.util.HashSet;

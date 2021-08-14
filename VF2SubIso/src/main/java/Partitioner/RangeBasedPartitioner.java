@@ -1,7 +1,6 @@
 package Partitioner;
 
-import graphLoader.GraphLoader;
-import infra.VF2DataGraph;
+import Infra.VF2DataGraph;
 
 import java.util.HashMap;
 

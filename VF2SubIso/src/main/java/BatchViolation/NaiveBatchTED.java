@@ -1,6 +1,6 @@
 package BatchViolation;
 
-import infra.*;
+import Infra.*;
 
 import java.time.LocalDate;
 import java.util.*;

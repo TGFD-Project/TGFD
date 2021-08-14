@@ -1,7 +1,7 @@
 package changeExploration;
 
-import infra.DataVertex;
-import infra.RelationshipEdge;
+import Infra.DataVertex;
+import Infra.RelationshipEdge;
 
 public class EdgeChange extends Change {
 

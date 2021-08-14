@@ -1,4 +1,4 @@
-package infra;
+package Infra;
 
 import java.util.ArrayList;
 

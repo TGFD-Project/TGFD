@@ -7,7 +7,7 @@ import changeExploration.Change;
 import changeExploration.ChangeLoader;
 import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
-import infra.*;
+import Infra.*;
 import org.jgrapht.GraphMapping;
 import util.Config;
 

@@ -11,7 +11,7 @@ import graphLoader.DBPediaLoader;
 import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
 import graphLoader.SyntheticLoader;
-import infra.*;
+import Infra.*;
 import org.jgrapht.GraphMapping;
 
 import java.time.LocalDate;

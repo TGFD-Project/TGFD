@@ -1,6 +1,6 @@
 package Partitioner;
 
-import infra.FocusNode;
+import Infra.FocusNode;
 
 import java.util.ArrayList;
 import java.util.List;

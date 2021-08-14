@@ -1,6 +1,6 @@
 import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
-import infra.TGFD;
+import Infra.TGFD;
 
 import java.util.ArrayList;
 import java.util.Collections;

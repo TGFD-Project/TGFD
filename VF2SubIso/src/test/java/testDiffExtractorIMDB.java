@@ -3,7 +3,7 @@ import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphLoader.GraphLoader;
 import graphLoader.IMDBLoader;
-import infra.TGFD;
+import Infra.TGFD;
 import util.Config;
 
 import java.io.FileNotFoundException;

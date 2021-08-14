@@ -1,4 +1,4 @@
-package infra;
+package Infra;
 
 import TgfdDiscovery.TgfdDiscovery;
 import org.jgrapht.Graph;

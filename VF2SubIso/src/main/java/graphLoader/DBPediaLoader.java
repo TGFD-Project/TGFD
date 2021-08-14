@@ -4,10 +4,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import infra.Attribute;
-import infra.DataVertex;
-import infra.RelationshipEdge;
-import infra.TGFD;
+import Infra.Attribute;
+import Infra.DataVertex;
+import Infra.RelationshipEdge;
+import Infra.TGFD;
 import org.apache.jena.rdf.model.*;
 import util.Config;
 

@@ -5,7 +5,7 @@ import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;
 import graphLoader.DBPediaLoader;
-import infra.*;
+import Infra.*;
 import org.jgrapht.GraphMapping;
 import util.Config;
 

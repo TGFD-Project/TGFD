@@ -1,6 +1,4 @@
-package infra;
-
-import org.apache.jena.sparql.core.Var;
+package Infra;
 
 import java.util.Objects;
 

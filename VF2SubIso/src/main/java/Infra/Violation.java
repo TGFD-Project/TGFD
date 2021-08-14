@@ -1,4 +1,4 @@
-package infra;
+package Infra;
 
 public class Violation {
     private Match match1,match2;

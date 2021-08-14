@@ -1,7 +1,5 @@
 import graphLoader.DBPediaLoader;
-import graphLoader.IMDBLoader;
-import infra.*;
-import org.apache.jena.vocabulary.DB;
+import Infra.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -10,15 +8,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 public class testGFDMiner {
 
     public static void main(String []args)
     {
-        DBPediaLoader dbpedia2015 = new DBPediaLoader(new ArrayList<>(), new ArrayList<>(Collections.singletonList("2015types.ttl")), new ArrayList<>(Arrays.asList("2015literals.ttl", "2015objects.ttl")));
-        DBPediaLoader dbpedia2016 = new DBPediaLoader(new ArrayList<>(), new ArrayList<>(Collections.singletonList("2016types.ttl")), new ArrayList<>(Arrays.asList("2016literals.ttl", "2016objects.ttl")));
-        DBPediaLoader dbpedia2017 = new DBPediaLoader(new ArrayList<>(), new ArrayList<>(Collections.singletonList("2017types.ttl")), new ArrayList<>(Arrays.asList("2017literals.ttl", "2017objects.ttl")));
+        String fileSuffix = args.length >= 1 ? "-"+args[0] : "";
+        DBPediaLoader dbpedia2015 = new DBPediaLoader(new ArrayList<>(), new ArrayList<>(Collections.singletonList("2015types"+fileSuffix+".ttl")), new ArrayList<>(Arrays.asList("2015literals"+fileSuffix+".ttl", "2015objects"+fileSuffix+".ttl")));
+        DBPediaLoader dbpedia2016 = new DBPediaLoader(new ArrayList<>(), new ArrayList<>(Collections.singletonList("2016types"+fileSuffix+".ttl")), new ArrayList<>(Arrays.asList("2016literals"+fileSuffix+".ttl", "2016objects"+fileSuffix+".ttl")));
+        DBPediaLoader dbpedia2017 = new DBPediaLoader(new ArrayList<>(), new ArrayList<>(Collections.singletonList("2017types"+fileSuffix+".ttl")), new ArrayList<>(Arrays.asList("2017literals"+fileSuffix+".ttl", "2017objects"+fileSuffix+".ttl")));
         ArrayList<DBPediaLoader> loaders = new ArrayList<>(Arrays.asList(dbpedia2015,dbpedia2016,dbpedia2017));
 
         int year = 2015;
@@ -39,7 +37,7 @@ public class testGFDMiner {
             }
 
             try {
-                String fileName = year+"-dbpedia.tsv";
+                String fileName = year+"-dbpedia"+fileSuffix+".tsv";
                 FileWriter file = new FileWriter(fileName);
                 file.write(sb.toString());
                 file.close();

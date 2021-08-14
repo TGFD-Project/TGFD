@@ -1,6 +1,6 @@
 package ErrorInjection;
 
-import infra.*;
+import Infra.*;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.time.LocalDate;

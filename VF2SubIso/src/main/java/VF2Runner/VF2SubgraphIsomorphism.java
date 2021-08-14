@@ -1,9 +1,9 @@
 package VF2Runner;
 
-import infra.RelationshipEdge;
-import infra.VF2DataGraph;
-import infra.VF2PatternGraph;
-import infra.Vertex;
+import Infra.RelationshipEdge;
+import Infra.VF2DataGraph;
+import Infra.VF2PatternGraph;
+import Infra.Vertex;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;

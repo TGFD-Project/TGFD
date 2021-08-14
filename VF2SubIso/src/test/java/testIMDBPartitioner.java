@@ -1,6 +1,6 @@
 import Partitioner.IMDBPartitioner;
 import graphLoader.IMDBLoader;
-import infra.TGFD;
+import Infra.TGFD;
 import util.Config;
 
 import java.io.FileNotFoundException;

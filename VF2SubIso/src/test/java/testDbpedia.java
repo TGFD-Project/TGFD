@@ -3,7 +3,7 @@ import BatchViolation.OptBatchTED;
 import TGFDLoader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import graphLoader.DBPediaLoader;
-import infra.*;
+import Infra.*;
 import org.jgrapht.GraphMapping;
 import util.Config;
 

@@ -1,4 +1,4 @@
-package infra;
+package Infra;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;

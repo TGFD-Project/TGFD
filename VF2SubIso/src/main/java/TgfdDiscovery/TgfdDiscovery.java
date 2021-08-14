@@ -6,7 +6,7 @@ import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;
 import graphLoader.DBPediaLoader;
-import infra.*;
+import Infra.*;
 import org.apache.commons.cli.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -60,6 +60,7 @@ public class TgfdDiscovery {
 	private HashMap<String, org.json.simple.JSONArray> changeFilesMap = new HashMap<>();
 	private List<Entry<String, Integer>> sortedVertexHistogram; // freq nodes come from here
 	private List<Entry<String, Integer>> sortedEdgeHistogram; // freq edges come from here
+	private HashMap<String, Integer> vertexHistogram;
 
 	public TgfdDiscovery(int numOfSnapshots) {
 		this.startTime = System.currentTimeMillis();
@@ -112,7 +113,7 @@ public class TgfdDiscovery {
 				(this.graphSize == null ? "" : "-G"+this.graphSize) +
 				(this.interestingTGFDs ? "-interesting" : "") +
 				"-k" + this.currentVSpawnLevel +
-				"-theta" + String.format("%.1f", this.theta) +
+				"-theta" + this.theta +
 				"-a" + this.gamma +
 				"-pTheta" + this.patternSupportThreshold +
 				(this.useChangeFile ? "-changefile" : "") +
@@ -239,7 +240,7 @@ public class TgfdDiscovery {
 				printWithTime("getMatchesForPattern2", (System.currentTimeMillis() - startTime));
 			}
 //			return;
-			if (patternTreeNode.getPatternSupport() < tgfdDiscovery.patternSupportThreshold) {
+			if (patternTreeNode.getPatternSupport() < tgfdDiscovery.theta) {
 				System.out.println("Mark as pruned. Real pattern support too low for pattern " + patternTreeNode.getPattern());
 				patternTreeNode.setIsPruned();
 				continue;
@@ -296,10 +297,10 @@ public class TgfdDiscovery {
 		}
 		System.out.println("Number of vertices in graph: " + this.NUM_OF_VERTICES_IN_GRAPH);
 
-		this.sortedVertexHistogram = getSortedFrequentVetexTypesHistogram(vertexTypesHistogram);
+		getSortedFrequentVetexTypesHistogram(vertexTypesHistogram);
 
 		computeAttrHistogram(vertexNameToTypeMap, tempVertexAttrFreqMap);
-		computeEdgeHistogram(vertexNameToTypeMap);
+		computeEdgeHistogram(vertexNameToTypeMap, vertexTypesHistogram);
 
 	}
 
@@ -390,7 +391,7 @@ public class TgfdDiscovery {
 		this.vertexTypesAttributes = vertexTypesAttributes;
 	}
 
-	public void computeEdgeHistogram(Map<String, String> nodesRecord) {
+	public void computeEdgeHistogram(Map<String, String> nodesRecord, Map<String, Integer> vertexTypesHistogram) {
 		System.out.println("Computing edges histogram");
 
 		Map<String, Integer> edgeTypesHistogram = new HashMap<>();
@@ -425,13 +426,14 @@ public class TgfdDiscovery {
 		}
 		System.out.println("Number of edges in graph: " + this.NUM_OF_EDGES_IN_GRAPH);
 
-		this.sortedEdgeHistogram = getSortedFrequentEdgeHistogram(edgeTypesHistogram);
+		this.sortedEdgeHistogram = getSortedFrequentEdgeHistogram(edgeTypesHistogram, vertexTypesHistogram);
 	}
 
-	public List<Entry<String, Integer>> getSortedFrequentVetexTypesHistogram(Map<String, Integer> vertexTypesHistogram) {
+	public void getSortedFrequentVetexTypesHistogram(Map<String, Integer> vertexTypesHistogram) {
 		ArrayList<Entry<String, Integer>> sortedVertexTypesHistogram = new ArrayList<>(vertexTypesHistogram.entrySet());
 		if (this.isNaive) {
-			return sortedVertexTypesHistogram;
+			this.sortedVertexHistogram = sortedVertexTypesHistogram;
+			return;
 		}
 		sortedVertexTypesHistogram.sort(new Comparator<Entry<String, Integer>>() {
 			@Override
@@ -447,10 +449,10 @@ public class TgfdDiscovery {
 				break;
 			}
 		}
-		return sortedVertexTypesHistogram.subList(0, size);
+		this.sortedVertexHistogram = sortedVertexTypesHistogram.subList(0, size);
 	}
 
-	public List<Entry<String, Integer>> getSortedFrequentEdgeHistogram(Map<String, Integer> edgeTypesHist) {
+	public List<Entry<String, Integer>> getSortedFrequentEdgeHistogram(Map<String, Integer> edgeTypesHist, Map<String, Integer> vertexTypesHistogram) {
 		ArrayList<Entry<String, Integer>> sortedEdgesHist = new ArrayList<>(edgeTypesHist.entrySet());
 		if (this.isNaive) {
 			return sortedEdgesHist;
@@ -462,8 +464,14 @@ public class TgfdDiscovery {
 			}
 		});
 		int size = 0;
+		this.vertexHistogram = new HashMap<String, Integer>();
 		for (Entry<String, Integer> entry : sortedEdgesHist) {
 			if (1.0 * entry.getValue() / NUM_OF_EDGES_IN_GRAPH >= this.patternSupportThreshold) {
+				String[] edgeString = entry.getKey().split(" ");
+				String sourceType = edgeString[0];
+				String targetType = edgeString[2];
+				this.vertexHistogram.put(sourceType, vertexTypesHistogram.get(sourceType));
+				this.vertexHistogram.put(targetType, vertexTypesHistogram.get(targetType));
 				size++;
 			} else {
 				break;
@@ -606,7 +614,7 @@ public class TgfdDiscovery {
 		return false;
 	}
 
-	public ArrayList<TGFD> deltaDiscovery(double theta, PatternTreeNode patternNode, LiteralTreeNode literalTreeNode, ArrayList<ConstantLiteral> literalPath, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
+	public ArrayList<TGFD> deltaDiscovery(PatternTreeNode patternNode, LiteralTreeNode literalTreeNode, ArrayList<ConstantLiteral> literalPath, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
 		// Add dependency attributes to pattern
@@ -649,7 +657,7 @@ public class TgfdDiscovery {
 		System.out.println("Discovering general TGFDs");
 
 		// Find general TGFDs
-		ArrayList<TGFD> generalTGFD = discoverGeneralTGFD(theta, patternNode, patternNode.getPatternSupport(), literalPath, entities.size(), constantXdeltas, satisfyingAttrValues);
+		ArrayList<TGFD> generalTGFD = discoverGeneralTGFD(patternNode, patternNode.getPatternSupport(), literalPath, entities.size(), constantXdeltas, satisfyingAttrValues);
 		if (generalTGFD.size() > 0) {
 			System.out.println("Marking literal node as pruned. Discovered general TGFDs for this dependency.");
 			literalTreeNode.setIsPruned();
@@ -660,7 +668,7 @@ public class TgfdDiscovery {
 		return tgfds;
 	}
 
-	private ArrayList<TGFD> discoverGeneralTGFD(double theta, PatternTreeNode patternTreeNode, double patternSupport, ArrayList<ConstantLiteral> literalPath, int entitiesSize, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
+	private ArrayList<TGFD> discoverGeneralTGFD(PatternTreeNode patternTreeNode, double patternSupport, ArrayList<ConstantLiteral> literalPath, int entitiesSize, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
 
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 
@@ -725,8 +733,10 @@ public class TgfdDiscovery {
 			System.out.println("Calculating support for candidate general TGFD candidate delta: " + intersection.getKey());
 
 			// Compute general support
-			float numerator = 0;
-			float denominator = 2 * entitiesSize * this.numOfSnapshots;
+			float numerator;
+			String centerVertexType = patternTreeNode.getPattern().getCenterVertexType();
+			float s = this.vertexHistogram.get(centerVertexType);
+			float denominator = (2 * s * this.numOfSnapshots);
 
 			int numberOfSatisfyingPairs = 0;
 			for (TreeSet<Pair> timestamps : intersection.getValue()) {
@@ -880,7 +890,7 @@ public class TgfdDiscovery {
 
 			// Compute TGFD support
 			Delta candidateTGFDdelta = null;
-			double candidateTGFDsupport = 0.0;
+			float candidateTGFDsupport = 0;
 			Pair mostSupportedDelta = null;
 			TreeSet<Pair> mostSupportedSatisfyingPairs = null;
 			for (Pair candidateDelta : candidateDeltas) {
@@ -888,8 +898,10 @@ public class TgfdDiscovery {
 				int maxDistance = candidateDelta.max();
 				if (minDistance <= maxDistance) {
 					System.out.println("Calculating support for candidate delta ("+minDistance+","+maxDistance+")");
-					float numer = 0;
-					float denom = 2 * 1 * this.numOfSnapshots;
+					float numer;
+					String centerVertexType = patternNode.getPattern().getCenterVertexType();
+					float s = this.vertexHistogram.get(centerVertexType);
+					float denom = (2 * s * this.numOfSnapshots);
 					List<Integer> timestamps = attrValuesTimestampsSortedByFreq.get(0).getValue();
 					TreeSet<Pair> satisfyingPairs = new TreeSet<Pair>();
 					for (int index = 0; index < timestamps.size() - 1; index++) {
@@ -903,7 +915,7 @@ public class TgfdDiscovery {
 					System.out.println("Satisfying pairs: " + satisfyingPairs);
 
 					numer = satisfyingPairs.size();
-					double candidateSupport = numer / denom;
+					float candidateSupport = numer / denom;
 
 					if (candidateSupport > candidateTGFDsupport) {
 						candidateTGFDsupport = candidateSupport;
@@ -921,7 +933,7 @@ public class TgfdDiscovery {
 			System.out.println("Entity support = " + candidateTGFDsupport);
 			satisfyingAttrValues.add(mostSupportedSatisfyingPairs);
 			constantXdeltas.add(mostSupportedDelta);
-			if (candidateTGFDsupport < theta) {
+			if (candidateTGFDsupport < this.theta) {
 				System.out.println("Could not satisfy TGFD support threshold for entity: " + entityEntry.getKey());
 				continue;
 			}
@@ -930,7 +942,7 @@ public class TgfdDiscovery {
 			candidateTGFDdelta = new Delta(Period.ofDays(minDistance * 183), Period.ofDays(maxDistance * 183 + 1), Duration.ofDays(183));
 			System.out.println("Constant TGFD delta: "+candidateTGFDdelta);
 
-			if (isSupersetPath(constantPath, patternNode.getAllMinimalDependenciesOnThisPath())) { // Ensures we don't expand constant TGFDs from previous iterations
+			if (isSupersetPath(constantPath, patternNode.getAllMinimalDependenciesOnThisPath()) && !this.isNaive) { // Ensures we don't expand constant TGFDs from previous iterations
 				System.out.println("Candidate constant TGFD " + constantPath + " is a superset of an existing minimal constant TGFD");
 				continue;
 			}
@@ -1047,7 +1059,7 @@ public class TgfdDiscovery {
 				ArrayList<TGFD> currentLevelTGFDs = new ArrayList<>();
 				for (LiteralTreeNode previousLevelLiteral : literalTreePreviousLevel) {
 					System.out.println("Creating literal tree node " + literalTree.getLevel(j).size() + "/" + (literalTreePreviousLevel.size() * (literalTreePreviousLevel.size()-1)));
-					if (previousLevelLiteral.isPruned()) continue;
+					if (previousLevelLiteral.isPruned() && !this.isNaive) continue;
 					ArrayList<ConstantLiteral> parentsPathToRoot = previousLevelLiteral.getPathToRoot();
 					for (ConstantLiteral literal: literals) {
 						if (this.interestingTGFDs) { // Ensures all vertices are involved in dependency
@@ -1065,11 +1077,11 @@ public class TgfdDiscovery {
 							System.out.println("Skip. Duplicate literal path.");
 							continue;
 						}
-						if (isSupersetPath(newPath, patternTreeNode.getAllZeroEntityDependenciesOnThisPath())) { // Ensures we don't re-explore dependencies whose subsets have no entities
+						if (isSupersetPath(newPath, patternTreeNode.getAllZeroEntityDependenciesOnThisPath()) && !this.isNaive) { // Ensures we don't re-explore dependencies whose subsets have no entities
 							System.out.println("Skip. Candidate literal path is a superset of zero-entity dependency.");
 							continue;
 						}
-						if (isSupersetPath(newPath, patternTreeNode.getAllMinimalDependenciesOnThisPath())) { // Ensures we don't re-explore dependencies whose subsets have already have a general dependency
+						if (isSupersetPath(newPath, patternTreeNode.getAllMinimalDependenciesOnThisPath()) && !this.isNaive) { // Ensures we don't re-explore dependencies whose subsets have already have a general dependency
 							System.out.println("Skip. Candidate literal path is a superset of minimal dependency.");
 							continue;
 						}
@@ -1086,7 +1098,7 @@ public class TgfdDiscovery {
 						visitedPaths.add(newPath);
 
 						System.out.println("Performing Delta Discovery at HSpawn level " + j);
-						ArrayList<TGFD> discoveredTGFDs = deltaDiscovery(theta, patternTreeNode, literalTreeNode, newPath, matchesPerTimestamps);
+						ArrayList<TGFD> discoveredTGFDs = deltaDiscovery(patternTreeNode, literalTreeNode, newPath, matchesPerTimestamps);
 						currentLevelTGFDs.addAll(discoveredTGFDs);
 					}
 				}
@@ -1385,7 +1397,7 @@ public class TgfdDiscovery {
 				continue;
 			}
 
-			if (isSupergraphPattern(newPattern, this.patternTree)) {
+			if (isSupergraphPattern(newPattern, this.patternTree) && !this.isNaive) {
 				v.setMarked(true);
 				System.out.println("Skip. Candidate pattern is a supergraph of pruned pattern");
 				continue;
@@ -1472,13 +1484,22 @@ public class TgfdDiscovery {
 		// TO-DO: Should we implement pattern support here to weed out patterns with few matches in later iterations?
 		// Is there an ideal pattern support threshold after which very few TGFDs are discovered?
 		// How much does the real pattern differ from the estimate?
-		double numberOfMatchesFound = 0;
+		int numberOfMatchesFound = 0;
 		for (ArrayList<HashSet<ConstantLiteral>> matchesInOneTimestamp : matchesPerTimestamps) {
 			numberOfMatchesFound += matchesInOneTimestamp.size();
 		}
 
-		double realPatternSupport = numberOfMatchesFound / this.NUM_OF_EDGES_IN_GRAPH;
-		System.out.println("Real Pattern Support: "+numberOfMatchesFound+" / "+this.NUM_OF_EDGES_IN_GRAPH+" = " + realPatternSupport);
+		calculatePatternSupport(numberOfMatchesFound, patternTreeNode);
+	}
+
+	private void calculatePatternSupport(int numberOfMatchesFound, PatternTreeNode patternTreeNode) {
+		String centerVertexType = patternTreeNode.getPattern().getCenterVertexType();
+		System.out.println("Center vertex type: " + centerVertexType);
+		float s = this.vertexHistogram.get(centerVertexType);
+		float numerator = (2 * numberOfMatchesFound * this.numOfSnapshots);
+		float denominator = (2 * s * this.numOfSnapshots);
+		float realPatternSupport = numerator / denominator;
+		System.out.println("Real Pattern Support: "+numerator+" / "+denominator+" = " + realPatternSupport);
 		patternTreeNode.setPatternSupport(realPatternSupport);
 	}
 
@@ -1701,9 +1722,7 @@ public class TgfdDiscovery {
 
 		System.out.println("-------------------------------------");
 		System.out.println("Total number of matches found in all snapshots: " + numberOfMatchesFound);
-		double realPatternSupport = 1.0 * numberOfMatchesFound / this.NUM_OF_EDGES_IN_GRAPH;
-		System.out.println("Real Pattern Support: "+numberOfMatchesFound+" / "+this.NUM_OF_EDGES_IN_GRAPH+" = " + realPatternSupport);
-		patternTreeNode.setPatternSupport(realPatternSupport);
+		calculatePatternSupport(numberOfMatchesFound, patternTreeNode);
 	}
 
 	private boolean equalsLiteral(HashSet<ConstantLiteral> match1, HashSet<ConstantLiteral> match2) {

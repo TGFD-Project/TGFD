@@ -1,5 +1,5 @@
 import VF2Runner.VF2SubgraphIsomorphism;
-import infra.*;
+import Infra.*;
 import TGFDLoader.TGFDGenerator;
 
 public class testVF2 {
