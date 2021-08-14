@@ -641,7 +641,7 @@ public class TgfdDiscovery {
 		// Find Constant TGFDs
 		ArrayList<Pair> constantXdeltas = new ArrayList<>();
 		ArrayList<TreeSet<Pair>> satisfyingAttrValues = new ArrayList<>();
-		ArrayList<TGFD> constantTGFDs = discoverConstantTGFDs(theta, patternNode, literalPath.get(literalPath.size()-1), entities, constantXdeltas, satisfyingAttrValues);
+		ArrayList<TGFD> constantTGFDs = discoverConstantTGFDs(patternNode, literalPath.get(literalPath.size()-1), entities, constantXdeltas, satisfyingAttrValues);
 		// TO-DO: Try discover general TGFD even if no constant TGFD candidate met support threshold
 		System.out.println("Constant TGFDs discovered: " + constantTGFDs.size());
 		tgfds.addAll(constantTGFDs);
@@ -715,8 +715,13 @@ public class TgfdDiscovery {
 
 		System.out.println("Evaluating candidate deltas for general TGFD...");
 		for (Entry<Pair, ArrayList<TreeSet<Pair>>> intersection : sortedIntersections) {
-			int generalMin = intersection.getKey().min();
-			int generalMax = intersection.getKey().max();
+			Pair candidateDelta = intersection.getKey();
+			// TO-DO: Verify - does this even work?
+			if (isSupersetPath(literalPath, candidateDelta, patternTreeNode.getAllLowSupportGeneralTgfds()) && !this.isNaive) {
+				continue;
+			}
+			int generalMin = candidateDelta.min();
+			int generalMax = candidateDelta.max();
 			System.out.println("Calculating support for candidate general TGFD candidate delta: " + intersection.getKey());
 
 			// Compute general support
@@ -740,7 +745,8 @@ public class TgfdDiscovery {
 
 			float support = numerator / denominator;
 			System.out.println("Candidate general TGFD support: " + support);
-			if (support < theta) {
+			if (support < this.theta) {
+				patternTreeNode.addToLowSupportGeneralTgfdList(literalPath, candidateDelta);
 				System.out.println("Support for candidate general TGFD is below support threshold");
 				continue;
 			}
@@ -769,7 +775,28 @@ public class TgfdDiscovery {
 		return tgfds;
 	}
 
-	private ArrayList<TGFD> discoverConstantTGFDs(double theta, PatternTreeNode patternNode, ConstantLiteral yLiteral, Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
+	private boolean isSupersetPath(ArrayList<ConstantLiteral> literalPath, TgfdDiscovery.Pair candidateDelta, HashMap<ArrayList<ConstantLiteral>, ArrayList<TgfdDiscovery.Pair>> lowSupportGeneralTgfdList) {
+		for (Map.Entry<ArrayList<ConstantLiteral>, ArrayList<Pair>> lowSupportGeneralTgfdEntry: lowSupportGeneralTgfdList.entrySet()) {
+			ArrayList<ConstantLiteral> lowSupportGeneralTgfdDependencyPath = lowSupportGeneralTgfdEntry.getKey();
+			ArrayList<Pair> lowSupportGeneralTgfdDeltaPairList = lowSupportGeneralTgfdEntry.getValue();
+			for (Pair lowSupportGeneralTgfdDeltaPair : lowSupportGeneralTgfdDeltaPairList) {
+				if (literalPath.get(literalPath.size() - 1).equals(lowSupportGeneralTgfdDependencyPath.get(lowSupportGeneralTgfdDependencyPath.size() - 1)) && literalPath.subList(0, literalPath.size() - 1).containsAll(lowSupportGeneralTgfdDependencyPath.subList(0, lowSupportGeneralTgfdDependencyPath.size() - 1))) {
+					System.out.println("Candidate path " + literalPath + " is a superset of pruned path " + lowSupportGeneralTgfdDependencyPath);
+					if (candidateDelta.min() >= lowSupportGeneralTgfdDeltaPair.min() &&  candidateDelta.max() <= lowSupportGeneralTgfdDeltaPair.max()) {
+						System.out.println("The candidate general dependency " + literalPath
+								+ "\n with candidate delta " + candidateDelta
+								+ "\n is a superset of a minimal dependency " + lowSupportGeneralTgfdDependencyPath
+								+ "\n with minimal delta " + lowSupportGeneralTgfdDeltaPair
+								+ ".");
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	private ArrayList<TGFD> discoverConstantTGFDs(PatternTreeNode patternNode, ConstantLiteral yLiteral, Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities, ArrayList<Pair> constantXdeltas, ArrayList<TreeSet<Pair>> satisfyingAttrValues) {
 		ArrayList<TGFD> tgfds = new ArrayList<>();
 		String yVertexType = yLiteral.getVertexType();
 		String yAttrName = yLiteral.getAttrName();
