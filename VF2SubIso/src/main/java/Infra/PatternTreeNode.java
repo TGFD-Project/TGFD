@@ -43,7 +43,7 @@ public class PatternTreeNode {
     }
 
     public double getPatternSupport() {
-        return patternSupport;
+        return this.patternSupport;
     }
 
     public PatternTreeNode parentNode() {
