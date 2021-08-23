@@ -67,6 +67,11 @@ public class TgfdDiscovery {
 	private List<Entry<String, Integer>> sortedEdgeHistogram; // freq edges come from here
 	private HashMap<String, Integer> vertexHistogram;
 	private boolean noSupportPruning;
+	private ArrayList<Float> patternSupportsList = new ArrayList<>();
+	private ArrayList<Float> constantTgfdSupportsList = new ArrayList<>();
+	private ArrayList<Float> generalTgfdSupportsList = new ArrayList<>();
+	private ArrayList<Float> vertexSupportsList = new ArrayList<>();
+	private ArrayList<Float> edgeSupportsList = new ArrayList<>();
 
 	public TgfdDiscovery(int numOfSnapshots) {
 		this.startTime = System.currentTimeMillis();
@@ -238,9 +243,11 @@ public class TgfdDiscovery {
 			System.out.println("Candidate edge index " + tgfdDiscovery.candidateEdgeIndex);
 
 			PatternTreeNode patternTreeNode = null;
+			final long vSpawnStartTime = System.currentTimeMillis();
 			while (patternTreeNode == null && tgfdDiscovery.currentVSpawnLevel <= tgfdDiscovery.k) {
 				patternTreeNode = tgfdDiscovery.vSpawn();
 			}
+			printWithTime("vSpawn", System.currentTimeMillis()-vSpawnStartTime);
 			if (tgfdDiscovery.currentVSpawnLevel > tgfdDiscovery.k) break;
 			ArrayList<ArrayList<HashSet<ConstantLiteral>>> matches = new ArrayList<>();
 			for (int timestamp = 0; timestamp < tgfdDiscovery.numOfSnapshots; timestamp++) {
@@ -263,11 +270,49 @@ public class TgfdDiscovery {
 				patternTreeNode.setIsPruned();
 				continue;
 			}
-			final long startTime = System.currentTimeMillis();
+			final long hSpawnStartTime = System.currentTimeMillis();
 			ArrayList<TGFD> tgfds = tgfdDiscovery.hSpawn(patternTreeNode, matches);
-			printWithTime("hSpawn", (System.currentTimeMillis() - startTime));
+			printWithTime("hSpawn", (System.currentTimeMillis() - hSpawnStartTime));
 			tgfdDiscovery.tgfds.get(tgfdDiscovery.currentVSpawnLevel).addAll(tgfds);
 		}
+	}
+
+	private void printStatistics() {
+		System.out.println("----------------Statistics for vSpawn level "+this.currentVSpawnLevel+"-----------------");
+		Collections.sort(this.vertexSupportsList);
+		Collections.sort(this.edgeSupportsList);
+		Collections.sort(this.patternSupportsList);
+		Collections.sort(this.constantTgfdSupportsList);
+		Collections.sort(this.generalTgfdSupportsList);
+		float medianVertexSupport = 0;
+		if (this.vertexSupportsList.size() > 0) {
+			medianVertexSupport = this.vertexSupportsList.size() % 2 != 0 ? this.vertexSupportsList.get(this.vertexSupportsList.size() / 2) : ((this.vertexSupportsList.get(this.vertexSupportsList.size() / 2) + this.vertexSupportsList.get(this.vertexSupportsList.size() / 2 - 1)) / 2);
+		}
+		float medianEdgeSupport = 0;
+		if (this.edgeSupportsList.size() > 0) {
+			medianEdgeSupport = this.edgeSupportsList.size() % 2 != 0 ? this.edgeSupportsList.get(this.edgeSupportsList.size() / 2) : ((this.edgeSupportsList.get(this.edgeSupportsList.size() / 2) + this.edgeSupportsList.get(this.edgeSupportsList.size() / 2 - 1)) / 2);
+		}
+		float patternSupportsList = 0;
+		if (this.patternSupportsList.size() > 0) {
+			patternSupportsList = this.patternSupportsList.size() % 2 != 0 ? this.patternSupportsList.get(this.patternSupportsList.size() / 2) : ((this.patternSupportsList.get(this.patternSupportsList.size() / 2) + this.patternSupportsList.get(this.patternSupportsList.size() / 2 - 1)) / 2);
+		}
+		float constantTgfdSupportsList = 0;
+		if (this.constantTgfdSupportsList.size() > 0) {
+			constantTgfdSupportsList = this.constantTgfdSupportsList.size() % 2 != 0 ? this.constantTgfdSupportsList.get(this.constantTgfdSupportsList.size() / 2) : ((this.constantTgfdSupportsList.get(this.constantTgfdSupportsList.size() / 2) + this.constantTgfdSupportsList.get(this.constantTgfdSupportsList.size() / 2 - 1)) / 2);
+		}
+		float generalTgfdSupportsList = 0;
+		if (this.generalTgfdSupportsList.size() > 0) {
+			generalTgfdSupportsList = this.generalTgfdSupportsList.size() % 2 != 0 ? this.generalTgfdSupportsList.get(this.generalTgfdSupportsList.size() / 2) : ((this.generalTgfdSupportsList.get(this.generalTgfdSupportsList.size() / 2) + this.generalTgfdSupportsList.get(this.generalTgfdSupportsList.size() / 2 - 1)) / 2);
+		}
+		System.out.println("Median Vertex Support: " + medianVertexSupport);
+		System.out.println("Median Edge Support: " + medianEdgeSupport);
+		System.out.println("Median Pattern Support: " + patternSupportsList);
+		System.out.println("Median Constant TGFD Support: " + constantTgfdSupportsList);
+		System.out.println("Median General TGFD Support: " + generalTgfdSupportsList);
+		// Reset for each level of vSpawn
+		this.patternSupportsList = new ArrayList<>();
+		this.constantTgfdSupportsList = new ArrayList<>();
+		this.generalTgfdSupportsList = new ArrayList<>();
 	}
 
 	private void markAsKexperiment() {
@@ -314,6 +359,7 @@ public class TgfdDiscovery {
 			this.NUM_OF_VERTICES_IN_GRAPH += entry.getValue();
 		}
 		System.out.println("Number of vertices in graph: " + this.NUM_OF_VERTICES_IN_GRAPH);
+		System.out.println("Number of vertex types in graph: " + vertexTypesHistogram.size());
 
 		getSortedFrequentVetexTypesHistogram(vertexTypesHistogram);
 
@@ -443,6 +489,7 @@ public class TgfdDiscovery {
 			this.NUM_OF_EDGES_IN_GRAPH += entry.getValue();
 		}
 		System.out.println("Number of edges in graph: " + this.NUM_OF_EDGES_IN_GRAPH);
+		System.out.println("Number of edges labels in graph: " + edgeTypesHistogram.size());
 
 		this.sortedEdgeHistogram = getSortedFrequentEdgeHistogram(edgeTypesHistogram, vertexTypesHistogram);
 	}
@@ -461,7 +508,9 @@ public class TgfdDiscovery {
 		});
 		int size = 0;
 		for (Entry<String, Integer> entry : sortedVertexTypesHistogram) {
-			if (1.0 * entry.getValue() / this.NUM_OF_VERTICES_IN_GRAPH >= this.patternSupportThreshold) {
+			float vertexSupport = (float) entry.getValue() / this.NUM_OF_VERTICES_IN_GRAPH;
+			this.vertexSupportsList.add(vertexSupport);
+			if (vertexSupport >= this.edgeSupportThreshold) {
 				size++;
 			} else {
 				break;
@@ -492,7 +541,9 @@ public class TgfdDiscovery {
 		int size = 0;
 		this.vertexHistogram = new HashMap<String, Integer>();
 		for (Entry<String, Integer> entry : sortedEdgesHist) {
-			if (1.0 * entry.getValue() / this.NUM_OF_EDGES_IN_GRAPH >= this.patternSupportThreshold) {
+			float edgeSupport = (float) entry.getValue() / this.NUM_OF_EDGES_IN_GRAPH;
+			this.edgeSupportsList.add(edgeSupport);
+			if (edgeSupport >= this.edgeSupportThreshold) {
 				String[] edgeString = entry.getKey().split(" ");
 				String sourceType = edgeString[0];
 				String targetType = edgeString[2];
@@ -955,6 +1006,7 @@ public class TgfdDiscovery {
 			System.out.println("Entity support = " + candidateTGFDsupport);
 			satisfyingAttrValues.add(mostSupportedSatisfyingPairs);
 			constantXdeltas.add(mostSupportedDelta);
+			this.constantTgfdSupportsList.add(candidateTGFDsupport);
 			if (candidateTGFDsupport < this.theta) {
 				System.out.println("Could not satisfy TGFD support threshold for entity: " + entityEntry.getKey());
 				continue;
@@ -1281,6 +1333,7 @@ public class TgfdDiscovery {
 			String experimentName = "api-test";
 			this.printTgfdsToFile(experimentName, this.tgfds.get(this.currentVSpawnLevel));
 			if (this.isKExperiment) this.printExperimentRuntimestoFile(experimentName, this.kRuntimes);
+			this.printStatistics();
 			this.currentVSpawnLevel++;
 			if (this.currentVSpawnLevel > this.k) {
 				return null;
@@ -1531,6 +1584,7 @@ public class TgfdDiscovery {
 		float realPatternSupport = numerator / denominator;
 		System.out.println("Real Pattern Support: "+numerator+" / "+denominator+" = " + realPatternSupport);
 		patternTreeNode.setPatternSupport(realPatternSupport);
+		this.patternSupportsList.add(realPatternSupport);
 	}
 
 	private void extractMatch(GraphMapping<Vertex, RelationshipEdge> result, PatternTreeNode patternTreeNode, HashSet<ConstantLiteral> match, HashSet<String> entityURIs) {
