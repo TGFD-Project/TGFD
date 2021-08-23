@@ -44,13 +44,13 @@ public class TgfdDiscovery {
 	public int NUM_OF_VERTICES_IN_GRAPH;
 	public Map<String, HashSet<String>> vertexTypesAttributes; // freq attributes come from here
 	public PatternTree patternTree;
-	public boolean isNaive;
+	public boolean noMinimalityPruning;
 	public Long graphSize = null;
 	private final boolean interestingTGFDs;
 	private final int k;
 	private final double theta;
 	private final int gamma;
-	private final double patternSupportThreshold;
+	private final double edgeSupportThreshold;
 	private HashSet<String> activeAttributesSet;
 	private int previousLevelNodeIndex = 0;
 	private int candidateEdgeIndex = 0;
@@ -79,39 +79,46 @@ public class TgfdDiscovery {
 		this.theta = DEFAULT_THETA;
 		this.gamma = DEFAULT_GAMMA;
 		this.numOfSnapshots = numOfSnapshots;
-		this.patternSupportThreshold = DEFAULT_PATTERN_SUPPORT_THRESHOLD;
-		this.isNaive = false;
+		this.edgeSupportThreshold = DEFAULT_PATTERN_SUPPORT_THRESHOLD;
+		this.noMinimalityPruning = false;
 		this.interestingTGFDs = true;
 		this.useChangeFile = false;
 		this.noSupportPruning = false;
 		this.dontSortHistogram = false;
 
-		System.out.println("Running experiment for |G|="+this.graphSize+", k="+this.k+", theta="+this.theta+", gamma"+this.gamma+", patternSupport="+this.patternSupportThreshold+", interesting="+this.interestingTGFDs+", optimized="+!this.isNaive);
+		System.out.println("Running experiment for |G|="+this.graphSize+", k="+this.k+", theta="+this.theta+", gamma"+this.gamma+", patternSupport="+this.edgeSupportThreshold +", interesting="+this.interestingTGFDs+", optimized="+!this.noMinimalityPruning);
 
 		this.tgfds = new ArrayList<>();
-		for (int vSpawnLevel = 0; vSpawnLevel <= k; vSpawnLevel++) {
+		for (int vSpawnLevel = 0; vSpawnLevel <= this.k; vSpawnLevel++) {
 			tgfds.add(new ArrayList<>());
 		}
 	}
 
-	public TgfdDiscovery(int k, double theta, int gamma, Long graphSize, double patternSupport, int numOfSnapshots, boolean isNaive, boolean interestingTGFDsOnly, boolean useChangeFile, boolean noSupportPruning, boolean dontSortHistogram) {
+	public TgfdDiscovery(int k, double theta, int gamma, Long graphSize, double patternSupport, int numOfSnapshots, boolean noMinimalityPruning, boolean interestingTGFDsOnly, boolean useChangeFile, boolean noSupportPruning, boolean dontSortHistogram) {
 		this.startTime = System.currentTimeMillis();
 		this.k = k;
 		this.theta = theta;
 		this.gamma = gamma;
 		this.graphSize = graphSize;
 		this.numOfSnapshots = numOfSnapshots;
-		this.patternSupportThreshold = patternSupport;
-		this.isNaive = isNaive;
+		this.edgeSupportThreshold = patternSupport;
+		this.noMinimalityPruning = noMinimalityPruning;
 		this.interestingTGFDs = interestingTGFDsOnly;
 		this.useChangeFile = useChangeFile;
 		this.noSupportPruning = noSupportPruning;
 		this.dontSortHistogram = dontSortHistogram;
 
-		System.out.println("Running experiment for |G|="+this.graphSize+", k="+this.k+", theta="+this.theta+", gamma"+this.gamma+", patternSupport="+this.patternSupportThreshold+", interesting="+this.interestingTGFDs+", optimized="+!this.isNaive);
+		System.out.println("Running experiment for |G|="+this.graphSize
+				+", k="+this.k
+				+", theta="+this.theta
+				+", gamma"+this.gamma
+				+", edgeSupport=" +this.edgeSupportThreshold
+				+", interesting="+this.interestingTGFDs
+				+", optimized="+!this.noMinimalityPruning
+				+", noSupportPruning="+this.noSupportPruning);
 
 		this.tgfds = new ArrayList<>();
-		for (int vSpawnLevel = 0; vSpawnLevel <= k; vSpawnLevel++) {
+		for (int vSpawnLevel = 0; vSpawnLevel <= this.k; vSpawnLevel++) {
 			tgfds.add(new ArrayList<>());
 		}
 	}
@@ -124,14 +131,14 @@ public class TgfdDiscovery {
 
 	@Override
 	public String toString() {
-		return (this.isNaive ? "naive" : "optimized") +
+		return (this.noMinimalityPruning ? "naive" : "optimized") +
 				(this.noSupportPruning ? "-noSupportPruning" : "") +
 				(this.graphSize == null ? "" : "-G"+this.graphSize) +
 				(this.interestingTGFDs ? "-interesting" : "") +
 				"-k" + this.currentVSpawnLevel +
 				"-theta" + this.theta +
 				"-a" + this.gamma +
-				"-pTheta" + this.patternSupportThreshold +
+				"-eSupp" + this.edgeSupportThreshold +
 				(this.useChangeFile ? "-changefile" : "") +
 				(this.timeAndDateStamp == null ? "" : ("-"+this.timeAndDateStamp));
 	}
@@ -265,9 +272,9 @@ public class TgfdDiscovery {
 				printWithTime("getMatchesForPattern2", (System.currentTimeMillis() - startTime));
 			}
 //			return;
-			if (patternTreeNode.getPatternSupport() < tgfdDiscovery.theta && !tgfdDiscovery.noSupportPruning) {
+			if (patternTreeNode.getPatternSupport() < tgfdDiscovery.theta) {
 				System.out.println("Mark as pruned. Real pattern support too low for pattern " + patternTreeNode.getPattern());
-				patternTreeNode.setIsPruned();
+				if (!tgfdDiscovery.noSupportPruning) patternTreeNode.setIsPruned();
 				continue;
 			}
 			final long hSpawnStartTime = System.currentTimeMillis();
@@ -715,9 +722,11 @@ public class TgfdDiscovery {
 		// Discover entities
 		Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities = findEntities(literalPath, matchesPerTimestamps);
 		if (entities == null) {
-			System.out.println("Mark as Pruned. No matches found during entity discovery.");
-			literalTreeNode.setIsPruned();
-			patternNode.addZeroEntityDependency(literalPath);
+			System.out.println("Mark as Pruned. No entities found during entity discovery.");
+			if (!this.noSupportPruning) {
+				literalTreeNode.setIsPruned();
+				patternNode.addZeroEntityDependency(literalPath);
+			}
 			return tgfds;
 		}
 
@@ -737,8 +746,10 @@ public class TgfdDiscovery {
 		ArrayList<TGFD> generalTGFD = discoverGeneralTGFD(patternNode, patternNode.getPatternSupport(), literalPath, entities.size(), constantXdeltas, satisfyingAttrValues);
 		if (generalTGFD.size() > 0) {
 			System.out.println("Marking literal node as pruned. Discovered general TGFDs for this dependency.");
-			literalTreeNode.setIsPruned();
-			patternNode.addMinimalDependency(literalPath);
+			if (!this.noMinimalityPruning) {
+				literalTreeNode.setIsPruned();
+				patternNode.addMinimalDependency(literalPath);
+			}
 		}
 		tgfds.addAll(generalTGFD);
 
@@ -802,7 +813,7 @@ public class TgfdDiscovery {
 		for (Entry<Pair, ArrayList<TreeSet<Pair>>> intersection : sortedIntersections) {
 			Pair candidateDelta = intersection.getKey();
 			// TO-DO: Verify - does this even work?
-			if (isSupersetPath(literalPath, candidateDelta, patternTreeNode.getAllLowSupportGeneralTgfds()) && !this.noSupportPruning) {
+			if (isSupersetPath(literalPath, candidateDelta, patternTreeNode.getAllLowSupportGeneralTgfds())) {
 				continue;
 			}
 			int generalMin = candidateDelta.min();
@@ -830,8 +841,9 @@ public class TgfdDiscovery {
 
 			float support = numerator / denominator;
 			System.out.println("Candidate general TGFD support: " + support);
+			this.generalTgfdSupportsList.add(support);
 			if (support < this.theta) {
-				patternTreeNode.addToLowSupportGeneralTgfdList(literalPath, candidateDelta);
+				if (!this.noSupportPruning) patternTreeNode.addToLowSupportGeneralTgfdList(literalPath, candidateDelta);
 				System.out.println("Support for candidate general TGFD is below support threshold");
 				continue;
 			}
@@ -1016,7 +1028,7 @@ public class TgfdDiscovery {
 			candidateTGFDdelta = new Delta(Period.ofDays(minDistance * 183), Period.ofDays(maxDistance * 183 + 1), Duration.ofDays(183));
 			System.out.println("Constant TGFD delta: "+candidateTGFDdelta);
 
-			if (isSupersetPath(constantPath, patternNode.getAllMinimalDependenciesOnThisPath()) && !this.isNaive) { // Ensures we don't expand constant TGFDs from previous iterations
+			if (!this.noMinimalityPruning && isSupersetPath(constantPath, patternNode.getAllMinimalDependenciesOnThisPath())) { // Ensures we don't expand constant TGFDs from previous iterations
 				System.out.println("Candidate constant TGFD " + constantPath + " is a superset of an existing minimal constant TGFD");
 				continue;
 			}
@@ -1024,7 +1036,7 @@ public class TgfdDiscovery {
 			TGFD entityTGFD = new TGFD(newPattern, candidateTGFDdelta, newDependency, candidateTGFDsupport, patternNode.getPatternSupport(), "");
 			System.out.println("TGFD: " + entityTGFD);
 			tgfds.add(entityTGFD);
-			patternNode.addMinimalDependency(constantPath);
+			if (!this.noMinimalityPruning) patternNode.addMinimalDependency(constantPath);
 		}
 		constantXdeltas.sort(new Comparator<Pair>() {
 			@Override
@@ -1133,7 +1145,7 @@ public class TgfdDiscovery {
 				ArrayList<TGFD> currentLevelTGFDs = new ArrayList<>();
 				for (LiteralTreeNode previousLevelLiteral : literalTreePreviousLevel) {
 					System.out.println("Creating literal tree node " + literalTree.getLevel(j).size() + "/" + (literalTreePreviousLevel.size() * (literalTreePreviousLevel.size()-1)));
-					if (previousLevelLiteral.isPruned() && !this.isNaive) continue;
+					if (previousLevelLiteral.isPruned()) continue;
 					ArrayList<ConstantLiteral> parentsPathToRoot = previousLevelLiteral.getPathToRoot();
 					for (ConstantLiteral literal: literals) {
 						if (this.interestingTGFDs) { // Ensures all vertices are involved in dependency
@@ -1151,11 +1163,11 @@ public class TgfdDiscovery {
 							System.out.println("Skip. Duplicate literal path.");
 							continue;
 						}
-						if (isSupersetPath(newPath, patternTreeNode.getAllZeroEntityDependenciesOnThisPath()) && !this.isNaive) { // Ensures we don't re-explore dependencies whose subsets have no entities
+						if (!this.noSupportPruning && isSupersetPath(newPath, patternTreeNode.getAllZeroEntityDependenciesOnThisPath())) { // Ensures we don't re-explore dependencies whose subsets have no entities
 							System.out.println("Skip. Candidate literal path is a superset of zero-entity dependency.");
 							continue;
 						}
-						if (isSupersetPath(newPath, patternTreeNode.getAllMinimalDependenciesOnThisPath()) && !this.isNaive) { // Ensures we don't re-explore dependencies whose subsets have already have a general dependency
+						if (!this.noMinimalityPruning && isSupersetPath(newPath, patternTreeNode.getAllMinimalDependenciesOnThisPath())) { // Ensures we don't re-explore dependencies whose subsets have already have a general dependency
 							System.out.println("Skip. Candidate literal path is a superset of minimal dependency.");
 							continue;
 						}
@@ -1165,7 +1177,7 @@ public class TgfdDiscovery {
 						LiteralTreeNode literalTreeNode = literalTree.createNodeAtLevel(j, literal, previousLevelLiteral);
 
 						// Ensures delta discovery only occurs when # of literals in dependency equals number of vertices in graph
-						if ((j + 1) != patternTreeNode.getGraph().vertexSet().size() && this.interestingTGFDs) {
+						if (this.interestingTGFDs && (j + 1) != patternTreeNode.getGraph().vertexSet().size()) {
 							System.out.println("|LHS|+|RHS| != |Q|. Skip performing Delta Discovery HSpawn level " + j);
 							continue;
 						}
@@ -1291,7 +1303,7 @@ public class TgfdDiscovery {
 			System.out.println("VSpawnInit with single-node pattern " + (i+1) + "/" + this.sortedVertexHistogram.size() + ": " + candidatePattern);
 
 			if (this.dontSortHistogram) {
-				if (patternSupport >= this.patternSupportThreshold) {
+				if (patternSupport >= this.edgeSupportThreshold) {
 					this.patternTree.createNodeAtLevel(0, candidatePattern, patternSupport, null);
 				} else {
 					System.out.println("Pattern support of " + patternSupport + " is below threshold.");
@@ -1357,7 +1369,7 @@ public class TgfdDiscovery {
 		System.out.println("Performing VSpawn on pattern: " + previousLevelNode.getPattern());
 
 		System.out.println("Level " + (this.currentVSpawnLevel - 1) + " pattern: " + previousLevelNode.getPattern());
-		if (previousLevelNode.isPruned() && !this.isNaive) {
+		if (!this.noSupportPruning && previousLevelNode.isPruned()) {
 			System.out.println("Marked as pruned. Skip.");
 			this.previousLevelNodeIndex++;
 			return null;
@@ -1368,8 +1380,8 @@ public class TgfdDiscovery {
 		String candidateEdgeString = candidateEdge.getKey();
 		System.out.println("Candidate edge:" + candidateEdgeString);
 
-		// For naive version only - checks if candidate edge is frequent enough
-		if (this.dontSortHistogram && (1.0 * candidateEdge.getValue() / NUM_OF_EDGES_IN_GRAPH) < this.patternSupportThreshold) {
+		// For non-optimized version only - checks if candidate edge is frequent enough
+		if (this.dontSortHistogram && (1.0 * candidateEdge.getValue() / NUM_OF_EDGES_IN_GRAPH) < this.edgeSupportThreshold) {
 			System.out.println("Candidate edge is below pattern support threshold. Skip");
 			this.candidateEdgeIndex++;
 			return null;
@@ -1476,7 +1488,7 @@ public class TgfdDiscovery {
 				continue;
 			}
 
-			if (isSupergraphPattern(newPattern, this.patternTree) && !this.isNaive) {
+			if (!this.noSupportPruning && isSupergraphPattern(newPattern, this.patternTree)) {
 				v.setMarked(true);
 				System.out.println("Skip. Candidate pattern is a supergraph of pruned pattern");
 				continue;
