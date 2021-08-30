@@ -1560,19 +1560,53 @@ public class TgfdDiscovery {
 		return null;
 	}
 
+	public void extractMatches(Set<RelationshipEdge> edgeSet, ArrayList<HashSet<ConstantLiteral>> matches, PatternTreeNode patternTreeNode, HashSet<String> entityURIs) {
+		String patternEdgeLabel = patternTreeNode.getGraph().edgeSet().iterator().next().getLabel();
+		String sourceVertexType = patternTreeNode.getGraph().edgeSet().iterator().next().getSource().getTypes().iterator().next();
+		String targetVertexType = patternTreeNode.getGraph().edgeSet().iterator().next().getTarget().getTypes().iterator().next();
+		int numOfMatches = 0;
+		for (RelationshipEdge edge: edgeSet) {
+			String matchedEdgeLabel = edge.getLabel();
+			String matchedSourceVertexType = edge.getSource().getTypes().iterator().next();
+			String matchedTargetVertexType = edge.getTarget().getTypes().iterator().next();
+			if (matchedEdgeLabel.equals(patternEdgeLabel) && sourceVertexType.equals(matchedSourceVertexType) && targetVertexType.equals(matchedTargetVertexType)) {
+				numOfMatches++;
+				HashSet<ConstantLiteral> match = new HashSet<>();
+				extractMatch(edge.getSource(), edge.getTarget(), patternTreeNode, match, entityURIs);
+				if (match.size() <= patternTreeNode.getGraph().vertexSet().size()) continue;
+				matches.add(match);
+			}
+		}
+		System.out.println("Number of matches found: " + numOfMatches);
+		System.out.println("Number of matches found that contain active attributes: " + matches.size());
+		matches.sort(new Comparator<HashSet<ConstantLiteral>>() {
+			@Override
+			public int compare(HashSet<ConstantLiteral> o1, HashSet<ConstantLiteral> o2) {
+				return o1.size() - o2.size();
+			}
+		});
+	}
+
 	public void getMatchesForPattern(ArrayList<DBPediaLoader> graphs, PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
 		// TO-DO: Potential speed up for single-edge/single-node patterns. Iterate through all edges/nodes in graph.
 		HashSet<String> entityURIs = new HashSet<>();
+		patternTreeNode.getPattern().getCenterVertexType();
+
 		for (int year = 0; year < this.numOfSnapshots; year++) {
 			long searchStartTime = System.currentTimeMillis();
-			VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> results = new VF2SubgraphIsomorphism().execute2(graphs.get(year).getGraph(), patternTreeNode.getPattern(), false);
 			ArrayList<HashSet<ConstantLiteral>> matches = new ArrayList<>();
-			if (results.isomorphismExists()) {
-				extractMatches(results.getMappings(), matches, patternTreeNode, entityURIs);
+			if (this.currentVSpawnLevel == 1) {
+				extractMatches(graphs.get(year).getGraph().getGraph().edgeSet(), matches, patternTreeNode, entityURIs);
+			} else {
+				VF2AbstractIsomorphismInspector<Vertex, RelationshipEdge> results = new VF2SubgraphIsomorphism().execute2(graphs.get(year).getGraph(), patternTreeNode.getPattern(), false);
+				if (results.isomorphismExists()) {
+					extractMatches(results.getMappings(), matches, patternTreeNode, entityURIs);
+				}
 			}
 			matchesPerTimestamps.get(year).addAll(matches);
 			printWithTime("Search Cost", (System.currentTimeMillis() - searchStartTime));
 		}
+
 		// TO-DO: Should we implement pattern support here to weed out patterns with few matches in later iterations?
 		// Is there an ideal pattern support threshold after which very few TGFDs are discovered?
 		// How much does the real pattern differ from the estimate?
@@ -1600,28 +1634,52 @@ public class TgfdDiscovery {
 	}
 
 	private void extractMatch(GraphMapping<Vertex, RelationshipEdge> result, PatternTreeNode patternTreeNode, HashSet<ConstantLiteral> match, HashSet<String> entityURIs) {
-		String centerVertexType = patternTreeNode.getPattern().getCenterVertexType();
 		String entityURI = null;
 		for (Vertex v : patternTreeNode.getGraph().vertexSet()) {
 			Vertex currentMatchedVertex = result.getVertexCorrespondence(v, false);
 			if (currentMatchedVertex == null) continue;
-			String patternVertexType = new ArrayList<>(currentMatchedVertex.getTypes()).get(0);
-			for (ConstantLiteral activeAttribute : getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet(),true)) {
-				if (!activeAttribute.getVertexType().equals(patternVertexType)) continue;
-				for (String matchedAttrName : currentMatchedVertex.getAllAttributesNames()) {
-					if (patternVertexType.equals(centerVertexType) && matchedAttrName.equals("uri")) {
-						entityURI = currentMatchedVertex.getAttributeValueByName(matchedAttrName);
-					}
-					if (!activeAttribute.getAttrName().equals(matchedAttrName)) continue;
-					String matchedAttrValue = currentMatchedVertex.getAttributeValueByName(matchedAttrName);
-					ConstantLiteral xLiteral = new ConstantLiteral(patternVertexType, matchedAttrName, matchedAttrValue);
-					match.add(xLiteral);
-				}
+			if (entityURI == null) {
+				entityURI = extractAttributes(patternTreeNode, match, currentMatchedVertex, entityURIs);
+			} else {
+				extractAttributes(patternTreeNode, match, currentMatchedVertex, entityURIs);
 			}
 		}
-		if (entityURIs != null && match.size() > patternTreeNode.getGraph().vertexSet().size()) {
+		if (entityURI != null && match.size() > patternTreeNode.getGraph().vertexSet().size()) {
 			entityURIs.add(entityURI);
 		}
+	}
+
+	private void extractMatch(Vertex currentSourceVertex, Vertex currentTargetVertex, PatternTreeNode patternTreeNode, HashSet<ConstantLiteral> match, HashSet<String> entityURIs) {
+		String entityURI = null;
+		for (Vertex currentMatchedVertex: Arrays.asList(currentSourceVertex, currentTargetVertex)) {
+			if (entityURI == null) {
+				entityURI = extractAttributes(patternTreeNode, match, currentMatchedVertex, entityURIs);
+			} else {
+				extractAttributes(patternTreeNode, match, currentMatchedVertex, entityURIs);
+			}
+		}
+		if (entityURI != null && match.size() > patternTreeNode.getGraph().vertexSet().size()) {
+			entityURIs.add(entityURI);
+		}
+	}
+
+	private String extractAttributes(PatternTreeNode patternTreeNode, HashSet<ConstantLiteral> match, Vertex currentMatchedVertex, HashSet<String> entityURIs) {
+		String entityURI = null;
+		String centerVertexType = patternTreeNode.getPattern().getCenterVertexType();
+		String patternVertexType = new ArrayList<>(currentMatchedVertex.getTypes()).get(0);
+		for (ConstantLiteral activeAttribute : getActiveAttributesInPattern(patternTreeNode.getGraph().vertexSet(),true)) {
+			if (!activeAttribute.getVertexType().equals(patternVertexType)) continue;
+			for (String matchedAttrName : currentMatchedVertex.getAllAttributesNames()) {
+				if (patternVertexType.equals(centerVertexType) && matchedAttrName.equals("uri")) {
+					entityURI = currentMatchedVertex.getAttributeValueByName(matchedAttrName);
+				}
+				if (!activeAttribute.getAttrName().equals(matchedAttrName)) continue;
+				String matchedAttrValue = currentMatchedVertex.getAttributeValueByName(matchedAttrName);
+				ConstantLiteral xLiteral = new ConstantLiteral(patternVertexType, matchedAttrName, matchedAttrValue);
+				match.add(xLiteral);
+			}
+		}
+		return entityURI;
 	}
 
 	private void extractMatches(Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator, ArrayList<HashSet<ConstantLiteral>> matches, PatternTreeNode patternTreeNode, HashSet<String> entityURIs) {
