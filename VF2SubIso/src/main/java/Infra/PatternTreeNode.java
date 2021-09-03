@@ -11,11 +11,14 @@ public class PatternTreeNode {
     private final VF2PatternGraph pattern;
     private Double patternSupport = null;
     private final PatternTreeNode parentNode;
+    private ArrayList<PatternTreeNode> subgraphParents = new ArrayList<>();
+    private PatternTreeNode centerVertexParent = null;
     private final String edgeString;
     private boolean isPruned = false;
     private ArrayList<ArrayList<ConstantLiteral>> zeroEntityDependencies = new ArrayList<>();
     private ArrayList<ArrayList<ConstantLiteral>> minimalDependencies = new ArrayList<>();
     private HashMap<ArrayList<ConstantLiteral>, ArrayList<TgfdDiscovery.Pair>> lowSupportGeneralTgfdList = new HashMap<>();
+    private ArrayList<ArrayList<DataVertex>> matchesOfCenterVertices = null;
 
     public PatternTreeNode(VF2PatternGraph pattern, PatternTreeNode parentNode, String edgeString) {
         this.pattern = pattern;
@@ -23,10 +26,10 @@ public class PatternTreeNode {
         this.edgeString = edgeString;
     }
 
-    public PatternTreeNode(VF2PatternGraph pattern, double patternSupport, PatternTreeNode parentNode) {
+    public PatternTreeNode(VF2PatternGraph pattern, double patternSupport) {
         this.pattern = pattern;
         this.patternSupport = patternSupport;
-        this.parentNode = parentNode;
+        this.parentNode = null;
         this.edgeString = null;
     }
 
@@ -60,7 +63,7 @@ public class PatternTreeNode {
 
     @Override
     public String toString() {
-        return "GenTreeNode{" +
+        return "PatternTreeNode{" +
                 "pattern=" + pattern +
                 ",\n support=" + patternSupport +
                 '}';
@@ -77,9 +80,8 @@ public class PatternTreeNode {
     public ArrayList<ArrayList<ConstantLiteral>> getAllZeroEntityDependenciesOnThisPath() {
         PatternTreeNode currPatternTreeNode = this;
         ArrayList<ArrayList<ConstantLiteral>> zeroEntityPaths = new ArrayList<>(currPatternTreeNode.getZeroEntityDependencies());
-        while (currPatternTreeNode.parentNode() != null) {
-            currPatternTreeNode = currPatternTreeNode.parentNode();
-            zeroEntityPaths.addAll(currPatternTreeNode.getZeroEntityDependencies());
+        for (PatternTreeNode parentNode: subgraphParents) {
+            zeroEntityPaths.addAll(parentNode.getAllZeroEntityDependenciesOnThisPath());
         }
         return zeroEntityPaths;
     }
@@ -95,9 +97,8 @@ public class PatternTreeNode {
     public ArrayList<ArrayList<ConstantLiteral>> getAllMinimalDependenciesOnThisPath() {
         PatternTreeNode currPatternTreeNode = this;
         ArrayList<ArrayList<ConstantLiteral>> minimalPaths = new ArrayList<>(currPatternTreeNode.getMinimalDependencies());
-        while (currPatternTreeNode.parentNode() != null) {
-            currPatternTreeNode = currPatternTreeNode.parentNode();
-            minimalPaths.addAll(currPatternTreeNode.getMinimalDependencies());
+        for (PatternTreeNode parentNode: subgraphParents) {
+            minimalPaths.addAll(parentNode.getAllMinimalDependenciesOnThisPath());
         }
         return minimalPaths;
     }
@@ -117,15 +118,13 @@ public class PatternTreeNode {
 
     public HashMap<ArrayList<ConstantLiteral>, ArrayList<TgfdDiscovery.Pair>> getAllLowSupportGeneralTgfds() {
         HashMap<ArrayList<ConstantLiteral>, ArrayList<TgfdDiscovery.Pair>> allTGFDs = new HashMap<>(this.getLowSupportGeneralTgfdList());
-        PatternTreeNode currentNode = this;
-        while (currentNode.getParentNode() != null) {
-            currentNode = currentNode.getParentNode();
-            for (Map.Entry<ArrayList<ConstantLiteral>, ArrayList<TgfdDiscovery.Pair>> tgfdEntry : currentNode.getLowSupportGeneralTgfdList().entrySet()) {
+        for (PatternTreeNode parentNode: subgraphParents) {
+            for (Map.Entry<ArrayList<ConstantLiteral>, ArrayList<TgfdDiscovery.Pair>> tgfdEntry : parentNode.getAllLowSupportGeneralTgfds().entrySet()) {
                 allTGFDs.putIfAbsent(tgfdEntry.getKey(), new ArrayList<>());
                 allTGFDs.get(tgfdEntry.getKey()).addAll(tgfdEntry.getValue());
             }
         }
-        return this.lowSupportGeneralTgfdList;
+        return allTGFDs;
     }
 
     public String getEdgeString() {
@@ -141,5 +140,29 @@ public class PatternTreeNode {
             edgeStrings.add(currentNode.getEdgeString());
         }
         return edgeStrings;
+    }
+
+    public ArrayList<ArrayList<DataVertex>> getMatchesOfCenterVertices() {
+        return this.matchesOfCenterVertices;
+    }
+
+    public void setMatchesOfCenterVertices(ArrayList<ArrayList<DataVertex>> matchesOfCenterVertices) {
+        this.matchesOfCenterVertices = matchesOfCenterVertices;
+    }
+
+    public void addSubgraphParent(PatternTreeNode otherPatternNode) {
+        this.subgraphParents.add(otherPatternNode);
+    }
+
+    public ArrayList<PatternTreeNode> getSubgraphParents() {
+        return this.subgraphParents;
+    }
+
+    public void setCenterVertexParent(PatternTreeNode centerVertexParent) {
+        this.centerVertexParent = centerVertexParent;
+    }
+
+    public PatternTreeNode getCenterVertexParent() {
+        return this.centerVertexParent;
     }
 }
