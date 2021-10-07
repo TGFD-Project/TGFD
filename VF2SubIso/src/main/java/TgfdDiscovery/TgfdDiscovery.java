@@ -75,7 +75,13 @@ public class TgfdDiscovery {
 	private ArrayList<Float> generalTgfdSupportsList = new ArrayList<>();
 	private ArrayList<Float> vertexSupportsList = new ArrayList<>();
 	private ArrayList<Float> edgeSupportsList = new ArrayList<>();
-	private HashMap<String, ArrayList<ArrayList<DataVertex>>> matchesOfCenterVertices = new HashMap<>();
+	private long totalVisitedPathCheckingTime = 0;
+	private long totalMatchingTime = 0;
+	private long totalSupersetPathCheckingTime = 0;
+	private long totalFindEntitiesTime = 0;
+	private long totalVspawnTime = 0;
+	private long totalDiscoverConstantTGFDsTime = 0;
+	private long totalDiscoverGeneralTGFDTime = 0;
 
 	public TgfdDiscovery(int numOfSnapshots) {
 		this.startTime = System.currentTimeMillis();
@@ -144,7 +150,7 @@ public class TgfdDiscovery {
 
 	@Override
 	public String toString() {
-		return (this.noMinimalityPruning ? "naive" : "optimized") +
+		return (this.noMinimalityPruning ? "noMinimalityPruning" : "") +
 				(this.noSupportPruning ? "-noSupportPruning" : "") +
 				(this.graphSize == null ? "" : "-G"+this.graphSize) +
 				(this.interestingTGFDs ? "-interesting" : "") +
@@ -194,7 +200,7 @@ public class TgfdDiscovery {
 
 		Options options = new Options();
 		options.addOption("console", false, "print to console");
-		options.addOption("naive", false, "run naive version of algorithm");
+		options.addOption("noMinimalityPruning", false, "run algorithm without minimality pruning");
 		options.addOption("noSupportPruning", false, "run algorithm without support pruning");
 		options.addOption("dontSortHistogram", false, "run algorithm without sorting histograms");
 		options.addOption("interesting", false, "run algorithm and only consider interesting TGFDs");
@@ -228,7 +234,7 @@ public class TgfdDiscovery {
 			System.setOut(logStream);
 		}
 
-		boolean isNaive = cmd.hasOption("naive");
+		boolean noMinimalityPruning = cmd.hasOption("noMinimalityPruning");
 		boolean noSupportPruning = cmd.hasOption("noSupportPruning");
 		boolean dontSortHistogram = cmd.hasOption("dontSortHistogram");
 		boolean interestingTGFDs = cmd.hasOption("interesting");
@@ -245,7 +251,7 @@ public class TgfdDiscovery {
 		int k = cmd.getOptionValue("k") == null ? DEFAULT_K : Integer.parseInt(cmd.getOptionValue("k"));
 		double patternSupportThreshold = cmd.getOptionValue("p") == null ? DEFAULT_PATTERN_SUPPORT_THRESHOLD : Double.parseDouble(cmd.getOptionValue("p"));
 
-		TgfdDiscovery tgfdDiscovery = new TgfdDiscovery(k, theta, gamma, graphSize, patternSupportThreshold, DEFAULT_NUM_OF_SNAPSHOTS, isNaive, interestingTGFDs, useChangeFile, noSupportPruning, dontSortHistogram, useSubgraph, generatek0Tgfds);
+		TgfdDiscovery tgfdDiscovery = new TgfdDiscovery(k, theta, gamma, graphSize, patternSupportThreshold, DEFAULT_NUM_OF_SNAPSHOTS, noMinimalityPruning, interestingTGFDs, useChangeFile, noSupportPruning, dontSortHistogram, useSubgraph, generatek0Tgfds);
 		final long histogramTime = System.currentTimeMillis();
 		tgfdDiscovery.histogram();
 		printWithTime("histogramTime", (System.currentTimeMillis() - histogramTime));
@@ -272,29 +278,33 @@ public class TgfdDiscovery {
 			System.out.println("Candidate edge index " + tgfdDiscovery.candidateEdgeIndex);
 
 			PatternTreeNode patternTreeNode = null;
-			final long vSpawnStartTime = System.currentTimeMillis();
+			long vSpawnTime = System.currentTimeMillis();
 			while (patternTreeNode == null && tgfdDiscovery.currentVSpawnLevel <= tgfdDiscovery.k) {
 				patternTreeNode = tgfdDiscovery.vSpawn();
 			}
-			printWithTime("vSpawn", System.currentTimeMillis()-vSpawnStartTime);
+			vSpawnTime = System.currentTimeMillis()-vSpawnTime;
+			printWithTime("vSpawn", vSpawnTime);
+			tgfdDiscovery.totalVspawnTime += vSpawnTime;
 			if (tgfdDiscovery.currentVSpawnLevel > tgfdDiscovery.k) break;
 			ArrayList<ArrayList<HashSet<ConstantLiteral>>> matches = new ArrayList<>();
 			for (int timestamp = 0; timestamp < tgfdDiscovery.numOfSnapshots; timestamp++) {
 				matches.add(new ArrayList<>());
 			}
-			final long startTime = System.currentTimeMillis();
+			long matchingTime = System.currentTimeMillis();
 			assert patternTreeNode != null;
 			if (useSubgraph) {
 				tgfdDiscovery.getMatchesUsingCenterVertices(graphs, patternTreeNode, matches);
-				printWithTime("getMatchesUsingCenterVertices", (System.currentTimeMillis() - startTime));
+				matchingTime = System.currentTimeMillis() - matchingTime;
+				printWithTime("getMatchesUsingCenterVertices", (matchingTime));
+				tgfdDiscovery.totalMatchingTime += matchingTime;
 			} else if (useChangeFile) {
 				tgfdDiscovery.getMatchesForPattern2(patternTreeNode, matches);
-				printWithTime("getMatchesForPattern2", (System.currentTimeMillis() - startTime));
+				printWithTime("getMatchesForPattern2", (System.currentTimeMillis() - matchingTime));
 			} else {
 				// TO-DO: Investigate - why is there a slight discrepancy between the # of matches found via snapshot vs. changefile?
 				// TO-DO: For full-sized dbpedia, can we store the models and create an optimized graph for every search?
 				tgfdDiscovery.getMatchesForPattern(graphs, patternTreeNode, matches); // this can be called repeatedly on many graphs
-				printWithTime("getMatchesForPattern", (System.currentTimeMillis() - startTime));
+				printWithTime("getMatchesForPattern", (System.currentTimeMillis() - matchingTime));
 			}
 
 			if (patternTreeNode.getPatternSupport() < tgfdDiscovery.theta) {
@@ -308,6 +318,32 @@ public class TgfdDiscovery {
 			printWithTime("hSpawn", (System.currentTimeMillis() - hSpawnStartTime));
 			tgfdDiscovery.tgfds.get(tgfdDiscovery.currentVSpawnLevel).addAll(tgfds);
 		}
+		tgfdDiscovery.printTimeStatistics();
+	}
+
+	private void printTimeStatistics() {
+		System.out.println("----------------Total Time Statistics-----------------");
+		System.out.println("totalVspawnTime time: " + this.totalVspawnTime + "(ms) ** " +
+				TimeUnit.MILLISECONDS.toSeconds(this.totalVspawnTime) +  "(sec)" +
+				TimeUnit.MILLISECONDS.toMinutes(this.totalVspawnTime) +  "(min)");
+		System.out.println("totalMatchingTime time: " + this.totalMatchingTime + "(ms) ** " +
+				TimeUnit.MILLISECONDS.toSeconds(this.totalMatchingTime) +  "(sec)" +
+				TimeUnit.MILLISECONDS.toMinutes(this.totalMatchingTime) +  "(min)");
+		System.out.println("totalVisitedPathCheckingTime time: " + this.totalVisitedPathCheckingTime + "(ms) ** " +
+				TimeUnit.MILLISECONDS.toSeconds(this.totalVisitedPathCheckingTime) +  "(sec)" +
+				TimeUnit.MILLISECONDS.toMinutes(this.totalVisitedPathCheckingTime) +  "(min)");
+		System.out.println("totalSupersetPathCheckingTime time: " + this.totalSupersetPathCheckingTime + "(ms) ** " +
+				TimeUnit.MILLISECONDS.toSeconds(this.totalSupersetPathCheckingTime) +  "(sec)" +
+				TimeUnit.MILLISECONDS.toMinutes(this.totalSupersetPathCheckingTime) +  "(min)");
+		System.out.println("totalFindEntitiesTime time: " + this.totalFindEntitiesTime + "(ms) ** " +
+				TimeUnit.MILLISECONDS.toSeconds(this.totalFindEntitiesTime) +  "(sec)" +
+				TimeUnit.MILLISECONDS.toMinutes(this.totalFindEntitiesTime) +  "(min)");
+		System.out.println("totalDiscoverConstantTGFDsTime time: " + this.totalDiscoverConstantTGFDsTime + "(ms) ** " +
+				TimeUnit.MILLISECONDS.toSeconds(this.totalDiscoverConstantTGFDsTime) +  "(sec)" +
+				TimeUnit.MILLISECONDS.toMinutes(this.totalDiscoverConstantTGFDsTime) +  "(min)");
+		System.out.println("totalDiscoverGeneralTGFDTime time: " + this.totalDiscoverGeneralTGFDTime + "(ms) ** " +
+				TimeUnit.MILLISECONDS.toSeconds(this.totalDiscoverGeneralTGFDTime) +  "(sec)" +
+				TimeUnit.MILLISECONDS.toMinutes(this.totalDiscoverGeneralTGFDTime) +  "(min)");
 	}
 
 	private void getMatchesUsingCenterVerticesForK1 (ArrayList<DBPediaLoader> graphs, PatternTreeNode patternTreeNode, ArrayList<ArrayList<HashSet<ConstantLiteral>>> matchesPerTimestamps) {
@@ -405,7 +441,7 @@ public class TgfdDiscovery {
 		calculatePatternSupport(entityURIs.size(), patternTreeNode);
 	}
 
-	private void printStatistics() {
+	private void printSupportStatistics() {
 		System.out.println("----------------Statistics for vSpawn level "+this.currentVSpawnLevel+"-----------------");
 		Collections.sort(this.vertexSupportsList);
 		Collections.sort(this.edgeSupportsList);
@@ -796,8 +832,8 @@ public class TgfdDiscovery {
 		return literals;
 	}
 
-	public static boolean isPathVisited(ArrayList<ConstantLiteral> path, ArrayList<ArrayList<ConstantLiteral>> visitedPaths) {
-		final long visitedPathCheckingTime = System.currentTimeMillis();
+	public boolean isPathVisited(ArrayList<ConstantLiteral> path, ArrayList<ArrayList<ConstantLiteral>> visitedPaths) {
+		long visitedPathCheckingTime = System.currentTimeMillis();
 		for (ArrayList<ConstantLiteral> visitedPath : visitedPaths) {
 			if (visitedPath.size() == path.size()
 					&& visitedPath.subList(0,visitedPath.size()-1).containsAll(path.subList(0, path.size()-1))
@@ -806,12 +842,14 @@ public class TgfdDiscovery {
 				return true;
 			}
 		}
-		printWithTime("visitedPathCheckingTime", System.currentTimeMillis()-visitedPathCheckingTime);
+		visitedPathCheckingTime = System.currentTimeMillis() - visitedPathCheckingTime;
+		printWithTime("visitedPathCheckingTime", visitedPathCheckingTime);
+		totalVisitedPathCheckingTime += visitedPathCheckingTime;
 		return false;
 	}
 
-	public static boolean isSupersetPath(ArrayList<ConstantLiteral> path, ArrayList<ArrayList<ConstantLiteral>> prunedPaths) {
-		final long supersetPathCheckingTime = System.currentTimeMillis();
+	public boolean isSupersetPath(ArrayList<ConstantLiteral> path, ArrayList<ArrayList<ConstantLiteral>> prunedPaths) {
+		long supersetPathCheckingTime = System.currentTimeMillis();
 		boolean isPruned = false;
 		for (ArrayList<ConstantLiteral> prunedPath : prunedPaths) {
 			if (path.get(path.size()-1).equals(prunedPath.get(prunedPath.size()-1)) && path.subList(0, path.size()-1).containsAll(prunedPath.subList(0,prunedPath.size()-1))) {
@@ -819,7 +857,9 @@ public class TgfdDiscovery {
 				isPruned = true;
 			}
 		}
-		printWithTime("supersetPathCheckingTime", System.currentTimeMillis()-supersetPathCheckingTime);
+		supersetPathCheckingTime = System.currentTimeMillis()-supersetPathCheckingTime;
+		printWithTime("supersetPathCheckingTime", supersetPathCheckingTime);
+		totalSupersetPathCheckingTime += supersetPathCheckingTime;
 		return isPruned;
 	}
 
@@ -845,9 +885,11 @@ public class TgfdDiscovery {
 		System.out.println("Performing Entity Discovery");
 
 		// Discover entities
-		final long findEntitiesTime = System.currentTimeMillis();
+		long findEntitiesTime = System.currentTimeMillis();
 		Map<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entities = findEntities(literalPath, matchesPerTimestamps);
-		printWithTime("findEntitiesTime", (System.currentTimeMillis() - findEntitiesTime));
+		findEntitiesTime = System.currentTimeMillis() - findEntitiesTime;
+		printWithTime("findEntitiesTime", findEntitiesTime);
+		totalFindEntitiesTime += findEntitiesTime;
 		if (entities == null) {
 			System.out.println("Mark as Pruned. No entities found during entity discovery.");
 			if (!this.noSupportPruning) {
@@ -862,9 +904,11 @@ public class TgfdDiscovery {
 		// Find Constant TGFDs
 		ArrayList<Pair> constantXdeltas = new ArrayList<>();
 		ArrayList<TreeSet<Pair>> satisfyingAttrValues = new ArrayList<>();
-		final long discoverConstantTGFDsTime = System.currentTimeMillis();
+		long discoverConstantTGFDsTime = System.currentTimeMillis();
 		ArrayList<TGFD> constantTGFDs = discoverConstantTGFDs(patternNode, literalPath.get(literalPath.size()-1), entities, constantXdeltas, satisfyingAttrValues);
-		printWithTime("discoverConstantTGFDsTime", (System.currentTimeMillis() - discoverConstantTGFDsTime));
+		discoverConstantTGFDsTime = System.currentTimeMillis() - discoverConstantTGFDsTime;
+		printWithTime("discoverConstantTGFDsTime", discoverConstantTGFDsTime);
+		totalDiscoverConstantTGFDsTime += discoverConstantTGFDsTime;
 		// TO-DO: Try discover general TGFD even if no constant TGFD candidate met support threshold
 		System.out.println("Constant TGFDs discovered: " + constantTGFDs.size());
 		tgfds.addAll(constantTGFDs);
@@ -872,9 +916,11 @@ public class TgfdDiscovery {
 		System.out.println("Discovering general TGFDs");
 
 		// Find general TGFDs
-		final long discoverGeneralTGFDTime = System.currentTimeMillis();
+		long discoverGeneralTGFDTime = System.currentTimeMillis();
 		ArrayList<TGFD> generalTGFD = discoverGeneralTGFD(patternNode, patternNode.getPatternSupport(), literalPath, entities.size(), constantXdeltas, satisfyingAttrValues);
-		printWithTime("discoverGeneralTGFDTime", (System.currentTimeMillis() - discoverGeneralTGFDTime));
+		discoverGeneralTGFDTime = System.currentTimeMillis() - discoverGeneralTGFDTime;
+		printWithTime("discoverGeneralTGFDTime", discoverGeneralTGFDTime);
+		totalDiscoverGeneralTGFDTime += discoverGeneralTGFDTime;
 		if (generalTGFD.size() > 0) {
 			System.out.println("Marking literal node as pruned. Discovered general TGFDs for this dependency.");
 			if (!this.noMinimalityPruning) {
@@ -1271,12 +1317,12 @@ public class TgfdDiscovery {
 					break;
 				}
 				literalTree.addLevel();
-				ArrayList<ArrayList<ConstantLiteral>> visitedPaths = new ArrayList<>();
+				ArrayList<ArrayList<ConstantLiteral>> visitedPaths = new ArrayList<>(); //TO-DO: Can this be implemented as HashSet to improve performance?
 				ArrayList<TGFD> currentLevelTGFDs = new ArrayList<>();
 				for (LiteralTreeNode previousLevelLiteral : literalTreePreviousLevel) {
 					System.out.println("Creating literal tree node " + literalTree.getLevel(j).size() + "/" + (literalTreePreviousLevel.size() * (literalTreePreviousLevel.size()-1)));
 					if (previousLevelLiteral.isPruned()) continue;
-					ArrayList<ConstantLiteral> parentsPathToRoot = previousLevelLiteral.getPathToRoot();
+					ArrayList<ConstantLiteral> parentsPathToRoot = previousLevelLiteral.getPathToRoot(); //TO-DO: Can this be implemented as HashSet to improve performance?
 					for (ConstantLiteral literal: activeAttributes) {
 						if (this.interestingTGFDs) { // Ensures all vertices are involved in dependency
 							if (isUsedVertexType(literal.getVertexType(), parentsPathToRoot)) continue;
@@ -1293,10 +1339,13 @@ public class TgfdDiscovery {
 							System.out.println("Skip. Duplicate literal path.");
 							continue;
 						}
+
+						//TO-DO: Can this be implemented as HashSet to improve performance?
 						if (!this.noSupportPruning && isSupersetPath(newPath, patternTreeNode.getAllZeroEntityDependenciesOnThisPath())) { // Ensures we don't re-explore dependencies whose subsets have no entities
 							System.out.println("Skip. Candidate literal path is a superset of zero-entity dependency.");
 							continue;
 						}
+						//TO-DO: Can this be implemented as HashSet to improve performance?
 						if (!this.noMinimalityPruning && isSupersetPath(newPath, patternTreeNode.getAllMinimalDependenciesOnThisPath())) { // Ensures we don't re-explore dependencies whose subsets have already have a general dependency
 							System.out.println("Skip. Candidate literal path is a superset of minimal dependency.");
 							continue;
@@ -1506,7 +1555,7 @@ public class TgfdDiscovery {
 			String experimentName = "api-test";
 			this.printTgfdsToFile(experimentName, this.tgfds.get(this.currentVSpawnLevel));
 			if (this.isKExperiment) this.printExperimentRuntimestoFile(experimentName, this.kRuntimes);
-			this.printStatistics();
+			this.printSupportStatistics();
 			this.currentVSpawnLevel++;
 			if (this.currentVSpawnLevel > this.k) {
 				return null;
