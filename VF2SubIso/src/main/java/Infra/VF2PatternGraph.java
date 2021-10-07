@@ -92,35 +92,47 @@ public class VF2PatternGraph {
             {
                 // Dequeue a vertex from queue and get its distance
                 x = queue.poll();
-                int distance=visited.get(x);
-                // Outgoing edges
-                for (RelationshipEdge edge : pattern.outgoingEdgesOf(v)) {
-                    w = edge.getTarget();
-                    // Check if the vertex is not visited
-                    if (!visited.containsKey(w)) {
-                        // Check if the vertex is within the diameter
-                        if (distance + 1 < d) {
-                            d = distance + 1;
-                        }
-                        //Enqueue the vertex and add it to the visited set
-                        visited.put(w, distance + 1);
-                        queue.add(w);
-                    }
-                }
-                // Incoming edges
-                for (RelationshipEdge edge : pattern.incomingEdgesOf(v)) {
+                int distance = visited.get(x);
+                for (RelationshipEdge edge : pattern.edgesOf(x)) {
                     w = edge.getSource();
+                    if (w.equals(x)) w = edge.getTarget();
                     // Check if the vertex is not visited
                     if (!visited.containsKey(w)) {
                         // Check if the vertex is within the diameter
-                        if (distance + 1 < d) {
-                            d = distance + 1;
-                        }
+                        d = distance + 1;
                         //Enqueue the vertex and add it to the visited set
                         visited.put(w, distance + 1);
                         queue.add(w);
                     }
                 }
+//                // Outgoing edges
+//                for (RelationshipEdge edge : pattern.outgoingEdgesOf(v)) {
+//                    w = edge.getTarget();
+//                    // Check if the vertex is not visited
+//                    if (!visited.containsKey(w)) {
+//                        // Check if the vertex is within the diameter
+//                        if (distance + 1 < d) {
+//                            d = distance + 1;
+//                        }
+//                        //Enqueue the vertex and add it to the visited set
+//                        visited.put(w, distance + 1);
+//                        queue.add(w);
+//                    }
+//                }
+//                // Incoming edges
+//                for (RelationshipEdge edge : pattern.incomingEdgesOf(v)) {
+//                    w = edge.getSource();
+//                    // Check if the vertex is not visited
+//                    if (!visited.containsKey(w)) {
+//                        // Check if the vertex is within the diameter
+//                        if (distance + 1 < d) {
+//                            d = distance + 1;
+//                        }
+//                        //Enqueue the vertex and add it to the visited set
+//                        visited.put(w, distance + 1);
+//                        queue.add(w);
+//                    }
+//                }
             }
             if(d>patternDiameter)
             {
