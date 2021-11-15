@@ -1,10 +1,12 @@
 package QPath;
 
+import Infra.Attribute;
 import Infra.PatternVertex;
 import Infra.Vertex;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class Triple implements Comparable<Triple>, Serializable {
     private final PatternVertex src;
@@ -85,6 +87,24 @@ public class Triple implements Comparable<Triple>, Serializable {
         if (!v.isMapped(this.dst))
             return false;
         return true;
+    }
+
+    public ArrayList<Attribute> getUnSatSRC(@NotNull Vertex vertex)
+    {
+        ArrayList<Attribute> unSat=new ArrayList<>();
+        for (Attribute attr:src.getAllAttributesList())
+            if(!attr.isNULL() && !vertex.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
+                unSat.add(attr);
+        return unSat;
+    }
+
+    public ArrayList<Attribute> getUnSatDST(@NotNull Vertex vertex)
+    {
+        ArrayList<Attribute> unSat=new ArrayList<>();
+        for (Attribute attr:dst.getAllAttributesList())
+            if(!attr.isNULL() && !vertex.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
+                unSat.add(attr);
+        return unSat;
     }
 
     @Override
