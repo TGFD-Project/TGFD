@@ -73,4 +73,11 @@ public class Query {
         return paths;
     }
 
+    public TGFD getTgfd() {
+        return tgfd;
+    }
+
+    public ArrayList<QueryPath> getQueryPaths() {
+        return queryPaths;
+    }
 }
