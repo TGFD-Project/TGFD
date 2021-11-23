@@ -9,29 +9,22 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Triple implements Comparable<Triple>, Serializable {
-    private final PatternVertex src;
-    private final PatternVertex dst;
+    private final Vertex src;
+    private final Vertex dst;
     private final String edge;
-
-    public Triple(PatternVertex src, PatternVertex dst, String edge)
-    {
-        this.src=src;
-        this.dst=dst;
-        this.edge=edge;
-    }
 
     public Triple(Vertex src, Vertex dst, String edge)
     {
-        this.src=(PatternVertex) src;
-        this.dst=(PatternVertex) dst;
+        this.src= src;
+        this.dst= dst;
         this.edge=edge;
     }
 
-    public PatternVertex getDst() {
+    public Vertex getDst() {
         return dst;
     }
 
-    public PatternVertex getSrc() {
+    public Vertex getSrc() {
         return src;
     }
 

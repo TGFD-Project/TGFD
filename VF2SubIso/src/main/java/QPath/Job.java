@@ -4,6 +4,8 @@ import Infra.*;
 import org.jgrapht.Graph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class Job {
 
@@ -14,6 +16,8 @@ public class Job {
     private int fragmentID;
     private ArrayList<RelationshipEdge> edges;
     private VF2DataGraph subgraph;
+    private ArrayList<boolean []>  matches=new ArrayList<>();
+    private ArrayList<HashMap<Integer, HashMap<Vertex, Literal>>>  unSat=new ArrayList<>();
 
     public Job(int id, DataVertex centerNode, Query query, int diameter, int fragmentID)
     {
@@ -35,6 +39,48 @@ public class Job {
     public void setSubgraph(Graph<Vertex, RelationshipEdge> inducedGraph) {
         this.subgraph=new VF2DataGraph(inducedGraph);
         this.subgraph.getGraph().vertexSet().forEach(vertex -> vertex.addJobletID(id));
+    }
+
+    public void findMatchesForTheFirstSnapshot()
+    {
+        for (int i=0;i<query.getQueryPaths().size();i++)
+        {
+            QueryPath path=query.getQueryPaths().get(i);
+            HashMap<Integer, HashSet<Triple>> matchedTriples=new HashMap<>();
+            for (int j=0;j<path.getTriples().size();j++)
+            {
+                matchedTriples.put(j,new HashSet<>());
+                Triple patternTriple=path.getTriples().get(j);
+                if(j==0)
+                {
+                    for (Vertex v:subgraph.getGraph().vertexSet()) {
+                        if(v.getTypes().containsAll(patternTriple.getSrc().getTypes()))
+                        {
+                            for (RelationshipEdge edge:subgraph.getGraph().outgoingEdgesOf(v)) {
+                                if(edge.getLabel().equals(patternTriple.getEdge()) && edge.getTarget().getTypes().containsAll(patternTriple.getDst().getTypes()))
+                                {
+                                    matchedTriples.get(j).add(new Triple(edge.getSource(),edge.getTarget(),edge.getLabel()));
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (Triple dataTriple:matchedTriples.get(j-1)) {
+                        if(dataTriple.getDst().getTypes().containsAll(patternTriple.getSrc().getTypes()))
+                        {
+                            for (RelationshipEdge edge:subgraph.getGraph().outgoingEdgesOf(dataTriple.getDst())) {
+                                if(edge.getLabel().equals(patternTriple.getEdge()) && edge.getTarget().getTypes().containsAll(patternTriple.getDst().getTypes()))
+                                {
+                                    matchedTriples.get(j).add(new Triple(edge.getSource(),edge.getTarget(),edge.getLabel()));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public VF2DataGraph getSubgraph() {
