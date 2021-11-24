@@ -59,7 +59,10 @@ public class Job {
                             for (RelationshipEdge edge:subgraph.getGraph().outgoingEdgesOf(v)) {
                                 if(edge.getLabel().equals(patternTriple.getEdge()) && edge.getTarget().getTypes().containsAll(patternTriple.getDst().getTypes()))
                                 {
-                                    matchedTriples.get(j).add(new Triple(edge.getSource(),edge.getTarget(),edge.getLabel()));
+                                    Triple triple = new Triple(edge.getSource(),edge.getTarget(),edge.getLabel());
+                                    triple.getUnSatSRC(edge.getSource());
+                                    triple.getUnSatDST(edge.getTarget());
+                                    matchedTriples.get(j).add(triple);
                                 }
                             }
                         }
@@ -73,7 +76,10 @@ public class Job {
                             for (RelationshipEdge edge:subgraph.getGraph().outgoingEdgesOf(dataTriple.getDst())) {
                                 if(edge.getLabel().equals(patternTriple.getEdge()) && edge.getTarget().getTypes().containsAll(patternTriple.getDst().getTypes()))
                                 {
-                                    matchedTriples.get(j).add(new Triple(edge.getSource(),edge.getTarget(),edge.getLabel()));
+                                    Triple triple = new Triple(edge.getSource(),edge.getTarget(),edge.getLabel());
+                                    triple.getUnSatSRC(edge.getSource());
+                                    triple.getUnSatDST(edge.getTarget());
+                                    matchedTriples.get(j).add(triple);
                                 }
                             }
                         }

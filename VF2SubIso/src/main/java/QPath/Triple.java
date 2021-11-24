@@ -7,10 +7,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Triple implements Comparable<Triple>, Serializable {
     private final Vertex src;
     private final Vertex dst;
+    private HashSet<Attribute> unSatForSRC;
+    private HashSet<Attribute> unSatForDST;
     private final String edge;
 
     public Triple(Vertex src, Vertex dst, String edge)
@@ -18,6 +21,8 @@ public class Triple implements Comparable<Triple>, Serializable {
         this.src= src;
         this.dst= dst;
         this.edge=edge;
+        this.unSatForSRC=new HashSet<>();
+        this.unSatForDST=new HashSet<>();
     }
 
     public Vertex getDst() {
@@ -26,6 +31,11 @@ public class Triple implements Comparable<Triple>, Serializable {
 
     public Vertex getSrc() {
         return src;
+    }
+
+    public boolean isUnSatEmpty()
+    {
+        return (unSatForDST.isEmpty() && unSatForSRC.isEmpty());
     }
 
     public String getEdge() {
@@ -82,22 +92,20 @@ public class Triple implements Comparable<Triple>, Serializable {
         return true;
     }
 
-    public ArrayList<Attribute> getUnSatSRC(@NotNull Vertex vertex)
+    public HashSet<Attribute> getUnSatSRC(@NotNull Vertex vertex)
     {
-        ArrayList<Attribute> unSat=new ArrayList<>();
         for (Attribute attr:src.getAllAttributesList())
             if(!attr.isNULL() && !vertex.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
-                unSat.add(attr);
-        return unSat;
+                unSatForSRC.add(attr);
+        return unSatForSRC;
     }
 
-    public ArrayList<Attribute> getUnSatDST(@NotNull Vertex vertex)
+    public HashSet<Attribute> getUnSatDST(@NotNull Vertex vertex)
     {
-        ArrayList<Attribute> unSat=new ArrayList<>();
         for (Attribute attr:dst.getAllAttributesList())
             if(!attr.isNULL() && !vertex.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
-                unSat.add(attr);
-        return unSat;
+                unSatForDST.add(attr);
+        return unSatForDST;
     }
 
     @Override
