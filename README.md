@@ -37,11 +37,12 @@ This page provides supplementary experimental details, dataset characteristics, 
 [DBpedia](https://databus.dbpedia.org/dbpedia/collections/latest-core) is a dataset containing structured content of Wikimedia projects, such as Wikipedia [1].
 
 This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges with 584 distinct labels [2].
-
+<!--
 ```diff
 ! TODO: add stats of the DBpedia dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
 ! TODO: check if stats listed in paper match the actual experimental stats listed for DBpedia [2021-03-21] [@mortez28]
 ```
+-->
 
 <h4 id="211-dbpedia-tgfds">2.1.1 DBpedia TGFDs</h4>
 
