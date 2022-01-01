@@ -20,6 +20,7 @@ public class testLocalJoblet {
 
     public static void main(String []args) throws FileNotFoundException
     {
+        /*
         Config.parse(args[0]);
 
         System.out.println(Arrays.toString(Config.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(Config.getFirstDataFilePath().toArray()));
@@ -34,8 +35,10 @@ public class testLocalJoblet {
         DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
 
         HashMap<Integer, Joblet> joblets=defineJoblets(dbpedia,allTGFDs);
+         */
     }
 
+    /*
     public static void addNewVertices(List<Change> changes, GraphLoader loader, List<TGFD> tgfds)
     {
         IncUpdates incUpdatesOnDBpedia = new IncUpdates(loader.getGraph(), tgfds);
@@ -132,5 +135,6 @@ public class testLocalJoblet {
             }
         }
     }
+     */
 
 }

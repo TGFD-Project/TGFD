@@ -1,6 +1,7 @@
 package QPath;
 
 import Infra.RelationshipEdge;
+import Infra.TGFD;
 import Infra.VF2PatternGraph;
 import Infra.Vertex;
 import changeExploration.EdgeChange;
@@ -9,65 +10,74 @@ import java.util.*;
 
 public class Query {
 
-    private VF2PatternGraph patternGraph;
+    private TGFD tgfd;
     private ArrayList<QueryPath> queryPaths;
 
-    public Query(VF2PatternGraph patternGraph)
+    public Query(TGFD tgfd)
     {
-        this.patternGraph=patternGraph;
+        queryPaths=new ArrayList<>();
+        this.tgfd=tgfd;
+        ArrayList<ArrayList<Triple>> paths=generateQueryPaths();
+        for (ArrayList<Triple> path:paths) {
+            queryPaths.add(new QueryPath(path));
+        }
     }
 
-
-
-
-
-
-    private void generateQueryPaths()
+    private ArrayList<ArrayList<Triple>> generateQueryPaths()
     {
-        String centerVertexType=patternGraph.getCenterVertexType();
+        String centerVertexType=tgfd.getPattern().getCenterVertexType();
         Vertex centerNode=null;
-        for (Vertex v:patternGraph.getPattern().vertexSet()) {
+        for (Vertex v:tgfd.getPattern().getPattern().vertexSet()) {
             if(v.getTypes().contains(centerVertexType)) {
                 centerNode = v;
                 break;
             }
         }
         HashSet<RelationshipEdge> visited=new HashSet<>();
-        HashSet<Vertex> leaves=new HashSet<>();
+        HashSet<Vertex> notLeaf=new HashSet<>();
+        HashMap<Vertex, ArrayList<Triple>> toTheRoot=new HashMap<>();
         ArrayList<ArrayList<Triple>> paths=new ArrayList<>();
         Stack<Vertex> stack=new Stack<>();
         stack.add(centerNode);
+        toTheRoot.put(centerNode,new ArrayList<>());
         ArrayList<Triple> path=new ArrayList<>();
         HashMap<Vertex, ArrayList<Vertex>> edgeTo=new HashMap<>();
         while (!stack.isEmpty())
         {
             Vertex v=stack.pop();
             boolean done=false;
-            for (RelationshipEdge edge:patternGraph.getPattern().outgoingEdgesOf(v)) {
+            for (RelationshipEdge edge:tgfd.getPattern().getPattern().outgoingEdgesOf(v)) {
                 if(!visited.contains(edge))
                 {
                     visited.add(edge);
-                    if(!edgeTo.containsKey(edge.getTarget()))
-                        edgeTo.put(edge.getTarget(),new ArrayList<>());
-                    edgeTo.get(edge.getTarget()).add(v);
+                    ArrayList<Triple> soFar= (ArrayList<Triple>) toTheRoot.get(v).clone();
+                    Triple triple=new Triple(v,edge.getTarget(),edge.getLabel());
+                    soFar.add(triple);
+                    toTheRoot.put(edge.getTarget(),soFar);
+                    //if(!edgeTo.containsKey(edge.getTarget()))
+                    //    edgeTo.put(edge.getTarget(),new ArrayList<>());
+                    //edgeTo.get(edge.getTarget()).add(v);
+                    stack.add(v);
+                    notLeaf.add(v);
                     stack.add(edge.getTarget());
                     done=true;
                     break;
                 }
             }
-            if(!done)
+            if(!done && !notLeaf.contains(v))
             {
-                leaves.add(v);
+                paths.add(toTheRoot.get(v));
+                //leaves.add(v);
             }
         }
-
-        for (Vertex leaf:leaves) {
-            path=new ArrayList<>();
-            while (true)
-            {
-
-            }
-        }
+        return paths;
     }
 
+    public TGFD getTgfd() {
+        return tgfd;
+    }
+
+    public ArrayList<QueryPath> getQueryPaths() {
+        return queryPaths;
+    }
 }

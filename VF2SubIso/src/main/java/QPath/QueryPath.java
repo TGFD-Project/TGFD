@@ -39,6 +39,10 @@ public class QueryPath {
         return triples.get(0).getSrc().getTypes().iterator().next();
     }
 
+    public ArrayList<Triple> getTriples() {
+        return triples;
+    }
+
     public int getSize()
     {
         return this.triples.size();
