@@ -298,8 +298,9 @@ Prerequisites:
 
 
 1. Build the VF2SubIso project.
-2. Download the initial IMDB snapshot and diffs here: https://drive.google.com/drive/u/1/folders/1oVevnjwKfsDyjw_nFSXsw1WzdUHbihyU
-3. Move VF2SubIso.jar, `VF2SubIso/src/test/java/exampleConfig/conf.txt`, imdb-141031.nt, and diffs into the same directory.
+2. Download the initial IMDB snapshot and diffs here:
+   [IMDB Diffs](https://drive.google.com/drive/u/1/folders/1oVevnjwKfsDyjw_nFSXsw1WzdUHbihyU)
+3. Move VF2SubIso.jar, `/exampleConfig/conf.txt`, imdb-141031.nt, and diffs into the same directory.
 
 To detect TGFD errors, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpediaInc ./conf.txt`
@@ -356,7 +357,7 @@ literal#y#musicalartist$name$musicalartist$name
 delta#0#210#1
 ```
 
-Refer to `VF2SubIso/src/test/java/samplePatterns/` for more examples.
+Refer to `/samplePatterns/` for more examples.
 
 <h4 id="323-creating-conf">3.2.3 Creating conf</h4>
 
