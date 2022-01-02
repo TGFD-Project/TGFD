@@ -46,7 +46,11 @@ This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges
 
 <h4 id="211-dbpedia-tgfds">2.1.1 DBpedia TGFDs</h4>
 
-We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/dbpedia` using real life domain knowledge.
+
+We applied a TGFD mining algorithm [3] over the DBPedia dataset to identify satisfying
+and approximate TGFDs.
+
+<!-- We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/dbpedia` using real life domain knowledge.
 
 Since there are many possible TGFDs for DBpedia, we considered the total number of vertices per vertex type. We wanted to be fair by not choosing vertices with a very low instance count (e.g. 'mousegene' type with only 1 vertex) or only vertices with a very high instance count (e.g. 'careerstation' type with 976,963 vertices). The DBpedia dataset number of instances per vertex type averaged 13,053 with a median of 1,870. We considered vertices around this range with several above it (including album with 139,058 instances).
 
@@ -57,8 +61,8 @@ From these core set of TGFDs, we modified them in several ways to generate addit
 We varied delta according to a user defined minimal support threshold. We estimate the support for a candidate TGFD by taking the minimum frequency of all edges occurring in a pattern. Selecting the minimum frequency of occurrence of edges in a pattern serves as an upper bound for the estimated number of matches. We prefer to pick a delta that has enough matches that satisfy the support, and we prefer a smaller deltas so that they are not subsumed by others.
 
 This same procedure was used to extend the core TGFDs in [2.2.1 IMDB TGFDs](#221-imdb-tgfds) and [2.3.1 Synthetic TGFDs](#231-synthetic-tgfds).
-
-We used the following subset of the vertices, edges, and attributes in the DBpedia dataset to form TGFDs.
+-->
+We used the following subset of the vertices, edges, and attributes as the active set in the DBpedia dataset to mine TGFDs.
 
 **Vertices:**
 
@@ -116,28 +120,28 @@ We used the following subset of the vertices, edges, and attributes in the DBped
 | publisher     | book             | publisher        |
 | team          | basketballplayer | basketballteam   |
 
-Below are samples of the core DBpedia TGFDs:  
+Below are samples of the DBpedia TGFDs:  
 
 **DBpedia TGFD 1**  
 ![DBpedia TGFD 1 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/1.png "DBpedia TGFD 1 Pattern")  
 Δ: (0 days,  1000 days)  
 X: album.name  
 Y: musicalartist.name  
-File: `/VF2SubIso/src/test/java/samplePatterns/dbpedia/pattern0100.txt`  
+File: `/samplePatterns/dbpedia/pattern0100.txt`  
 
 **DBpedia TGFD 2**  
 ![DBpedia TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/2.png "DBpedia TGFD 2 Pattern")  
 Δ: (0 days, 30 days)  
 X: basketballplayer.name, basketballteam.name  
 Y: basketballleague.name  
-File: `/VF2SubIso/src/test/java/samplePatterns/dbpedia/pattern0400.txt`  
+File: `/samplePatterns/dbpedia/pattern0400.txt`  
 
 **DBpedia TGFD 3**  
 ![DBpedia TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/3.png "DBpedia TGFD 3 Pattern")  
 Δ: (0 days, 30 days)  
 X: book.name, book.isbn, country.name  
 Y: publisher.name  
-File: `/VF2SubIso/src/test/java/samplePatterns/dbpedia/pattern0500.txt`  
+File: `/samplePatterns/dbpedia/pattern0500.txt`  
 
 <h3 id="22-imdb">2.2 IMDB</h3>
 
@@ -162,13 +166,13 @@ From these weekly snapshots, we took every 4th snapshot to approximate a monthly
 
 <h4 id="221-imdb-tgfds">2.2.1 IMDB TGFDs</h4>
 
-We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/imdb` using real life domain knowledge.
+We mined set of TGFDs for the IMDB dataset in these files `/samplePatterns/imdb` using real life domain knowledge.
 
-**Extending the core TGFD set**
+<!--**Extending the core TGFD set**
 
 The core set of TGFDs were extended in the same manner as described in [2.1.1 DBpedia TGFDs](#211-dbpedia-tgfds).
-
-We used the following subset of the vertices, edges, and attributes in the DBpedia dataset to form TGFDs.
+-->
+We used the following subset of the vertices, edges, and attributes as an active set in the IMDB dataset to mine TGFDs.
 
 **Vertices:**
 
@@ -193,25 +197,25 @@ Below are samples of the core IMDB TGFDs:
 Δ: (0 days, 1000 days)  
 X: actor.name  
 Y: movie.name  
-File: `/VF2SubIso/src/test/java/samplePatterns/imdb/pattern0100.txt`  
+File: `/samplePatterns/imdb/pattern0100.txt`  
 
 **IMDB TGFD 2**  
 ![IMDB TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/2.png "IMDB TGFD 2 Pattern")  
 Δ: (0 days, 365 days)  
 X: genre.name  
 Y: movie.name  
-File: `/VF2SubIso/src/test/java/samplePatterns/imdb/pattern0600.txt`  
+File: `/samplePatterns/imdb/pattern0600.txt`  
 
 **IMDB TGFD 3**  
 ![IMDB TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/3.png "IMDB TGFD 3 Pattern")  
 Δ: (0 days, 365 days)  
 X: language.name  
 Y: language.name  
-File: `/VF2SubIso/src/test/java/samplePatterns/imdb/pattern0700.txt`  
+File: `/samplePatterns/imdb/pattern0700.txt`  
 
 <h3 id="23-synthetic">2.3 Synthetic</h3>
 
-[gMark](https://github.com/gbagan/gmark) is a synthetic graph data generation tool that provides generation of static domain independent synthetic graphs that supports user-defined schemas and queries. [3]
+[gMark](https://github.com/gbagan/gmark) is a synthetic graph data generation tool that provides generation of static domain independent synthetic graphs that supports user-defined schemas and queries. [4]
 
 It takes as input a configuration file. The configuration file lists the number of nodes, the node labels and their proportions, the edge labels and their proportions, and a schema that defines the triples in the graph and also the distributions of the in-degrees and out-degrees of each triple. It outputs a synthetic graph that is represented as a list of triples (e.g "Person_123 isLocatedIn City_123")
 
@@ -224,11 +228,9 @@ We used `Dataset/synthetic/social-network.xml` as parameters to gMark.
 
 <h4 id="231-synthetic-tgfds">2.3.1 Synthetic TGFDs</h4>
 
-We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/synthetic` using real life domain knowledge.
+We  defined a core set of TGFDs specified in these files `/samplePatterns/synthetic` using real life domain knowledge.
 
-**Extending the core TGFD set**
-
-The core set of TGFDs were extended in the same manner as described in [2.1.1 DBpedia TGFDs](#211-dbpedia-tgfds).
+The core set of TGFDs were defined based on the following vertices and edges as an active set.
 
 **Vertices:**
 
@@ -280,21 +282,21 @@ Below are samples of the core Synthetic TGFDs:
 Δ: (0 days, 365 days)  
 X: person.name  
 Y: company.name  
-File: `/VF2SubIso/src/test/java/samplePatterns/synthetic/pattern0200.txt`  
+File: `/samplePatterns/synthetic/pattern0200.txt`  
 
 **Synthetic TGFD 2**  
 ![Synthetic TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/2.png "Synthetic TGFD 2 Pattern")  
 Δ: (0 days, 365 days)  
 X: person.name  
 Y: university.name  
-File: `/VF2SubIso/src/test/java/samplePatterns/synthetic/pattern1000.txt`  
+File: `/samplePatterns/synthetic/pattern1000.txt`  
 
 **Synthetic TGFD 3**  
 ![Synthetic TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/3.png "Synthetic TGFD 3 Pattern")  
 Δ: (0 days, 365 days)  
 X: person.name  
 Y: tag.name  
-File: `/VF2SubIso/src/test/java/samplePatterns/synthetic/pattern0700.txt`  
+File: `/samplePatterns/synthetic/pattern0700.txt`  
 
 <h2 id="3-getting-started">3. Getting started</h2>
 
@@ -304,9 +306,6 @@ Prerequisites:
 
 <h3 id="31-with-sample">3.1 With Sample</h3>
 
-```diff
-! TODO: define VF2SubIso/src/test/java/exampleConfig/conf.txt to use with sample [2021-04-23] [@adammansfield]
-```
 
 1. Build the VF2SubIso project.
 2. Download the initial IMDB snapshot and diffs here: https://drive.google.com/drive/u/1/folders/1oVevnjwKfsDyjw_nFSXsw1WzdUHbihyU
@@ -321,9 +320,9 @@ To detect TGFD errors, run:
 
 For DBpedia dataset,
 
-```diff
-! TODO: explain how to generate DBpedia snapshots [2021-04-04] [@adammansfield]
-```
+Download the dataset from the folder `/Dataset/` or link below:
+
+[DBPedia](https://drive.google.com/drive/folders/1IAt16Tpt0zaX197W1DKHTiezXBcA3RBt?usp=sharing)
 
 For IMDB dataset, you need the additional prerequisites:
   - Python 3
@@ -476,4 +475,7 @@ Source code is available at https://github.com/TGFD-Project/TGFD.
 
 [2] Jens Lehmann, Robert Isele, Max Jakob, Anja Jentzsch, Dimitris Kontokostas, Pablo N Mendes, Sebastian Hellmann, Mohamed Morsey, Patrick Van Kleef, SörenAuer, et al. 2015. DBpedia–a large-scale, multilingual knowledge base extractedfrom Wikipedia. Semantic Web (2015)
 
-[3] Guillaume Bagan, Angela Bonifati, Radu Ciucanu, George HL Fletcher, AurélienLemay, and Nicky Advokaat. 2016. Generating flexible workloads for graphdatabases.Proceedings of the VLDB Endowment 9, 13 (2016), 1457–1460
+[3] Levin Noronha and Fei Chiang. 2021. Discovery of Temporal Graph Functional  Dependencies. In ACM International Conference on Information and Knowledge Management, Virtual Event. 3348–3352.
+
+[4] Guillaume Bagan, Angela Bonifati, Radu Ciucanu, George HL Fletcher, AurélienLemay, and Nicky Advokaat. 2016. Generating flexible workloads for graphdatabases.Proceedings of the VLDB Endowment 9, 13 (2016), 1457–1460
+

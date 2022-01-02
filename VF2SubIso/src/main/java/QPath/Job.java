@@ -1,11 +1,16 @@
 package QPath;
 
 import Infra.*;
+import changeExploration.AttributeChange;
+import changeExploration.Change;
+import changeExploration.ChangeType;
+import changeExploration.EdgeChange;
 import org.jgrapht.Graph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class Job {
 
@@ -16,8 +21,12 @@ public class Job {
     private int fragmentID;
     private ArrayList<RelationshipEdge> edges;
     private VF2DataGraph subgraph;
-    private ArrayList<boolean []>  matches=new ArrayList<>();
-    private ArrayList<HashMap<Integer, HashMap<Vertex, Literal>>>  unSat=new ArrayList<>();
+    private int matchID=0;
+    private int tripleIDCount=0;
+
+    //private ArrayList<boolean []>  matches=new ArrayList<>();
+    //private ArrayList<HashMap<Integer, HashMap<Vertex, Literal>>>  unSat=new ArrayList<>();
+    private HashMap<Integer,HashMap<Integer,QPathMatch>> localMatches;
 
     public Job(int id, DataVertex centerNode, Query query, int diameter, int fragmentID)
     {
@@ -26,6 +35,7 @@ public class Job {
         this.centerNode=centerNode;
         this.query=query;
         this.fragmentID=fragmentID;
+        this.localMatches=new HashMap<>();
     }
 
     public void setEdges(ArrayList<RelationshipEdge> edges) {
@@ -43,49 +53,172 @@ public class Job {
 
     public void findMatchesForTheFirstSnapshot()
     {
-        for (int i=0;i<query.getQueryPaths().size();i++)
-        {
-            QueryPath path=query.getQueryPaths().get(i);
-            HashMap<Integer, HashSet<Triple>> matchedTriples=new HashMap<>();
-            for (int j=0;j<path.getTriples().size();j++)
-            {
-                matchedTriples.put(j,new HashSet<>());
-                Triple patternTriple=path.getTriples().get(j);
-                if(j==0)
-                {
-                    for (Vertex v:subgraph.getGraph().vertexSet()) {
-                        if(v.getTypes().containsAll(patternTriple.getSrc().getTypes()))
-                        {
-                            for (RelationshipEdge edge:subgraph.getGraph().outgoingEdgesOf(v)) {
-                                if(edge.getLabel().equals(patternTriple.getEdge()) && edge.getTarget().getTypes().containsAll(patternTriple.getDst().getTypes()))
-                                {
-                                    Triple triple = new Triple(edge.getSource(),edge.getTarget(),edge.getLabel());
-                                    triple.getUnSatSRC(edge.getSource());
-                                    triple.getUnSatDST(edge.getTarget());
-                                    matchedTriples.get(j).add(triple);
-                                }
+        for (int qPathID=0;qPathID<query.getQueryPaths().size();qPathID++) {
+            findMatchForAQPath(qPathID);
+        }
+    }
+
+    private void findMatchForAQPath(int qPathID)
+    {
+        HashMap<Integer, HashSet<Triple>> matchedTriples=new HashMap<>();
+        QueryPath path=query.getQueryPaths().get(qPathID);
+        for (int j=0;j<path.getTriples().size();j++) {
+            matchedTriples.put(j, new HashSet<>());
+            Triple patternTriple = path.getTriples().get(j);
+            if (j == 0) {
+                for (Vertex v : subgraph.getGraph().vertexSet()) {
+                    if (v.getTypes().containsAll(patternTriple.getSrc().getTypes())) {
+                        for (RelationshipEdge edge : subgraph.getGraph().outgoingEdgesOf(v)) {
+                            if (edge.getLabel().equals(patternTriple.getEdge()) && edge.getTarget().getTypes().containsAll(patternTriple.getDst().getTypes())) {
+                                Triple newMatchedTriple = new Triple(edge.getSource(), edge.getTarget(), edge.getLabel()
+                                        , -1, tripleIDCount++);
+                                newMatchedTriple.getUnSatSRC(edge.getSource());
+                                newMatchedTriple.getUnSatDST(edge.getTarget());
+                                matchedTriples.get(j).add(newMatchedTriple);
                             }
                         }
                     }
                 }
-                else
-                {
-                    for (Triple dataTriple:matchedTriples.get(j-1)) {
-                        if(dataTriple.getDst().getTypes().containsAll(patternTriple.getSrc().getTypes()))
-                        {
-                            for (RelationshipEdge edge:subgraph.getGraph().outgoingEdgesOf(dataTriple.getDst())) {
-                                if(edge.getLabel().equals(patternTriple.getEdge()) && edge.getTarget().getTypes().containsAll(patternTriple.getDst().getTypes()))
-                                {
-                                    Triple triple = new Triple(edge.getSource(),edge.getTarget(),edge.getLabel());
-                                    triple.getUnSatSRC(edge.getSource());
-                                    triple.getUnSatDST(edge.getTarget());
-                                    matchedTriples.get(j).add(triple);
-                                }
+            } else {
+                for (Triple dataTriple : matchedTriples.get(j - 1)) {
+                    if (dataTriple.getDst().getTypes().containsAll(patternTriple.getSrc().getTypes())) {
+                        for (RelationshipEdge edge : subgraph.getGraph().outgoingEdgesOf(dataTriple.getDst())) {
+                            if (edge.getLabel().equals(patternTriple.getEdge()) && edge.getTarget().getTypes().containsAll(patternTriple.getDst().getTypes())) {
+                                Triple newMatchedTriple = new Triple(edge.getSource(), edge.getTarget(), edge.getLabel()
+                                        , dataTriple.getTripleID(), tripleIDCount++);
+                                newMatchedTriple.getUnSatSRC(edge.getSource());
+                                newMatchedTriple.getUnSatDST(edge.getTarget());
+                                matchedTriples.get(j).add(newMatchedTriple);
                             }
                         }
                     }
                 }
             }
+        }
+
+        HashMap<Integer, ArrayList<ArrayList<Triple>>> tempIndexedTriples;
+        tempIndexedTriples=new HashMap<>();
+        localMatches.put(qPathID,new HashMap<>());
+        for (Triple firstTriple: matchedTriples.get(0)) {
+            ArrayList<Triple> tempArr=new ArrayList<>();
+            tempArr.add(firstTriple);
+            tempIndexedTriples.put(firstTriple.getTripleID(),new ArrayList<>());
+            tempIndexedTriples.get(firstTriple.getTripleID()).add(tempArr);
+        }
+        for (int j=1;j<path.getTriples().size();j++)
+        {
+            for (Triple nextTriple: matchedTriples.get(j)) {
+                if(tempIndexedTriples.containsKey(nextTriple.getPrecTripleID()))
+                {
+                    tempIndexedTriples.put(nextTriple.getTripleID(),new ArrayList<>());
+                    for (ArrayList<Triple> prevArrayList:tempIndexedTriples.get(nextTriple.getPrecTripleID())) {
+                        ArrayList<Triple> tempArr=new ArrayList<>();
+                        for (int count=0;count<j;count++)
+                        {
+                            tempArr.add(prevArrayList.get(count));
+                        }
+                        tempIndexedTriples.get(nextTriple.getTripleID()).add(tempArr);
+                    }
+                }
+            }
+        }
+        for (Triple lastTriple: matchedTriples.get(path.getTriples().size()-1)) {
+            if (tempIndexedTriples.containsKey(lastTriple.getTripleID())) {
+                for (ArrayList<Triple> arr : tempIndexedTriples.get(lastTriple.getTripleID())) {
+                    QPathMatch match = new QPathMatch(++matchID, arr);
+                    localMatches.get(qPathID).put(matchID, match);
+                }
+            }
+        }
+    }
+
+    private void deleteMatchesForAQPath(int qPathID,DataVertex v1,DataVertex v2, String edgeLabel)
+    {
+        HashSet<Integer> toBeDeleted=new HashSet<>();
+        for (QPathMatch qPathMatch:localMatches.get(qPathID).values()) {
+            for (Triple triple:qPathMatch.getMatchesInTriple()) {
+                if(((DataVertex)triple.getSrc()).getVertexURI().equals(v1.getVertexURI()) &&
+                        ((DataVertex)triple.getDst()).getVertexURI().equals(v2.getVertexURI()) &&
+                triple.getEdge().equals(edgeLabel))
+                    toBeDeleted.add(triple.getTripleID());
+            }
+        }
+        for (int id: toBeDeleted) {
+            localMatches.get(qPathID).remove(id);
+        }
+    }
+
+    private void updateOrDeleteAttributeForAQPath(int qPathID,DataVertex v1, Attribute attribute)
+    {
+        for (QPathMatch qPathMatch:localMatches.get(qPathID).values()) {
+            for (Triple triple:qPathMatch.getMatchesInTriple()) {
+                if(((DataVertex)triple.getSrc()).getVertexURI().equals(v1.getVertexURI()))
+                    triple.getUnSatSRC(v1);
+                else if (((DataVertex)triple.getDst()).getVertexURI().equals(v1.getVertexURI()))
+                    triple.getUnSatDST(v1);
+            }
+        }
+    }
+
+    public void applyChangeForTheNextSnapshot(Change change)
+    {
+        if(change instanceof EdgeChange)
+        {
+            EdgeChange edgeChange=(EdgeChange) change;
+            DataVertex v1= (DataVertex) this.subgraph.getNode(edgeChange.getSrc());
+            DataVertex v2= (DataVertex) this.subgraph.getNode(edgeChange.getDst());
+            if(v1==null || v2==null)
+                return;
+
+            if(edgeChange.getTypeOfChange()== ChangeType.insertEdge)
+            {
+                if(!subgraph.getGraph().containsVertex(v2))
+                    subgraph.getGraph().addVertex(v2);
+                subgraph.getGraph().addEdge(v1,v2,new RelationshipEdge(edgeChange.getLabel()));
+                ArrayList<Integer> qPathIDs=findRelevantQPath(v1,v2,edgeChange.getLabel());
+                for (int qPathID:qPathIDs)
+                    findMatchForAQPath(qPathID);
+            }
+            else if(edgeChange.getTypeOfChange()== ChangeType.deleteEdge)
+            {
+                // Now, perform the change and remove the edge from the subgraph
+                for (RelationshipEdge e:subgraph.getGraph().outgoingEdgesOf(v1)) {
+                    DataVertex target=(DataVertex) e.getTarget();
+                    if(target.getVertexURI().equals(v2.getVertexURI()) && edgeChange.getLabel().equals(e.getLabel()))
+                    {
+                        subgraph.getGraph().removeEdge(e);
+                        break;
+                    }
+                }
+                ArrayList<Integer> qPathIDs=findRelevantQPath(v1,v2,edgeChange.getLabel());
+                for (int qPathID:qPathIDs)
+                    deleteMatchesForAQPath(qPathID,v1,v2,edgeChange.getLabel());
+            }
+            else
+                throw new IllegalArgumentException("The change is instance of EdgeChange, but type of change is: " + edgeChange.getTypeOfChange());
+        }
+        else if(change instanceof AttributeChange)
+        {
+            AttributeChange attributeChange=(AttributeChange) change;
+            DataVertex v1=(DataVertex) this.subgraph.getNode(attributeChange.getUri());
+            if(v1==null)
+                return;
+            if(attributeChange.getTypeOfChange()==ChangeType.changeAttr || attributeChange.getTypeOfChange()==ChangeType.insertAttr)
+            {
+                v1.setOrAddAttribute(attributeChange.getAttribute());
+                ArrayList<Integer> qPathIDs=findRelevantQPath(v1,attributeChange.getAttribute());
+                for (int qPathID:qPathIDs)
+                    updateOrDeleteAttributeForAQPath(qPathID,v1, attributeChange.getAttribute());
+            }
+            else if(attributeChange.getTypeOfChange()==ChangeType.deleteAttr)
+            {
+                v1.deleteAttribute(attributeChange.getAttribute());
+                ArrayList<Integer> qPathIDs=findRelevantQPath(v1,attributeChange.getAttribute());
+                for (int qPathID:qPathIDs)
+                    updateOrDeleteAttributeForAQPath(qPathID,v1, attributeChange.getAttribute());
+            }
+            else
+                throw new IllegalArgumentException("The change is instance of AttributeChange, but type of change is: " + attributeChange.getTypeOfChange());
         }
     }
 
@@ -125,4 +258,39 @@ public class Job {
             return 0;
     }
 
+    private ArrayList<Integer> findRelevantQPath(DataVertex v1,DataVertex v2, String edgeLabel)
+    {
+        ArrayList<Integer> qPathIndices=new ArrayList<>();
+        for (int i=0;i<query.getQueryPaths().size();i++) {
+            QueryPath path = query.getQueryPaths().get(i);
+            for (int j = 0; j < path.getTriples().size(); j++) {
+                Triple patternTriple = path.getTriples().get(j);
+                if(patternTriple.isTopologicalMappedToSRC(v1) && patternTriple.isTopologicalMappedToDST(v2) &&
+                patternTriple.getEdge().equals(edgeLabel))
+                {
+                    qPathIndices.add(i);
+                    break;
+                }
+            }
+        }
+        return qPathIndices;
+    }
+
+    private ArrayList<Integer> findRelevantQPath(DataVertex v1, Attribute attribute)
+    {
+        ArrayList<Integer> qPathIndices=new ArrayList<>();
+        for (int i=0;i<query.getQueryPaths().size();i++) {
+            QueryPath path = query.getQueryPaths().get(i);
+            for (int j = 0; j < path.getTriples().size(); j++) {
+                Triple patternTriple = path.getTriples().get(j);
+                if((patternTriple.isTopologicalMappedToSRC(v1) && patternTriple.hasAttrSRC(attribute)) ||
+                        (patternTriple.isTopologicalMappedToDST(v1) && patternTriple.hasAttrDST(attribute)))
+                {
+                    qPathIndices.add(i);
+                    break;
+                }
+            }
+        }
+        return qPathIndices;
+    }
 }

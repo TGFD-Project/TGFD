@@ -15,6 +15,8 @@ public class Triple implements Comparable<Triple>, Serializable {
     private HashSet<Attribute> unSatForSRC;
     private HashSet<Attribute> unSatForDST;
     private final String edge;
+    private int tripleID;
+    private int precTripleID;
 
     public Triple(Vertex src, Vertex dst, String edge)
     {
@@ -23,6 +25,25 @@ public class Triple implements Comparable<Triple>, Serializable {
         this.edge=edge;
         this.unSatForSRC=new HashSet<>();
         this.unSatForDST=new HashSet<>();
+    }
+
+    public Triple(Vertex src, Vertex dst, String edge,int precTripleID, int tripleID)
+    {
+        this.src= src;
+        this.dst= dst;
+        this.edge=edge;
+        this.unSatForSRC=new HashSet<>();
+        this.unSatForDST=new HashSet<>();
+        this.precTripleID=precTripleID;
+        this.tripleID=tripleID;
+    }
+
+    public int getPrecTripleID() {
+        return precTripleID;
+    }
+
+    public int getTripleID() {
+        return tripleID;
     }
 
     public Vertex getDst() {
@@ -94,6 +115,7 @@ public class Triple implements Comparable<Triple>, Serializable {
 
     public HashSet<Attribute> getUnSatSRC(@NotNull Vertex vertex)
     {
+        unSatForSRC.clear();
         for (Attribute attr:src.getAllAttributesList())
             if(!attr.isNULL() && !vertex.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 unSatForSRC.add(attr);
@@ -102,10 +124,27 @@ public class Triple implements Comparable<Triple>, Serializable {
 
     public HashSet<Attribute> getUnSatDST(@NotNull Vertex vertex)
     {
+        unSatForDST.clear();
         for (Attribute attr:dst.getAllAttributesList())
             if(!attr.isNULL() && !vertex.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 unSatForDST.add(attr);
         return unSatForDST;
+    }
+
+    public boolean hasAttrSRC(@NotNull Attribute attribute)
+    {
+        for (Attribute attr:src.getAllAttributesList())
+            if(!attr.isNULL() && attr.getAttrName().equals(attribute.getAttrName()))
+                return true;
+        return false;
+    }
+
+    public boolean hasAttrDST(@NotNull Attribute attribute)
+    {
+        for (Attribute attr:dst.getAllAttributesList())
+            if(!attr.isNULL() && attr.getAttrName().equals(attribute.getAttrName()))
+                return true;
+        return false;
     }
 
     @Override

@@ -14,7 +14,7 @@ public class IncUpdates {
     private VF2SubgraphIsomorphism VF2;
 
     /** Map of the relevant TGFDs for each entity type */
-    private HashMap<String, HashSet<String>> relaventTGFDs=new HashMap <>();
+    private HashMap<String, HashSet<String>> relevantTGFDs =new HashMap <>();
 
 
     public IncUpdates(VF2DataGraph baseGraph, List<TGFD> tgfds)
@@ -205,8 +205,8 @@ public class IncUpdates {
     {
         //change.addTGFD(v.getTypes().stream().filter(type -> relaventTGFDs.containsKey(type)));
         for (String type:v.getTypes())
-            if(relaventTGFDs.containsKey(type))
-                change.addTGFD(relaventTGFDs.get(type));
+            if(relevantTGFDs.containsKey(type))
+                change.addTGFD(relevantTGFDs.get(type));
     }
 
     /**
@@ -249,9 +249,9 @@ public class IncUpdates {
      */
     private void addRelevantType(String type, String TGFDName)
     {
-        if(!relaventTGFDs.containsKey(type))
-            relaventTGFDs.put(type,new HashSet <>());
-        relaventTGFDs.get(type).add(TGFDName);
+        if(!relevantTGFDs.containsKey(type))
+            relevantTGFDs.put(type,new HashSet <>());
+        relevantTGFDs.get(type).add(TGFDName);
     }
 
 }

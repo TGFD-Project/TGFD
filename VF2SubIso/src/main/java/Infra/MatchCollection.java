@@ -123,16 +123,9 @@ public class MatchCollection
         long start= System.currentTimeMillis();
         while (mappingIterator.hasNext())
         {
-            var mapping = mappingIterator.next();
+            GraphMapping<Vertex, RelationshipEdge> mapping = mappingIterator.next();
             addMatch(timestamp, mapping);
             addVertices(timestamp, mapping);
-//            if(matchCount++%1000==0) {
-//                System.out.println("Retrived " + matchCount + " matches in " +
-//                        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-start) +  "(sec) ** " +
-//                        TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()-start) + "(min)");
-//                start=System.currentTimeMillis();
-//
-//            }
         }
         System.out.println("Total Number of matches: " + matchCount);
         return matchCount;
