@@ -37,12 +37,6 @@ This page provides supplementary experimental details, dataset characteristics, 
 [DBpedia](https://databus.dbpedia.org/dbpedia/collections/latest-core) is a dataset containing structured content of Wikimedia projects, such as Wikipedia [1].
 
 This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges with 584 distinct labels [2].
-<!--
-```diff
-! TODO: add stats of the DBpedia dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
-! TODO: check if stats listed in paper match the actual experimental stats listed for DBpedia [2021-03-21] [@mortez28]
-```
--->
 
 <h4 id="211-dbpedia-tgfds">2.1.1 DBpedia TGFDs</h4>
 
@@ -145,16 +139,12 @@ File: `/samplePatterns/dbpedia/pattern0500.txt`
 
 <h3 id="22-imdb">2.2 IMDB</h3>
 
-The Internet Movie Database (IMDB) provides weekly updates in the form of diff files until 2017. We extracted 38 monthly timestamps from October 2014 to November 2017, including total 4.8M entities of 8 types and 16.7M edges with X changes over all timestamps.
+The Internet Movie Database (IMDB) provides weekly updates in the form of diff files until 2017. We extracted 38 monthly timestamps from October 2014 to November 2017, including total 4.8M entities of 8 types and 16.7M edges.
 
 Sources:
 - https://www.imdb.com/interfaces/.
 - ftp://ftp.fu-berlin.de/pub/misc/movies/database/frozendata/.
 
-```diff
-! TODO: add stats of the IMDB dataset (before and after filtering relevent vertices for TGFDs) [2021-03-21] [@mortez28]
-! TODO: check if stats listed in paper match the actual experimental stats listed for IMDB [2021-03-21] [@mortez28]
-```
 
 While IMDB supposedly provides weekly data from 1998 to 2017, there were three issues that prevented us from using the full range. Changes are provided in text diff files starting with a snapshot at 1998-10-02. To re-create the snapshots, you need to apply the diff files sequentially to the starting 1998-10-02 snapshot. The starting snapshot is not available in either of the two mirrors still hosting the IMDB data (as of 2021-03-01). What is available in the mirrors is the final snapshot, which is the result of all the diffs applied in order.
 
