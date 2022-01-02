@@ -288,6 +288,10 @@ X: person.name
 Y: tag.name  
 File: `/samplePatterns/synthetic/pattern0700.txt`  
 
+<h3 id="24-GFDs">2.4 GFDs</h3>
+
+We consider the same set of TGFDs in `/samplePatterns/` folder to define GFDs for each dataset. To this end, we set Δ: (0, 0) to consider each TGFD model the corresponding GFD.
+
 <h2 id="3-getting-started">3. Getting started</h2>
 
 Prerequisites:
