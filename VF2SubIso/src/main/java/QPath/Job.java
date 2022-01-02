@@ -6,6 +6,7 @@ import changeExploration.Change;
 import changeExploration.ChangeType;
 import changeExploration.EdgeChange;
 import org.jgrapht.Graph;
+import org.jgrapht.GraphMapping;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +80,9 @@ public class Job {
                         }
                     }
                 }
-            } else {
+            }
+            else
+            {
                 for (Triple dataTriple : matchedTriples.get(j - 1)) {
                     if (dataTriple.getDst().getTypes().containsAll(patternTriple.getSrc().getTypes())) {
                         for (RelationshipEdge edge : subgraph.getGraph().outgoingEdgesOf(dataTriple.getDst())) {
@@ -220,6 +223,11 @@ public class Job {
             else
                 throw new IllegalArgumentException("The change is instance of AttributeChange, but type of change is: " + attributeChange.getTypeOfChange());
         }
+    }
+
+    public void findMatchMapping()
+    {
+
     }
 
     public VF2DataGraph getSubgraph() {

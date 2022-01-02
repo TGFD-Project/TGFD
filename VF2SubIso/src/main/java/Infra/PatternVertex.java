@@ -1,18 +1,28 @@
 package Infra;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
 public class PatternVertex extends Vertex{
 
+    private boolean isPatternNode=true;
+    private String patternVertexRandomID="";
+
     public PatternVertex(String type) {
         super(type.toLowerCase());
+        this.patternVertexRandomID= RandomStringUtils.random(20, true, true);
     }
-    private boolean isPatternNode=true;
+
+    public PatternVertex(String type, String patternVertexRandomID) {
+        super(type.toLowerCase());
+        this.patternVertexRandomID= patternVertexRandomID;
+    }
+
 
     public PatternVertex copy(){
-        PatternVertex newV = new PatternVertex(new ArrayList<>(this.getTypes()).get(0));
+        PatternVertex newV = new PatternVertex(new ArrayList<>(this.getTypes()).get(0), this.patternVertexRandomID);
         for (Attribute attr : this.getAllAttributesList()) {
             newV.addAttribute(attr.getAttrName(), attr.getAttrValue());
         }
