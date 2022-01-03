@@ -470,7 +470,7 @@ To run GFD, set `-gfd true` in the conf file.
 
 The same conf.txt can be used to generate the diffs as well as TGFD error detection.
 
-To detect diffs on DBPedia dataset, run:
+For example, to detect diffs on DBPedia dataset, run:
 
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDiffExtractorDbpedia ./conf.txt`
 
