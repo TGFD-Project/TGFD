@@ -18,8 +18,9 @@
     - [3.2.1 Datasets](#321-datasets)
     - [3.2.2 Defining TGFDs](#322-defining-tgfds)
     - [3.2.3 Creating conf](#323-creating-conf)
-    - [3.2.4 Detecting errors](#324-detecting-errors)
-    - [3.2.5 Generating diffs](#325-generating-diffs)
+    - [3.2.4 Detecting errors on Local Machine](#324-detecting-errors-local)
+    - [3.2.5 Detecting errors on EC2 cluster](#325-detecting-errors-Amazon)
+    - [3.2.6 Generating diffs](#326-generating-diffs)
 * [5. Source Code](#5-source-code)
 * [6. References](#6-references)
 
@@ -440,7 +441,7 @@ Example of a conf.txt for the coordinator (to run on Amazon EC2):
 -mqurl ssl://xxxx.mq.us-east-2.amazonaws.com:61617
 ```
 
-<h4 id="324-detecting-errors">3.2.4 Detecting errors on local machine</h4>
+<h4 id="324-detecting-errors-local">3.2.4 Detecting errors on local machine</h4>
 
 To detect TGFD errors using SeqTED on DBPedia dataset, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpediaInc ./conf.txt`
@@ -451,7 +452,7 @@ To detect TGFD errors using SeqTED on IMDB dataset, run:
 To detect TGFD errors using SeqTED on Synthetic dataset, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testSyntheticInc ./conf.txt`
 
-<h4 id="325-detecting-errors">3.2.5 Detecting errors on EC2 cluster</h4>
+<h4 id="325-detecting-errors-Amazon">3.2.5 Detecting errors on EC2 cluster</h4>
 
 To detect TGFD errors using ParallelTED with QPath based subgraph isomorphism on any dataset , run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testAdvanceParallelQPath ./conf.txt`
