@@ -459,7 +459,7 @@ To detect TGFD errors using ParallelTED with QPath based subgraph isomorphism on
 
 You need to specify dataset name in the conf file as it is shown in section [3.2.3](#323-creating-conf).
 
-To detect TGFD/GFD errors using ParallelTED with VF2 based subgraph isomorphism and without re-balancing on any dataset, run:  
+To detect TGFD/GFD errors using ParallelTED with VF2 based subgraph isomorphism on any dataset, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testAdvanceParallel ./conf.txt`
 
 Similarly, specify the dataset name in the conf file as it is shown in section [3.2.3](#323-creating-conf).
