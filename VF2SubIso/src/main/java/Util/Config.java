@@ -34,6 +34,7 @@ public class Config {
     public static long threadsIdleTime=3000;// in ms
     public static int supersteps=0;
     public static double zeta=10;
+    public static boolean gfd=false;
 
     public static boolean optimizedLoadingBasedOnTGFD=false;
     public static boolean saveViolations=false;
@@ -112,6 +113,8 @@ public class Config {
                     dataset=conf[1];
                 }else if(conf[0].equals("-zeta")) {
                     zeta=Double.parseDouble(conf[1]);
+                } else if(conf[0].equals("-gfd")) {
+                    gfd=Boolean.parseBoolean(conf[1]);
                 }else if(conf[0].equals("-job")) {
                     String[] temp = conf[1].split(",");
                     if(temp.length !=2)
