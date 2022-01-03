@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AdvancedCoordinatorNoReBalance {
+public class AdvancedCoordinator {
 
     //region --[Fields: Private]---------------------------------------
 
@@ -50,7 +50,7 @@ public class AdvancedCoordinatorNoReBalance {
 
     //region --[Constructor]-----------------------------------------
 
-    public AdvancedCoordinatorNoReBalance()
+    public AdvancedCoordinator()
     {
         for (String worker: Config.workers) {
             workersStatus.put(worker,false);

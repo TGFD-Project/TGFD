@@ -1,7 +1,5 @@
-import ParalleRunner.AdvancedCoordinatorNoReBalance;
-import ParalleRunner.AdvancedWorkerNoRebalance;
-import ParalleRunner.MediumCoordinator;
-import ParalleRunner.MediumWorker;
+import ParalleRunner.AdvancedCoordinator;
+import ParalleRunner.AdvancedWorker;
 import Util.Config;
 
 import java.io.FileNotFoundException;
@@ -13,15 +11,15 @@ public class testAdvanceParallel {
         if(Config.nodeName.equalsIgnoreCase("coordinator"))
         {
 
-            AdvancedCoordinatorNoReBalance advancedCoordinatorNoReBalance =new AdvancedCoordinatorNoReBalance();
-            advancedCoordinatorNoReBalance.start();
-            advancedCoordinatorNoReBalance.assignJoblets();
-            advancedCoordinatorNoReBalance.waitForResults();
+            AdvancedCoordinator advancedCoordinator =new AdvancedCoordinator();
+            advancedCoordinator.start();
+            advancedCoordinator.assignJoblets();
+            advancedCoordinator.waitForResults();
         }
         else
         {
             System.out.println("Worker '"+ Config.nodeName+"' is starting...");
-            AdvancedWorkerNoRebalance worker=new AdvancedWorkerNoRebalance();
+            AdvancedWorker worker=new AdvancedWorker();
             worker.start();
         }
     }

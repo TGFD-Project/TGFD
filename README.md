@@ -4,12 +4,6 @@
 [comment]: # (E.g. For "# 1. Overview", Github generates id="1-overview" and Github Pages generates id="overview")
 [comment]: # (Must use Gitub's generated id to be consistent between Github and Github Pages because Github will override it")
 
-<h2 id="1-overview">1. Overview</h2>
-
-The **T**emporal **G**raph **F**unctional **D**ependencies (TGFD) project detects errors in TGFDs. A TGFD is a new class of temporal dependencies over graphs that specify topological and attribute requirements over a time interval.
-
-This page provides supplementary experimental details, dataset characteristics, TGFD samples, and a link to the source code.
-
 * [1. Overview](#1-overview)
 * [2. Datasets](#2-datasets)
   + [2.1 DBpedia](#21-dbpedia)
@@ -24,11 +18,17 @@ This page provides supplementary experimental details, dataset characteristics, 
     - [3.2.1 Datasets](#321-datasets)
     - [3.2.2 Defining TGFDs](#322-defining-tgfds)
     - [3.2.3 Creating conf](#323-creating-conf)
-    - [3.2.4 Generating diffs](#324-generating-diffs)
-    - [3.2.5 Detecting errors](#325-detecting-errors)
-* [4. Comparative Baselines](#4-comparative-baselines)
+    - [3.2.4 Detecting errors](#324-detecting-errors)
+    - [3.2.5 Generating diffs](#325-generating-diffs)
 * [5. Source Code](#5-source-code)
 * [6. References](#6-references)
+
+<h2 id="1-overview">1. Overview</h2>
+
+The **T**emporal **G**raph **F**unctional **D**ependencies (TGFD) project detects errors in TGFDs. A TGFD is a new class of temporal dependencies over graphs that specify topological and attribute requirements over a time interval.
+
+This page provides supplementary experimental details, dataset characteristics, TGFD samples, and a link to the source code.
+
 
 <h2 id="2-datasets">2. Datasets</h2>
 
@@ -306,7 +306,7 @@ Prerequisites:
    [IMDB Diffs](https://drive.google.com/drive/u/1/folders/1oVevnjwKfsDyjw_nFSXsw1WzdUHbihyU)
 3. Move VF2SubIso.jar, `/exampleConfig/conf.txt`, imdb-141031.nt, and diffs into the same directory.
 
-To detect TGFD errors, run:  
+To detect TGFD errors using SeqTED on DBPedia dataset, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpediaInc ./conf.txt`
 
 <h3 id="32-from-scratch">3.2 From Scratch</h3>
@@ -369,10 +369,12 @@ TGFD detection input a configuration file in the form of
 ```
 Expected arguments to parse:
 -p <path to the patternFile> // in case of Amazon S3, it should be in the form of bucket_name/key
--t<snapshotId> <typeFile> // <path/to/timestamp/snapshotID/type file>
--d<snapshotId> <dataFile> // <path/to/timestamp/snapshotID/data file>
--c<snapshotId> <diff file> // <path/to/timestamp/snapshotID/diff file>
--s<snapshotId> <snapshot timestamp> //<timestamp of <snapshotId> snapshot>
+[-t<snapshotId> <typeFile>]
+[-d<snapshotId> <dataFile>]
+[-c<snapshotId> <diff file>]
+[-s<snapshotId> <snapshot timestamp>]
+-diffCap List<double> // example: -diffCap 0.02,0.04,0.06,1
+-optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
 -debug <true-false> // print details of matching
 -mqurl <URL> // URL of the ActiveMQ Broker
 -mqusername <Username> // Username to access ActiveMQ Broker
@@ -382,10 +384,11 @@ Expected arguments to parse:
 -amazon <true-false> // run on Amazon EC2
 -region <region name> // Name of the region in Amazon EC2
 -language <language name> // Names like "N-Triples", "TURTLE", "RDF/XML"
--job <worker name>,<job> // For example: -job worker1,pattern1.txt
 -dataset <dataset name> // Options: imdb (default), dbpedia, synthetic
--diffCap List<double> // example: -diffCap 0.02,0.04,0.06,1
--optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
+-idletime <time> // idle time in threads (in ms)
+-superstep <integer> // number of supersteps
+-zeta <double> // value of zeta
+-gfd <true-false> // run GFD error detection
 ```
 
 Example of a conf.txt (to run locally):
@@ -401,7 +404,7 @@ Example of a conf.txt (to run locally):
 -optgraphload true
 ```
 
-Example of a coordinator conf.txt (to run on Amazon EC2):
+Example of a conf.txt for a worker node name "worker1" (to run on Amazon EC2):
 ```
 -d1 imdb-141031/imdb-141031.nt
 -c2 imdb-141031/diff_2014-10-31_2014-11-28_imdbp0800_full.json
@@ -418,7 +421,7 @@ Example of a coordinator conf.txt (to run on Amazon EC2):
 -mqurl ssl://xxxx.mq.us-east-2.amazonaws.com:61617
 ```
 
-Example of a conf.txt (to run on Amazon EC2):
+Example of a conf.txt for the coordinator (to run on Amazon EC2):
 ```
 -d1 imdb-141031/imdb-141031.nt
 -c2 imdb-141031/diff_2014-10-31_2014-11-28_imdbp0800_full.json
@@ -429,28 +432,45 @@ Example of a conf.txt (to run on Amazon EC2):
 -optgraphload true
 -amazon true
 -nodename coordinator
+-zeta 10
 -dataset imdb
 -workers worker1,worker2,worker3,worker4
--job worker1,imdb-141031/pattern0801.txt
--job worker2,imdb-141031/pattern0802.txt
--job worker3,imdb-141031/pattern0803.txt
--job worker4,imdb-141031/pattern0804.txt
 -mqusername *username*
 -mqpassword *password*
 -mqurl ssl://xxxx.mq.us-east-2.amazonaws.com:61617
 ```
 
-The same conf.txt can be used to generate the diffs as well as TGFD error detection.
+<h4 id="324-detecting-errors">3.2.4 Detecting errors on local machine</h4>
 
-<h4 id="324-generating-diffs">3.2.4 Generating diffs</h4>
+To detect TGFD errors using SeqTED on DBPedia dataset, run:  
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpediaInc ./conf.txt`
+
+To detect TGFD errors using SeqTED on IMDB dataset, run:  
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testIMDBInc ./conf.txt`
+
+To detect TGFD errors using SeqTED on Synthetic dataset, run:  
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testSyntheticInc ./conf.txt`
+
+<h4 id="325-detecting-errors">3.2.5 Detecting errors on EC2 cluster</h4>
+
+To detect TGFD errors using ParallelTED with QPath based subgraph isomorphism on any dataset , run:  
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testAdvanceParallelQPath ./conf.txt`
+
+You need to specify dataset name in the conf file as it is shown in section [3.2.3](#323-creating-conf).
+
+To detect TGFD/GFD errors using ParallelTED with VF2 based subgraph isomorphism and without re-balancing on any dataset, run:  
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testAdvanceParallel ./conf.txt`
+
+Similarly, specify the dataset name in the conf file as it is shown in section [3.2.3](#323-creating-conf).
+
+To run GFD, set `-gfd true` in the conf file.
+
+<h4 id="326-generating-diffs">3.2.6 Generating diffs</h4>
+
+The same conf.txt can be used to generate the diffs as well as TGFD error detection.
 
 To detect diffs, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDiffExtractorDbpedia ./conf.txt`
-
-<h4 id="325-detecting-errors">3.2.5 Detecting errors</h4>
-
-To detect TGFD errors, run:  
-`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpediaInc ./conf.txt`
 
 <!-- <h2 id="4-comparative-baselines">4. Comparative Baselines</h2>
 

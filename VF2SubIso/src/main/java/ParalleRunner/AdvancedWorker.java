@@ -16,7 +16,7 @@ import java.util.*;
 
 import static java.lang.Thread.sleep;
 
-public class AdvancedWorkerNoRebalance {
+public class AdvancedWorker {
 
     //region --[Fields: Private]---------------------------------------
 
@@ -29,7 +29,7 @@ public class AdvancedWorkerNoRebalance {
 
     //region --[Constructor]-----------------------------------------
 
-    public AdvancedWorkerNoRebalance()  {
+    public AdvancedWorker()  {
         this.nodeName= Config.nodeName;
         workingBucketName = Config
                 .getFirstDataFilePath()
