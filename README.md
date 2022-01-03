@@ -303,12 +303,14 @@ Prerequisites:
 
 
 1. Build the VF2SubIso project.
-2. Download the initial IMDB snapshot and diffs here:
+2. Download the initial snapshot and diffs in the dataset folder. For example, IMDB files are here:
    [IMDB Diffs](https://drive.google.com/drive/u/1/folders/1oVevnjwKfsDyjw_nFSXsw1WzdUHbihyU)
-3. Move VF2SubIso.jar, `/exampleConfig/conf.txt`, imdb-141031.nt, and diffs into the same directory.
+3. Move VF2SubIso.jar, `/exampleConfig/conf.txt`, imdb-141031.nt, and diffs into the same directory. Do the same for other datasets.
 
-To detect TGFD errors using SeqTED on DBPedia dataset, run:  
-`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpediaInc ./conf.txt`
+To detect TGFD errors using SeqTED on IMDB dataset, run:  
+`java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testIMDBInc ./conf.txt`
+
+For other datasets, read next section.
 
 <h3 id="32-from-scratch">3.2 From Scratch</h3>
 
