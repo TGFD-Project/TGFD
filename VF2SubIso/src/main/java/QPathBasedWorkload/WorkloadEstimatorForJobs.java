@@ -1,11 +1,11 @@
-package Workload;
+package QPathBasedWorkload;
 
 import AmazonStorage.S3Storage;
 import Infra.*;
-import Partitioner.RangeBasedPartitioner;
-import changeExploration.*;
 import Loader.GraphLoader;
+import Partitioner.RangeBasedPartitioner;
 import Util.Config;
+import changeExploration.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,17 +17,16 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-public class WorkloadEstimator {
+public class WorkloadEstimatorForJobs {
 
     private GraphLoader loader;
     private HashMap<DataVertex,Integer> fragments;
     private HashMap<DataVertex, HashSet<Integer>> copiedVertices;
-    //private HashMap<String,ArrayList<Joblet>> jobletsByTGFD;
-    private HashMap<Integer, ArrayList<Joblet>> jobletsByFragmentID;
-    private HashMap<Integer, Joblet> jobletsByID;
+    private HashMap<Integer, ArrayList<Job>> jobsByFragmentID;
+    private HashMap<Integer, Job> jobsByID;
     private int numberOfProcessors;
 
-    public WorkloadEstimator(GraphLoader loader,int numberOfProcessors, HashMap<DataVertex,Integer> fragments)
+    public WorkloadEstimatorForJobs(GraphLoader loader, int numberOfProcessors, HashMap<DataVertex,Integer> fragments)
     {
         this.loader = loader;
         this.fragments=fragments;
@@ -35,7 +34,7 @@ public class WorkloadEstimator {
         copiedVertices=new HashMap<>();
     }
 
-    public WorkloadEstimator(GraphLoader loader, int numberOfProcessors)
+    public WorkloadEstimatorForJobs(GraphLoader loader, int numberOfProcessors)
     {
         this.loader = loader;
         this.numberOfProcessors=numberOfProcessors;
@@ -45,32 +44,32 @@ public class WorkloadEstimator {
 
     }
 
-    public void defineJoblets(List<TGFD> tgfds)
+    public void defineJobs(List<TGFD> tgfds)
     {
-        //jobletsByTGFD=new HashMap<>();
-        jobletsByID=new HashMap<>();
-        jobletsByFragmentID= new HashMap<>();
-        int jobletID=0;
+        //jobsByTGFD=new HashMap<>();
+        jobsByID=new HashMap<>();
+        jobsByFragmentID= new HashMap<>();
+        int jobID=0;
         IntStream.range(0, numberOfProcessors)
-                .forEach(i -> jobletsByFragmentID.put(i, new ArrayList<>()));
+                .forEach(i -> jobsByFragmentID.put(i, new ArrayList<>()));
 
         for (TGFD tgfd:tgfds) {
             System.out.println("TGFD: " + tgfd.getName() + " with the center type: " + tgfd.getPattern().getCenterVertexType());
-            //jobletsByTGFD.put(tgfd.getName(),new ArrayList <>());
+            //jobsByTGFD.put(tgfd.getName(),new ArrayList <>());
             String centerNodeType=tgfd.getPattern().getCenterVertexType();
             for (Vertex v: loader.getGraph().getGraph().vertexSet()) {
                 if(v.getTypes().contains(centerNodeType))
                 {
-                    jobletID++;
+                    jobID++;
                     DataVertex dataVertex=(DataVertex) v;
-                    Joblet joblet=new Joblet(jobletID,dataVertex,tgfd,tgfd.getPattern().getDiameter(),fragments.get(dataVertex));
+                    Job job=new Job(jobID,dataVertex,new Query(tgfd),tgfd.getPattern().getDiameter(),fragments.get(dataVertex));
                     ArrayList<RelationshipEdge> edges = loader.getGraph().getEdgesWithinDiameter(dataVertex, tgfd.getPattern().getDiameter());
-                    joblet.setEdges(edges);
-                    jobletsByID.put(jobletID,joblet);
-                    //jobletsByTGFD.get(tgfd.getName()).add(joblet);
-                    jobletsByFragmentID.get(fragments.get(dataVertex)).add(joblet);
-                    if(jobletID%100==0)
-                        System.out.println("Joblets so far: " + jobletID + "  **  " + LocalDateTime.now());
+                    job.setEdges(edges);
+                    jobsByID.put(jobID,job);
+                    //jobsByTGFD.get(tgfd.getName()).add(job);
+                    jobsByFragmentID.get(fragments.get(dataVertex)).add(job);
+                    if(jobID%100==0)
+                        System.out.println("Jobs so far: " + jobID + "  **  " + LocalDateTime.now());
                 }
             }
         }
@@ -78,19 +77,19 @@ public class WorkloadEstimator {
 
     public void partitionWorkload()
     {
-        WorkloadPartitioner partitioner=new WorkloadPartitioner(this);
-        this.jobletsByFragmentID =  partitioner.partition();
+        WorkloadPartitionerForJobs partitioner=new WorkloadPartitionerForJobs(this);
+        this.jobsByFragmentID =  partitioner.partition();
     }
 
     public int communicationCost()
     {
         System.out.println("Computing the data that needs to be shipped");
         int count=0;
-        for (int fragment:jobletsByFragmentID.keySet()) {
-            count += jobletsByFragmentID
+        for (int fragment:jobsByFragmentID.keySet()) {
+            count += jobsByFragmentID
                     .get(fragment)
                     .stream()
-                    .flatMap(joblet -> joblet
+                    .flatMap(job -> job
                             .getEdges()
                             .stream())
                     .filter(edge -> fragments.get((DataVertex) edge.getTarget()) != fragment || fragments.get((DataVertex) edge.getSource()) != fragment)
@@ -102,15 +101,15 @@ public class WorkloadEstimator {
     public HashMap<Integer,HashMap<Integer,ArrayList<SimpleEdge>>> dataToBeShipped()
     {
         HashMap<Integer,HashMap<Integer,ArrayList<SimpleEdge>>> dataToBeShipped=new HashMap<>();
-        for(int i:jobletsByFragmentID.keySet())
+        for(int i:jobsByFragmentID.keySet())
         {
             dataToBeShipped.put(i,new HashMap<>());
-            for(int j:jobletsByFragmentID.keySet())
+            for(int j:jobsByFragmentID.keySet())
                 dataToBeShipped.get(i).put(j,new ArrayList<>());
         }
-        for (int fragmentID:jobletsByFragmentID.keySet()) {
-            for (Joblet joblet :jobletsByFragmentID.get(fragmentID)) {
-                for (RelationshipEdge edge:joblet.getEdges()) {
+        for (int fragmentID:jobsByFragmentID.keySet()) {
+            for (Job job :jobsByFragmentID.get(fragmentID)) {
+                for (RelationshipEdge edge:job.getEdges()) {
                     DataVertex srcVertex=(DataVertex) edge.getSource();
                     DataVertex dstVertex=(DataVertex) edge.getTarget();
                     if(fragments.get(srcVertex)!=fragmentID)
@@ -143,10 +142,10 @@ public class WorkloadEstimator {
     public HashMap<Integer,HashMap<Integer,ArrayList<SimpleEdge>>> dataToBeShipped(List<Change> changes)
     {
         HashMap<Integer,HashMap<Integer,ArrayList<SimpleEdge>>> dataToBeShipped=new HashMap<>();
-        for(int i:jobletsByFragmentID.keySet())
+        for(int i:jobsByFragmentID.keySet())
         {
             dataToBeShipped.put(i,new HashMap<>());
-            for(int j:jobletsByFragmentID.keySet())
+            for(int j:jobsByFragmentID.keySet())
                 dataToBeShipped.get(i).put(j,new ArrayList<>());
         }
         for (Change change:changes) {
@@ -196,7 +195,7 @@ public class WorkloadEstimator {
     {
         HashMap<Integer,List<Change>> changesByFragmentID=new HashMap<>();
 
-        for(int i:jobletsByFragmentID.keySet())
+        for(int i:jobsByFragmentID.keySet())
             changesByFragmentID.put(i,new ArrayList<>());
 
         for (Change change:changes) {
@@ -315,31 +314,31 @@ public class WorkloadEstimator {
         return listOfFiles;
     }
 
-    public double computeJobletsSize(int fragmentID)
+    public double computeJobsSize(int fragmentID)
     {
-        return jobletsByFragmentID
+        return jobsByFragmentID
                 .get(fragmentID)
                 .stream()
-                .mapToDouble(Joblet::getSize)
+                .mapToDouble(Job::getSize)
                 .sum();
     }
 
     public double computeTotalSize()
     {
-        return jobletsByFragmentID
+        return jobsByFragmentID
                 .keySet()
                 .stream()
                 .mapToInt(fragmentID -> fragmentID)
-                .mapToObj(fragmentID -> jobletsByFragmentID
+                .mapToObj(fragmentID -> jobsByFragmentID
                         .get(fragmentID)
                         .stream())
                 .flatMap(Function.identity())
-                .mapToDouble(Joblet::getSize)
+                .mapToDouble(Job::getSize)
                 .sum();
     }
 
-    public HashMap<Integer, ArrayList<Joblet>> getJobletsByFragmentID() {
-        return jobletsByFragmentID;
+    public HashMap<Integer, ArrayList<Job>> getJobsByFragmentID() {
+        return jobsByFragmentID;
     }
 
     public GraphLoader getLoader() {
@@ -354,8 +353,8 @@ public class WorkloadEstimator {
         return numberOfProcessors;
     }
 
-    public void setJobletsByFragmentID(HashMap<Integer, ArrayList<Joblet>> jobletsByFragmentID) {
-        this.jobletsByFragmentID = jobletsByFragmentID;
+    public void setJobsByFragmentID(HashMap<Integer, ArrayList<Job>> jobsByFragmentID) {
+        this.jobsByFragmentID = jobsByFragmentID;
     }
 
     private void saveEdges(String path, StringBuilder stringBuilder)

@@ -3,7 +3,7 @@ package Util;
 import BatchViolation.OptBatchTED;
 import IncrementalRunner.IncUpdates;
 import IncrementalRunner.IncrementalChange;
-import TGFDLoader.TGFDGenerator;
+import Loader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;

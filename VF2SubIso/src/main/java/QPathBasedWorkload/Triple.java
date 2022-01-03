@@ -1,12 +1,10 @@
-package QPath;
+package QPathBasedWorkload;
 
 import Infra.Attribute;
-import Infra.PatternVertex;
 import Infra.Vertex;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 public class Triple implements Comparable<Triple>, Serializable {

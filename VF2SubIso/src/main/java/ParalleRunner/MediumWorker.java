@@ -3,7 +3,7 @@ package ParalleRunner;
 import AmazonStorage.S3Storage;
 import MPI.Consumer;
 import MPI.Producer;
-import TGFDLoader.TGFDGenerator;
+import Loader.TGFDGenerator;
 import Infra.TGFD;
 import Infra.VF2DataGraph;
 import org.apache.commons.lang3.RandomStringUtils;

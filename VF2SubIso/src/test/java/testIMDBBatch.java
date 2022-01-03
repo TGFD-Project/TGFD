@@ -1,6 +1,6 @@
 import BatchViolation.NaiveBatchTED;
 import BatchViolation.OptBatchTED;
-import TGFDLoader.TGFDGenerator;
+import Loader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;

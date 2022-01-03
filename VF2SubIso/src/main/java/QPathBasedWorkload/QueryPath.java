@@ -1,14 +1,8 @@
-package QPath;
+package QPathBasedWorkload;
 
 import Infra.PatternVertex;
-import Infra.RelationshipEdge;
-import Infra.Vertex;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultDirectedGraph;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 
 public class QueryPath {
 

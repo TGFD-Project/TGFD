@@ -7,11 +7,11 @@ import Loader.SimpleDBPediaLoader;
 import Loader.SimpleIMDBLoader;
 import MPI.Consumer;
 import MPI.Producer;
-import QPath.Job;
-import TGFDLoader.TGFDGenerator;
+import QPathBasedWorkload.Job;
+import Loader.TGFDGenerator;
 import Util.Config;
 
-import Workload.WorkloadEstimatorForJobs;
+import QPathBasedWorkload.WorkloadEstimatorForJobs;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;
 

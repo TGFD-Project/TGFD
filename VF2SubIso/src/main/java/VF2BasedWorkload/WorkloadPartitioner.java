@@ -1,4 +1,4 @@
-package Workload;
+package VF2BasedWorkload;
 
 import java.util.ArrayList;
 import java.util.HashMap;

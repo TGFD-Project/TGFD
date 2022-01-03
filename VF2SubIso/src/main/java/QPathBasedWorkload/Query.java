@@ -1,10 +1,8 @@
-package QPath;
+package QPathBasedWorkload;
 
 import Infra.RelationshipEdge;
 import Infra.TGFD;
-import Infra.VF2PatternGraph;
 import Infra.Vertex;
-import changeExploration.EdgeChange;
 
 import java.util.*;
 

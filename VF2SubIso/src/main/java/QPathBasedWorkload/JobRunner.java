@@ -1,40 +1,39 @@
-package Util;
+package QPathBasedWorkload;
 
-import BatchViolation.OptBatchTED;
-import IncrementalRunner.IncUpdates;
-import IncrementalRunner.IncrementalChange;
 import Infra.*;
 import Loader.DBPediaLoader;
 import Loader.GraphLoader;
 import Loader.IMDBLoader;
 import Loader.SyntheticLoader;
-import TGFDLoader.TGFDGenerator;
+import Loader.TGFDGenerator;
+import Util.Config;
 import VF2Runner.VF2SubgraphIsomorphism;
-import Workload.Joblet;
 import changeExploration.Change;
-import changeExploration.ChangeLoader;
 import org.jgrapht.Graph;
-import org.jgrapht.GraphMapping;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class JobletsRunner {
+public class JobRunner {
 
     private GraphLoader loader=null;
     private List<TGFD> tgfds;
-    private HashMap<String, TGFD> tgfdByName=new HashMap<>();
+    //private HashMap<String, TGFD> tgfdByName=new HashMap<>();
+    private HashMap<String, Query> queriesByName=new HashMap<>();
     private long wallClockTime=0;
-    private HashMap<Integer, Joblet> assignedJoblets;
-    private String jobletsInRawString;
+    private HashMap<Integer, Job> assignedJobs;
+    private String jobsInRawString;
 
     private HashMap <String, MatchCollection> matchCollectionHashMap;
 
-    public JobletsRunner()
+    public JobRunner()
     {
         System.out.println("Test Incremental algorithm for the "+ Config.dataset+" dataset from testRunner");
-        assignedJoblets=new HashMap<>();
+        assignedJobs=new HashMap<>();
     }
 
     public void load()
@@ -43,7 +42,7 @@ public class JobletsRunner {
 
         TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
         tgfds=generator.getTGFDs();
-        tgfds.forEach(tgfd -> tgfdByName.put(tgfd.getName(), tgfd));
+        tgfds.forEach(tgfd -> queriesByName.put(tgfd.getName(), new Query(tgfd)));
 
         //Load the first timestamp
         System.out.println("===========Snapshot 1 (" + Config.getTimestamps().get(1) + ")===========");
@@ -59,22 +58,22 @@ public class JobletsRunner {
         wallClockTime+=System.currentTimeMillis()-startTime;
     }
 
-    public void setJobletsInRawString(String jobletsInRawString) {
-        this.jobletsInRawString = jobletsInRawString;
+    public void setJobsInRawString(String jobsInRawString) {
+        this.jobsInRawString = jobsInRawString;
     }
 
-    public void generateJoblets()
+    public void generateJobs()
     {
-        if(jobletsInRawString!=null)
+        if(jobsInRawString!=null)
         {
-            String []temp=jobletsInRawString.split("\n");
+            String []temp=jobsInRawString.split("\n");
             for (int i=1;i<temp.length;i++)
             {
                 String []arr=temp[i].split("#");
                 if(arr.length==3)
                 {
-                    Joblet joblet=new Joblet(Integer.parseInt(arr[0]),(DataVertex) loader.getGraph().getNode(arr[1]),tgfdByName.get(arr[2]),tgfdByName.get(arr[2]).getPattern().getDiameter(),0);
-                    assignedJoblets.put(joblet.getId(), joblet);
+                    Job job=new Job(Integer.parseInt(arr[0]),(DataVertex) loader.getGraph().getNode(arr[1]),queriesByName.get(arr[2]),queriesByName.get(arr[2]).getTGFD().getPattern().getDiameter(),0);
+                    assignedJobs.put(job.getJobID(), job);
                 }
             }
         }
@@ -103,11 +102,12 @@ public class JobletsRunner {
         VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
 
         startTime=System.currentTimeMillis();
-        for (Joblet joblet:assignedJoblets.values()) {
-            Graph<Vertex, RelationshipEdge> subgraph = loader.getGraph().getSubGraphWithinDiameter(joblet.getCenterNode(), joblet.getDiameter(),joblet.getTGFD());
-            joblet.setSubgraph(subgraph);
-            Iterator <GraphMapping <Vertex, RelationshipEdge>> results= VF2.execute(subgraph, joblet.getTGFD().getPattern(),false);
-            matchCollectionHashMap.get(joblet.getTGFD().getName()).addMatches(currentSnapshotDate,results);
+        for (Job job:assignedJobs.values()) {
+            Graph<Vertex, RelationshipEdge> subgraph = loader.getGraph().getSubGraphWithinDiameter(job.getCenterNode(), job.getDiameter(),job.getQuery().getTGFD());
+            job.setSubgraph(subgraph);
+            job.runTheFirstSnapshot();
+            var results= job.findMatchMapping();
+            matchCollectionHashMap.get(job.getQuery().getTGFD().getName()).addMatches(currentSnapshotDate,results);
         }
         printWithTime("Match retrieval", System.currentTimeMillis()-startTime);
     }
@@ -138,18 +138,34 @@ public class JobletsRunner {
         }
 
         for (Change change:changes) {
-            for (int jobletID:change.getJobletIDs()) {
-                if(assignedJoblets.containsKey(jobletID))
+            for (int jobID:change.getJobletIDs()) {
+                if(assignedJobs.containsKey(jobID))
                 {
-                    IncUpdates incUpdatesOnDBpedia=new IncUpdates(assignedJoblets.get(jobletID).getSubgraph(),tgfds);
-                    HashMap<String, IncrementalChange> incrementalChangeHashMap=incUpdatesOnDBpedia.updateGraph(change,tgfdsByName);
-                    if(incrementalChangeHashMap==null)
-                        continue;
-                    for (String tgfdName:incrementalChangeHashMap.keySet()) {
-                        newMatchesSignaturesByTGFD.get(tgfdName).addAll(incrementalChangeHashMap.get(tgfdName).getNewMatches().keySet());
-                        removedMatchesSignaturesByTGFD.get(tgfdName).addAll(incrementalChangeHashMap.get(tgfdName).getRemovedMatchesSignatures());
-                        matchCollectionHashMap.get(tgfdName).addMatches(currentSnapshotDate,incrementalChangeHashMap.get(tgfdName).getNewMatches());
+                    // Previous Matches
+                    HashSet<String> prevMatches = new HashSet<>(assignedJobs.get(jobID).getLatestMappingSignatures().keySet());
+
+                    // Apply the change
+                    assignedJobs.get(jobID).applyChangeForTheNextSnapshot(change);
+
+                    //Removed matches signature
+                    HashSet<String> removedMatchesSignature=new HashSet<>();
+
+                    //New matches to be stored in the match collection
+                    HashMap <String,VertexMapping> newMatches=new HashMap<>();
+
+                    for (String signature:assignedJobs.get(jobID).getLatestMappingSignatures().keySet()) {
+                        if(!prevMatches.contains(signature))
+                            newMatches.put(signature,assignedJobs.get(jobID).getLatestMappingSignatures().get(signature));
                     }
+                    for (String key:prevMatches) {
+                        if(!assignedJobs.get(jobID).getLatestMappingSignatures().containsKey(key))
+                            removedMatchesSignature.add(key);
+                    }
+
+                    String tgfdName=assignedJobs.get(jobID).getQuery().getTGFD().getName();
+                    newMatchesSignaturesByTGFD.get(tgfdName).addAll(newMatches.keySet());
+                    removedMatchesSignaturesByTGFD.get(tgfdName).addAll(removedMatchesSignature);
+                    matchCollectionHashMap.get(tgfdName).addMatches(currentSnapshotDate,newMatches.values());
                 }
             }
         }

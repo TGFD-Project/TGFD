@@ -7,10 +7,10 @@ import Loader.SimpleIMDBLoader;
 import Infra.TGFD;
 import MPI.Consumer;
 import MPI.Producer;
-import TGFDLoader.TGFDGenerator;
+import Loader.TGFDGenerator;
 import Util.Config;
-import Workload.Joblet;
-import Workload.WorkloadEstimator;
+import VF2BasedWorkload.Joblet;
+import VF2BasedWorkload.WorkloadEstimator;
 import changeExploration.Change;
 import changeExploration.ChangeLoader;
 

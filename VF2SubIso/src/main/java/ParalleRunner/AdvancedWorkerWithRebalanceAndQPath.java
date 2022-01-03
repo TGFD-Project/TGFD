@@ -8,7 +8,7 @@ import MPI.Consumer;
 import MPI.Producer;
 import Partitioner.Util;
 import Util.Config;
-import Util.JobRunner;
+import QPathBasedWorkload.JobRunner;
 import changeExploration.Change;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;

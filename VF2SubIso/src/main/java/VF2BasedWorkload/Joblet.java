@@ -1,4 +1,4 @@
-package Workload;
+package VF2BasedWorkload;
 
 import Infra.*;
 import org.jgrapht.Graph;

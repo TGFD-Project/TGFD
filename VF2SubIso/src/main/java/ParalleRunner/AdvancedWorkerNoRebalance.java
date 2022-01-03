@@ -5,22 +5,14 @@ import Infra.*;
 import MPI.Consumer;
 import MPI.Producer;
 import Partitioner.Util;
-import TGFDLoader.TGFDGenerator;
 import Util.Config;
-import Util.JobletsRunner;
-import Util.testRunner;
-import Workload.Joblet;
+import VF2BasedWorkload.JobletRunner;
 import changeExploration.Change;
-import org.apache.activemq.broker.scheduler.Job;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Thread.sleep;
 
@@ -29,7 +21,7 @@ public class AdvancedWorkerNoRebalance {
     //region --[Fields: Private]---------------------------------------
 
     private String nodeName = "";
-    private JobletsRunner runner;
+    private JobletRunner runner;
     private String workingBucketName="";
     private HashMap<Integer, ArrayList<SimpleEdge>> dataToBeShipped;
 
@@ -53,7 +45,7 @@ public class AdvancedWorkerNoRebalance {
     {
         sendStatusToCoordinator();
 
-        runner=new JobletsRunner();
+        runner=new JobletRunner();
         runner.load();
 
         runFirstSuperstep();

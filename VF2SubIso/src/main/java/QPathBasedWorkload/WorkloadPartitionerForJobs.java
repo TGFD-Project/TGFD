@@ -1,6 +1,4 @@
-package Workload;
-
-import QPath.Job;
+package QPathBasedWorkload;
 
 import java.util.ArrayList;
 import java.util.HashMap;

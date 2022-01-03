@@ -1,4 +1,4 @@
-import TGFDLoader.TGFDGenerator;
+import Loader.TGFDGenerator;
 import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import Loader.GraphLoader;

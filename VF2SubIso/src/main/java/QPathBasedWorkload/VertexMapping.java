@@ -1,4 +1,4 @@
-package QPath;
+package QPathBasedWorkload;
 
 import Infra.PatternVertex;
 import Infra.Vertex;

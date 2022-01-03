@@ -1,6 +1,6 @@
 package Infra;
 
-import Workload.Joblet;
+import VF2BasedWorkload.Joblet;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 

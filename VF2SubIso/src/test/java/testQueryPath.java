@@ -1,7 +1,6 @@
 import Infra.TGFD;
-import QPath.Query;
-import TGFDLoader.TGFDGenerator;
-import Util.Config;
+import QPathBasedWorkload.Query;
+import Loader.TGFDGenerator;
 
 import java.util.List;
 
