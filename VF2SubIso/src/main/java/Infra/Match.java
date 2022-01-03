@@ -1,5 +1,6 @@
 package Infra;
 
+import QPath.VertexMapping;
 import org.jgrapht.GraphMapping;
 
 import java.time.Duration;
@@ -18,7 +19,10 @@ public final class Match {
     private List<Interval> intervals;
 
     /** Graph mapping from pattern graph to match graph. */
-    private GraphMapping<Vertex, RelationshipEdge> mapping;
+    private GraphMapping<Vertex, RelationshipEdge> matchMapping;
+
+    /** Graph mapping from pattern graph to match graph using vertexMapping for QPath based subgraph isomorphism. */
+    private VertexMapping matchVertexMapping;
 
     /** Signature of the match computed from X. */
     private String signatureX;
@@ -35,7 +39,7 @@ public final class Match {
     //region --[Constructors]------------------------------------------
     private Match(
         TemporalGraph<Vertex> temporalGraph,
-        GraphMapping<Vertex, RelationshipEdge> mapping,
+        GraphMapping<Vertex, RelationshipEdge> matchMapping,
         String signatureX,
         List<Interval> intervals,
         LocalDate initialTimepoint)
@@ -44,25 +48,58 @@ public final class Match {
         this.signatureX = signatureX;
         this.intervals = intervals;
 
-        this.mapping = (mapping instanceof BackwardVertexGraphMapping)
-            ? mapping
-            : new BackwardVertexGraphMapping<>(mapping, initialTimepoint, temporalGraph);
+        this.matchMapping = (matchMapping instanceof BackwardVertexGraphMapping)
+            ? matchMapping
+            : new BackwardVertexGraphMapping<>(matchMapping, initialTimepoint, temporalGraph);
+        this.matchVertexMapping=null;
      }
+
+    //region --[Constructors]------------------------------------------
+    private Match(
+            TemporalGraph<Vertex> temporalGraph,
+            VertexMapping matchVertexMapping,
+            String signatureX,
+            List<Interval> intervals,
+            LocalDate initialTimepoint)
+    {
+        this.temporalGraph = temporalGraph;
+        this.signatureX = signatureX;
+        this.intervals = intervals;
+
+        this.matchMapping = null;
+        this.matchVertexMapping=matchVertexMapping;
+    }
 
     /**
      * Create a new Match.
      * @param temporalGraph Temporal graph containing the vertices.
-     * @param mapping Mapping of the match.
+     * @param matchMapping Mapping of the match.
      * @param signatureX Signature of the match computed from X.
      */
     public Match(
         TemporalGraph temporalGraph,
-        GraphMapping<Vertex, RelationshipEdge> mapping,
+        GraphMapping<Vertex, RelationshipEdge> matchMapping,
         String signatureX,
         LocalDate initialTimepoint)
     {
         // TODO: FIXME: can we get away with using initalTimepoint for the TemporalGraph? [2021-02-24]
-        this(temporalGraph, mapping, signatureX, new ArrayList<Interval>(), initialTimepoint);
+        this(temporalGraph, matchMapping, signatureX, new ArrayList<Interval>(), initialTimepoint);
+    }
+
+    /**
+     * Create a new Match.
+     * @param temporalGraph Temporal graph containing the vertices.
+     * @param matchVertexMapping VertexMapping of the match.
+     * @param signatureX Signature of the match computed from X.
+     */
+    public Match(
+            TemporalGraph temporalGraph,
+            VertexMapping matchVertexMapping,
+            String signatureX,
+            LocalDate initialTimepoint)
+    {
+        // TODO: FIXME: can we get away with using initalTimepoint for the TemporalGraph? [2021-02-24]
+        this(temporalGraph, matchVertexMapping, signatureX, new ArrayList<Interval>(), initialTimepoint);
     }
 
     /**
@@ -71,12 +108,24 @@ public final class Match {
      */
     public Match WithIntervals(List<Interval> intervals)
     {
-        return new Match(
-            this.temporalGraph,
-            this.mapping,
-            this.signatureX,
-            intervals,
-            intervals.get(0).getEnd());
+        if(matchMapping!=null)
+        {
+            return new Match(
+                    this.temporalGraph,
+                    this.matchMapping,
+                    this.signatureX,
+                    intervals,
+                    intervals.get(0).getEnd());
+        }
+        else
+        {
+            return new Match(
+                    this.temporalGraph,
+                    this.matchVertexMapping,
+                    this.signatureX,
+                    intervals,
+                    intervals.get(0).getEnd());
+        }
     }
     //endregion
 
@@ -241,6 +290,57 @@ public final class Match {
     }
 
     /**
+     * Gets the signature of a match for comparison across time w.r.t. the X of the dependency.
+     * @param pattern Pattern of the match.
+     * @param mapping VertexMapping of the match.
+     * @param xLiterals Literals of the X dependency.
+     */
+    public static String signatureFromX(
+            VF2PatternGraph pattern,
+            VertexMapping mapping,
+            ArrayList<Literal> xLiterals)
+    {
+        // We assume that all x variable literals are also defined in the pattern? [2021-02-13]
+        var builder = new StringBuilder();
+
+        // TODO: consider collecting (type, name, attr) and sorting at the end [2021-02-14]
+
+        // NOTE: Ensure stable sorting of vertices [2021-02-13]
+        var sortedPatternVertices = pattern.getPattern().vertexSet().stream().sorted();
+        sortedPatternVertices.forEach(patternVertex ->
+        {
+            var matchVertex = mapping.getVertexCorrespondence(patternVertex);
+            if (matchVertex == null)
+                return;
+
+            // NOTE: Ensure stable sorting of attributes [2021-02-13]
+            //var sortedAttributes = matchVertex.getAllAttributesList().stream().sorted();
+            //sortedAttributes.forEach(attribute ->{});
+            for (Literal literal : xLiterals)
+            {
+                // We can ignore constant literals because a Match is for a single TGFD which has constant defined in the pattern
+                if (literal instanceof VariableLiteral)
+                {
+                    var varLiteral = (VariableLiteral)literal;
+                    var matchVertexTypes = matchVertex.getTypes();
+                    if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && matchVertex.hasAttribute(varLiteral.getAttrName_1())))
+                    {
+                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_1()));
+                        builder.append(",");
+                    }
+                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.hasAttribute((varLiteral.getAttrName_2())))
+                    {
+                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
+                        builder.append(",");
+                    }
+                }
+            }
+        });
+        // TODO: consider returning a hash [2021-02-13]
+        return builder.toString();
+    }
+
+    /**
      * Gets the signature of a match for comparison across time w.r.t. the Y of the dependency.
      * @param pattern Pattern of the match.
      * @param mapping Mapping of the match.
@@ -259,6 +359,67 @@ public final class Match {
         sortedPatternVertices.forEach(patternVertex ->
         {
             var matchVertex = mapping.getVertexCorrespondence(patternVertex, false);
+            if (matchVertex == null)
+                return;
+
+            // NOTE: Ensure stable sorting of attributes [2021-02-13]
+            //var sortedAttributes = matchVertex.getAllAttributesList().stream().sorted();
+            //sortedAttributes.forEach(attribute ->{});
+            for (Literal literal : yLiterals)
+            {
+                if (literal instanceof ConstantLiteral)
+                {
+                    var constantLiteral = (ConstantLiteral)literal;
+                    if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
+                        continue;
+                    if (!matchVertex.hasAttribute(constantLiteral.attrName))
+                        continue;
+                    if (!matchVertex.getAttributeValueByName(constantLiteral.attrName).equals(constantLiteral.attrValue))
+                        continue;
+
+                    builder.append(matchVertex.getAttributeValueByName(constantLiteral.attrName));
+                    builder.append(",");
+                }
+                else if (literal instanceof VariableLiteral)
+                {
+                    var varLiteral = (VariableLiteral)literal;
+                    var matchVertexTypes = matchVertex.getTypes();
+                    if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && matchVertex.hasAttribute(varLiteral.getAttrName_1())))
+                    {
+                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_1()));
+                        builder.append(",");
+                    }
+                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.hasAttribute((varLiteral.getAttrName_2())))
+                    {
+                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
+                        builder.append(",");
+                    }
+                }
+            }
+        });
+        // TODO: consider returning a hash [2021-02-13]
+        return builder.toString();
+    }
+
+    /**
+     * Gets the signature of a match for comparison across time w.r.t. the Y of the dependency.
+     * @param pattern Pattern of the match.
+     * @param mapping VertexMapping of the match.
+     * @param yLiterals TGFD dependency.
+     */
+    public static String signatureFromY(
+            VF2PatternGraph pattern,
+            VertexMapping mapping,
+            ArrayList<Literal> yLiterals)
+    {
+        // We assume that all x variable literals are also defined in the pattern? [2021-02-13]
+        var builder = new StringBuilder();
+
+        // NOTE: Ensure stable sorting of vertices [2021-02-13]
+        var sortedPatternVertices = pattern.getPattern().vertexSet().stream().sorted();
+        sortedPatternVertices.forEach(patternVertex ->
+        {
+            var matchVertex = mapping.getVertexCorrespondence(patternVertex);
             if (matchVertex == null)
                 return;
 
@@ -325,6 +486,31 @@ public final class Match {
         // TODO: consider returning a hash [2021-02-13]
         return builder.toString();
     }
+
+    /**
+     * Gets the signature of a match w.r.t the input pattern.
+     * @param pattern Pattern of the match.
+     * @param mapping VertexMapping of the match.
+     */
+    public static String signatureFromPattern(
+            VF2PatternGraph pattern,
+            VertexMapping mapping)
+    {
+        var builder = new StringBuilder();
+
+        // NOTE: Ensure stable sorting of vertices [2021-02-13]
+        var sortedPatternVertices = pattern.getPattern().vertexSet().stream().sorted();
+        sortedPatternVertices.forEach(patternVertex ->
+        {
+            var matchVertex = (DataVertex)mapping.getVertexCorrespondence(patternVertex);
+            if (matchVertex == null)
+                return;
+            builder.append(matchVertex.getVertexURI());
+            builder.append(",");
+        });
+        // TODO: consider returning a hash [2021-02-13]
+        return builder.toString();
+    }
     //endregion
 
     //region --[Properties: Public]------------------------------------
@@ -332,7 +518,12 @@ public final class Match {
     public List<Interval> getIntervals() { return this.intervals; }
 
     /** Gets the vertices of the match. */
-    public GraphMapping<Vertex, RelationshipEdge> getMapping() { return this.mapping; }
+    public GraphMapping<Vertex, RelationshipEdge> getMatchMapping() { return this.matchMapping; }
+
+    /** Gets the vertices of the match using VertexMapping. */
+    public VertexMapping getMatchVertexMapping() {
+        return matchVertexMapping;
+    }
 
     /** Gets the signature of the match computed from X. */
     public String getSignatureX() { return signatureX; }

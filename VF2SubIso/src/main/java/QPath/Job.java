@@ -6,16 +6,14 @@ import changeExploration.Change;
 import changeExploration.ChangeType;
 import changeExploration.EdgeChange;
 import org.jgrapht.Graph;
-import org.jgrapht.GraphMapping;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 public class Job {
 
-    private int id;
+    private int jobID;
     private int diameter;
     private DataVertex centerNode;
     private Query query;
@@ -25,34 +23,36 @@ public class Job {
     private int matchID=0;
     private int tripleIDCount=0;
 
-    //private ArrayList<boolean []>  matches=new ArrayList<>();
-    //private ArrayList<HashMap<Integer, HashMap<Vertex, Literal>>>  unSat=new ArrayList<>();
+    private HashMap<String, VertexMapping> latestMappingSignatures=new HashMap<>();
+    
     private HashMap<Integer,HashMap<Integer,QPathMatch>> localMatches;
+    private HashMap<Integer,QPathMatch> localQueryPathMatches;
 
-    public Job(int id, DataVertex centerNode, Query query, int diameter, int fragmentID)
+    public Job(int jobID, DataVertex centerNode, Query query, int diameter, int fragmentID)
     {
-        this.id=id;
+        this.jobID =jobID;
         this.diameter=diameter;
         this.centerNode=centerNode;
         this.query=query;
         this.fragmentID=fragmentID;
         this.localMatches=new HashMap<>();
+        this.localQueryPathMatches=new HashMap<>();
     }
 
     public void setEdges(ArrayList<RelationshipEdge> edges) {
         this.edges = edges;
         edges.forEach(edge -> {
-            edge.getSource().addJobletID(id);
-            edge.getTarget().addJobletID(id);
+            edge.getSource().addJobletID(jobID);
+            edge.getTarget().addJobletID(jobID);
         });
     }
 
     public void setSubgraph(Graph<Vertex, RelationshipEdge> inducedGraph) {
         this.subgraph=new VF2DataGraph(inducedGraph);
-        this.subgraph.getGraph().vertexSet().forEach(vertex -> vertex.addJobletID(id));
+        this.subgraph.getGraph().vertexSet().forEach(vertex -> vertex.addJobletID(jobID));
     }
 
-    public void findMatchesForTheFirstSnapshot()
+    public void runTheFirstSnapshot()
     {
         for (int qPathID=0;qPathID<query.getQueryPaths().size();qPathID++) {
             findMatchForAQPath(qPathID);
@@ -128,30 +128,37 @@ public class Job {
         for (Triple lastTriple: matchedTriples.get(path.getTriples().size()-1)) {
             if (tempIndexedTriples.containsKey(lastTriple.getTripleID())) {
                 for (ArrayList<Triple> arr : tempIndexedTriples.get(lastTriple.getTripleID())) {
-                    QPathMatch match = new QPathMatch(++matchID, arr);
+                    QPathMatch match = new QPathMatch(++matchID, arr,qPathID);
                     localMatches.get(qPathID).put(matchID, match);
+                    localQueryPathMatches.put(matchID,match);
                 }
             }
         }
     }
 
-    private void deleteMatchesForAQPath(int qPathID,DataVertex v1,DataVertex v2, String edgeLabel)
+    private void deleteMatchesForAQPathByDeletingAnEdge(int qPathID, DataVertex v1, DataVertex v2, String edgeLabel)
     {
         HashSet<Integer> toBeDeleted=new HashSet<>();
         for (QPathMatch qPathMatch:localMatches.get(qPathID).values()) {
             for (Triple triple:qPathMatch.getMatchesInTriple()) {
-                if(((DataVertex)triple.getSrc()).getVertexURI().equals(v1.getVertexURI()) &&
-                        ((DataVertex)triple.getDst()).getVertexURI().equals(v2.getVertexURI()) &&
-                triple.getEdge().equals(edgeLabel))
-                    toBeDeleted.add(triple.getTripleID());
+                if(
+                        ((DataVertex)triple.getSrc()).getVertexURI().equals(v1.getVertexURI())
+                        && ((DataVertex)triple.getDst()).getVertexURI().equals(v2.getVertexURI())
+                        && triple.getEdge().equals(edgeLabel)
+                )
+                {
+                    toBeDeleted.add(qPathMatch.getMatchID());
+                    break;
+                }
             }
         }
-        for (int id: toBeDeleted) {
-            localMatches.get(qPathID).remove(id);
+        for (int qPathMatchID: toBeDeleted) {
+            localMatches.get(qPathID).remove(qPathMatchID);
+            localQueryPathMatches.remove(qPathMatchID);
         }
     }
 
-    private void updateOrDeleteAttributeForAQPath(int qPathID,DataVertex v1, Attribute attribute)
+    private void updateOrDeleteAttributeForAQPath(int qPathID,DataVertex v1)
     {
         for (QPathMatch qPathMatch:localMatches.get(qPathID).values()) {
             for (Triple triple:qPathMatch.getMatchesInTriple()) {
@@ -195,7 +202,7 @@ public class Job {
                 }
                 ArrayList<Integer> qPathIDs=findRelevantQPath(v1,v2,edgeChange.getLabel());
                 for (int qPathID:qPathIDs)
-                    deleteMatchesForAQPath(qPathID,v1,v2,edgeChange.getLabel());
+                    deleteMatchesForAQPathByDeletingAnEdge(qPathID,v1,v2,edgeChange.getLabel());
             }
             else
                 throw new IllegalArgumentException("The change is instance of EdgeChange, but type of change is: " + edgeChange.getTypeOfChange());
@@ -211,23 +218,60 @@ public class Job {
                 v1.setOrAddAttribute(attributeChange.getAttribute());
                 ArrayList<Integer> qPathIDs=findRelevantQPath(v1,attributeChange.getAttribute());
                 for (int qPathID:qPathIDs)
-                    updateOrDeleteAttributeForAQPath(qPathID,v1, attributeChange.getAttribute());
+                    updateOrDeleteAttributeForAQPath(qPathID,v1);
             }
             else if(attributeChange.getTypeOfChange()==ChangeType.deleteAttr)
             {
                 v1.deleteAttribute(attributeChange.getAttribute());
                 ArrayList<Integer> qPathIDs=findRelevantQPath(v1,attributeChange.getAttribute());
                 for (int qPathID:qPathIDs)
-                    updateOrDeleteAttributeForAQPath(qPathID,v1, attributeChange.getAttribute());
+                    updateOrDeleteAttributeForAQPath(qPathID,v1);
             }
             else
                 throw new IllegalArgumentException("The change is instance of AttributeChange, but type of change is: " + attributeChange.getTypeOfChange());
         }
     }
 
-    public void findMatchMapping()
+    public HashSet<VertexMapping> findMatchMapping()
     {
+        HashSet<VertexMapping> mappings=new HashSet<>();
+        HashMap<Integer,HashSet<ArrayList<Integer>>> mappingIndices=new HashMap<>();
+        mappingIndices.put(0,new HashSet<>());
+        for (QPathMatch match:localMatches.get(0).values()) {
+            ArrayList<Integer> temp=new ArrayList<>();
+            temp.add(match.getMatchID());
+            mappingIndices.get(0).add(temp);
+        }
+        for (int qPathID=1;qPathID<query.getQueryPaths().size();qPathID++) {
+            mappingIndices.put(qPathID,new HashSet<>());
+            for (ArrayList<Integer> prevMatches:mappingIndices.get(qPathID-1)) {
+                for (QPathMatch match:localMatches.get(qPathID).values()) {
+                    ArrayList<Integer> temp = new ArrayList<>(prevMatches);
+                    temp.add(match.getMatchID());
+                    mappingIndices.get(qPathID).add(temp);
+                }
+            }
+        }
 
+        for (ArrayList<Integer> matches:mappingIndices.get(query.getQueryPaths().size()-1))
+        {
+            VertexMapping mapping = new VertexMapping();
+            for (int qPathMatchID:matches) {
+                QPathMatch qPathMatch=localQueryPathMatches.get(qPathMatchID);
+                for (int i=0;i<qPathMatch.getMatchesInTriple().size();i++)
+                {
+                    Triple dataTriple=qPathMatch.getMatchesInTriple().get(i);
+                    PatternVertex correspondingPatternVertex =(PatternVertex) query.getQueryPaths().get(qPathMatch.getqPathID()).getTriples().get(i).getSrc();
+                    mapping.addMapping(dataTriple.getSrc(),correspondingPatternVertex);
+                }
+            }
+            mappings.add(mapping);
+        }
+        latestMappingSignatures.clear();
+        for (VertexMapping vertexMapping:mappings) {
+            latestMappingSignatures.put(Match.signatureFromPattern(getQuery().getTGFD().getPattern(),vertexMapping),vertexMapping);
+        }
+        return mappings;
     }
 
     public VF2DataGraph getSubgraph() {
@@ -246,12 +290,12 @@ public class Job {
         return centerNode;
     }
 
-    public Query getًQuery() {
+    public Query getQuery() {
         return query;
     }
 
-    public int getId() {
-        return id;
+    public int getJobID() {
+        return jobID;
     }
 
     public int getFragmentID() {
@@ -261,12 +305,16 @@ public class Job {
     public double getSize()
     {
         if(edges!=null)
-            return Math.pow(edges.size(),query.getTgfd().getPattern().getSize());
+            return Math.pow(edges.size(),query.getTGFD().getPattern().getSize());
         else
             return 0;
     }
 
-    private ArrayList<Integer> findRelevantQPath(DataVertex v1,DataVertex v2, String edgeLabel)
+    public HashMap<String, VertexMapping> getLatestMappingSignatures() {
+        return latestMappingSignatures;
+    }
+
+    private ArrayList<Integer> findRelevantQPath(DataVertex v1, DataVertex v2, String edgeLabel)
     {
         ArrayList<Integer> qPathIndices=new ArrayList<>();
         for (int i=0;i<query.getQueryPaths().size();i++) {

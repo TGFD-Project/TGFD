@@ -5,12 +5,14 @@ import java.util.ArrayList;
 public class QPathMatch {
 
     private int matchID;
+    private int qPathID;
     private ArrayList<Triple> matchesInTriple;
 
-    public QPathMatch(int matchID,ArrayList<Triple> matchesInTriple)
+    public QPathMatch(int matchID,ArrayList<Triple> matchesInTriple, int qPathID)
     {
         this.matchesInTriple=matchesInTriple;
         this.matchID=matchID;
+        this.qPathID=qPathID;
     }
 
     public QPathMatch(int matchID,Triple firstMatchInTriple)
@@ -31,6 +33,10 @@ public class QPathMatch {
 
     public int getMatchID() {
         return matchID;
+    }
+
+    public int getqPathID() {
+        return qPathID;
     }
 
     public boolean isUnSatEmpty()

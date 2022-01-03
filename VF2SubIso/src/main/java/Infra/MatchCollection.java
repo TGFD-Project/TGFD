@@ -1,5 +1,6 @@
 package Infra;
 
+import QPath.VertexMapping;
 import org.jgrapht.GraphMapping;
 
 import java.time.Duration;
@@ -85,6 +86,30 @@ public class MatchCollection
     }
 
     /**
+     * Add a match for a timestamp.
+     * @param timestamp Timepoint of the match.
+     * @param mapping The mapping of the match.
+     */
+    private void addMatch(
+            LocalDate timestamp,
+            VertexMapping mapping)
+    {
+        var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
+
+        var match = matchesBySignature.getOrDefault(signature, null);
+        if (match == null)
+        {
+            match = new Match(temporalGraph, mapping, signature, timestamp);
+            matchesBySignature.put(signature, match);
+        }
+
+        var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
+
+        match.addTimepoint(timestamp, granularity);
+        match.addSignatureY(timestamp,granularity,signatureY);
+    }
+
+    /**
      * Adds vertices of the match to the TemporalGraph shared by matches in this collection.
      * @param timestamp Timepoint of the match.
      * @param mapping Mapping of the match.
@@ -100,6 +125,25 @@ public class MatchCollection
                 matchVertex,
                 ((DataVertex)matchVertex).getVertexURI(),
                 timestamp);
+        }
+    }
+
+    /**
+     * Adds vertices of the match to the TemporalGraph shared by matches in this collection.
+     * @param timestamp Timepoint of the match.
+     * @param mapping VertexMapping of the match.
+     */
+    private void addVertices(LocalDate timestamp, VertexMapping mapping)
+    {
+        for (var pattenVertex : pattern.getPattern().vertexSet())
+        {
+            var matchVertex = mapping.getVertexCorrespondence(pattenVertex);
+
+            // TODO: change Vertex type to DataVertex or add vertex id to Vertex [2021-02-24]
+            temporalGraph.addVertex(
+                    matchVertex,
+                    ((DataVertex)matchVertex).getVertexURI(),
+                    timestamp);
         }
     }
     //endregion
@@ -124,6 +168,32 @@ public class MatchCollection
         while (mappingIterator.hasNext())
         {
             GraphMapping<Vertex, RelationshipEdge> mapping = mappingIterator.next();
+            addMatch(timestamp, mapping);
+            addVertices(timestamp, mapping);
+        }
+        System.out.println("Total Number of matches: " + matchCount);
+        return matchCount;
+    }
+
+
+    /**
+     * Adds matches for a timestamp.
+     * @param timestamp Timepoint of the matches.
+     * @param mappings An Arraylist of vertex mapping to the graph pattern.
+     */
+    public int addMatches(
+            LocalDate timestamp,
+            Collection<VertexMapping> mappings)
+    {
+        if (mappings == null)
+            return 0;
+
+        timestamps.add(timestamp);
+
+        int matchCount = 0;
+        long start= System.currentTimeMillis();
+        for (VertexMapping mapping:mappings) {
+
             addMatch(timestamp, mapping);
             addVertices(timestamp, mapping);
         }

@@ -73,7 +73,7 @@ public class Query {
         return paths;
     }
 
-    public TGFD getTgfd() {
+    public TGFD getTGFD() {
         return tgfd;
     }
 

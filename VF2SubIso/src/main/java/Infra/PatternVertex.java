@@ -37,6 +37,10 @@ public class PatternVertex extends Vertex{
                 '}';
     }
 
+    public String getPatternVertexRandomID() {
+        return patternVertexRandomID;
+    }
+
     // This is being used to check if a PatternVertex can be mapped to a DataVertex
     @Override
     public boolean isMapped(Vertex v)

@@ -38,12 +38,20 @@ public class GFDBatchTED {
             List<Match> secondMatches=matches.getMatches(allSnapshots[i]);
             for (Match first:firstMatches) {
                 String firstSignatureX=first.getSignatureX();
-                String firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMapping(),tgfd.getDependency().getY());
+                String firstSignatureY="";
+                if(first.getMatchMapping()!=null)
+                    firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchMapping(),tgfd.getDependency().getY());
+                else
+                    firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchVertexMapping(),tgfd.getDependency().getY());
                 for (Match second:secondMatches) {
                     if(firstSignatureX.equals(second.getSignatureX()))
                     {
                         //Here, they both should have the same signature Y
-                        String secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMapping(),tgfd.getDependency().getY());
+                        String secondSignatureY="";
+                        if(second.getMatchMapping()!=null)
+                            secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMatchMapping(),tgfd.getDependency().getY());
+                        else
+                            secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMatchVertexMapping(),tgfd.getDependency().getY());
                         if(!firstSignatureY.equals(secondSignatureY))
                         {
                             //Violation happened.
