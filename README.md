@@ -5,22 +5,22 @@
 [comment]: # (Must use Gitub's generated id to be consistent between Github and Github Pages because Github will override it")
 
 * [1. Overview](#1-overview)
-* [2. Datasets](#2-datasets)
-  + [2.1 DBpedia](#21-dbpedia)
-    - [2.1.1 DBpedia TGFDs](#211-dbpedia-tgfds)
-  + [2.2 IMDB](#22-imdb)
-    - [2.2.1 IMDB TGFDs](#221-imdb-tgfds)
-  + [2.3 Synthetic](#23-synthetic)
-    - [2.3.1 Synthetic TGFDs](#231-synthetic-tgfds)
-* [3. Getting started](#3-getting-started)
-  + [3.1 With Sample](#31-with-sample)
-  + [3.2 From Scratch](#32-from-scratch)
-    - [3.2.1 Datasets](#321-datasets)
-    - [3.2.2 Defining TGFDs](#322-defining-tgfds)
-    - [3.2.3 Creating conf](#323-creating-conf)
-    - [3.2.4 Detecting errors on Local Machine](#324-detecting-errors-local)
-    - [3.2.5 Detecting errors on EC2 cluster](#325-detecting-errors-Amazon)
-    - [3.2.6 Generating diffs](#326-generating-diffs)
+* [2. TGFD Syntax](#2-TGFD-definition)
+* [3. Datasets](#3-datasets)
+  + [3.1 DBpedia](#31-dbpedia)
+    - [3.1.1 DBpedia TGFDs](#311-dbpedia-tgfds)
+  + [3.2 IMDB](#32-imdb)
+    - [3.2.1 IMDB TGFDs](#321-imdb-tgfds)
+  + [3.3 Synthetic](#33-synthetic)
+    - [3.3.1 Synthetic TGFDs](#331-synthetic-tgfds)
+* [4. Getting started](#4-getting-started)
+  + [4.1 With Sample](#41-with-sample)
+  + [4.2 From Scratch](#42-from-scratch)
+    - [4.2.1 Datasets](#421-datasets)
+    - [4.2.2 Creating conf](#422-creating-conf)
+    - [4.2.3 Detecting errors on Local Machine](#423-detecting-errors-local)
+    - [4.2.4 Detecting errors on EC2 cluster](#424-detecting-errors-Amazon)
+    - [4.2.5 Generating diffs](#425-generating-diffs)
 * [5. Source Code](#5-source-code)
 * [6. References](#6-references)
 
@@ -31,15 +31,46 @@ The **T**emporal **G**raph **F**unctional **D**ependencies (TGFD) project detect
 This page provides supplementary experimental details, dataset characteristics, TGFD samples, and a link to the source code.
 
 
-<h2 id="2-datasets">2. Datasets</h2>
+<h2 id="2-TGFD-definition">2. TGFD Syntax</h2>
 
-<h3 id="21-dbpedia">2.1 DBpedia</h3>
+To store TGFDs and use them in our implementation, we considered a specific syntax to define TGFDs. This syntax is being used throughout the whole implementation.
+
+TGFDs are stored in a text file and the syntax of a TGFD is line-based with a `#` delimiter:
+```
+tgfd#{name}
+vertex#v1#{vertex1Type}
+vertex#v2#{vertex2Type}
+edge#v1#v2#{edgeType}
+diameter#{diameterOfPattern}
+literal#x#{vertex1Type}${vertex1Attribute}${vertex1Type}${vertex1Attribute}
+literal#y#{vertex2Type}${vertex2Attribute}${vertex2Type}${vertex2Attribute}
+delta#{start}#{end}#{step}
+```
+
+For example, DBpedia TGFD 1 is defined as:
+```
+tgfd#p0100
+vertex#v1#album#name#uri
+vertex#v2#musicalartist#name
+edge#v1#v2#producer
+diameter#1
+literal#x#album$name$album$name
+literal#x#album$uri$album$uri
+literal#y#musicalartist$name$musicalartist$name
+delta#0#210#1
+```
+
+Refer to `/samplePatterns/` for more examples.
+
+<h2 id="3-datasets">3. Datasets</h2>
+
+<h3 id="31-dbpedia">3.1 DBpedia</h3>
 
 [DBpedia](https://databus.dbpedia.org/dbpedia/collections/latest-core) is a dataset containing structured content of Wikimedia projects, such as Wikipedia [1].
 
 This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges with 584 distinct labels [2].
 
-<h4 id="211-dbpedia-tgfds">2.1.1 DBpedia TGFDs</h4>
+<h4 id="311-dbpedia-tgfds">3.1.1 DBpedia TGFDs</h4>
 
 
 We applied a TGFD mining algorithm [3] over the DBPedia dataset to identify satisfying
@@ -88,6 +119,8 @@ We used the following subset of the vertices, edges, and attributes as the activ
 | publisher        | name                      |
 | recordlabel      | name, foundingyear        |
 | university       | name                      |
+| soccerplayer     | name                      |
+| soccerteam       | name, league              |
 
 **Edges:**
 
@@ -114,6 +147,7 @@ We used the following subset of the vertices, edges, and attributes as the activ
 | publisher     | academicjournal  | publisher        |
 | publisher     | book             | publisher        |
 | team          | basketballplayer | basketballteam   |
+| team          | soccerplayer     | soccerteam       |
 
 Below are samples of the DBpedia TGFDs:  
 
@@ -138,7 +172,7 @@ X: book.name, book.isbn, country.name
 Y: publisher.name  
 File: `/samplePatterns/dbpedia/pattern0500.txt`  
 
-<h3 id="22-imdb">2.2 IMDB</h3>
+<h3 id="32-imdb">3.2 IMDB</h3>
 
 The Internet Movie Database (IMDB) provides weekly updates in the form of diff files until 2017. We extracted 38 monthly timestamps from October 2014 to November 2017, including total 4.8M entities of 8 types and 16.7M edges.
 
@@ -155,7 +189,7 @@ The final issue is that the reverse patch of 2014-10-24 diff to the actors list 
 
 From these weekly snapshots, we took every 4th snapshot to approximate a monthly snapshot (~4weeks). We wrote an additional tool that will parse IMDB semi-structured list format into RDF format. Tool is located in `/Dataset/imdb`.
 
-<h4 id="221-imdb-tgfds">2.2.1 IMDB TGFDs</h4>
+<h4 id="321-imdb-tgfds">3.2.1 IMDB TGFDs</h4>
 
 We mined set of TGFDs for the IMDB dataset in these files `/samplePatterns/imdb` using real life domain knowledge.
 
@@ -204,7 +238,7 @@ X: language.name
 Y: language.name  
 File: `/samplePatterns/imdb/pattern0700.txt`  
 
-<h3 id="23-synthetic">2.3 Synthetic</h3>
+<h3 id="33-synthetic">3.3 Synthetic</h3>
 
 [gMark](https://github.com/gbagan/gmark) is a synthetic graph data generation tool that provides generation of static domain independent synthetic graphs that supports user-defined schemas and queries. [4]
 
@@ -217,11 +251,11 @@ These changes are injected equally as structural updates (node/edge deletion and
 
 We used `Dataset/synthetic/social-network.xml` as parameters to gMark.
 
-<h4 id="231-synthetic-tgfds">2.3.1 Synthetic TGFDs</h4>
+<h4 id="331-synthetic-tgfds">3.3.1 Synthetic TGFDs</h4>
 
-We  defined a core set of TGFDs specified in these files `/samplePatterns/synthetic` using real life domain knowledge.
+We mined a set of TGFDs specified in these files `/samplePatterns/synthetic` using real life domain knowledge.
 
-The core set of TGFDs were defined based on the following vertices and edges as an active set.
+We used the following subset of the vertices, edges, and attributes as an active set in the Synthetic dataset to mine TGFDs.
 
 **Vertices:**
 
@@ -289,17 +323,17 @@ X: person.name
 Y: tag.name  
 File: `/samplePatterns/synthetic/pattern0700.txt`  
 
-<h3 id="24-GFDs">2.4 GFDs</h3>
+<h3 id="34-GFDs">3.4 GFDs</h3>
 
 We consider the same set of TGFDs in `/samplePatterns/` folder to define GFDs for each dataset. To this end, we set Δ: (0, 0) to consider each TGFD model the corresponding GFD.
 
-<h2 id="3-getting-started">3. Getting started</h2>
+<h2 id="4-getting-started">4. Getting started</h2>
 
 Prerequisites:
   - Java 15
   - maven
 
-<h3 id="31-with-sample">3.1 With Sample</h3>
+<h3 id="41-with-sample">4.1 With Sample</h3>
 
 
 1. Build the VF2SubIso project.
@@ -312,9 +346,9 @@ To detect TGFD errors using SeqTED on IMDB dataset, run:
 
 For other datasets, read next section.
 
-<h3 id="32-from-scratch">3.2 From Scratch</h3>
+<h3 id="42-from-scratch">4.2 From Scratch</h3>
 
-<h4 id="321-datasets">3.2.1 Datasets </h4>
+<h4 id="421-datasets">4.2.1 Datasets </h4>
 
 For DBpedia dataset,
 
@@ -322,7 +356,10 @@ Download the dataset from the folder `/Dataset/` or link below:
 
 [DBPedia](https://drive.google.com/drive/folders/1IAt16Tpt0zaX197W1DKHTiezXBcA3RBt?usp=sharing)
 
-For IMDB dataset, you need the additional prerequisites:
+There is no extra prerequisite for this dataset as the diff files can be extracted using our source code.
+(to be explained in Section [4.2.5](#425-generating-diffs).)
+
+However, for IMDB dataset, you need the additional prerequisites:
   - Python 3
   - rdflib
 
@@ -337,38 +374,9 @@ For Synthetic dataset, you need the additional prerequisites:
 
 For a custom dataset, you'll need to either format the data the same as DBpedia or as RDF. Then it may be possible to re-use either the DBpedia graph loader or the IMDB graph loader. For example, you should be able to use DBpedia loader to load [Yago](https://yago-knowledge.org/). If you need to write your own loader, then refer to the loaders in `/VF2SubIso/src/main/java/graphLoader`.
 
-<h4 id="322-defining-tgfds">3.2.2 Defining TGFDs</h4>
+<h4 id="422-creating-conf">4.2.2 Creating conf</h4>
 
-Format of the pattern file is line-based with a `#` delimiter:
-```
-tgfd#{name}
-vertex#v1#{vertex1Type}
-vertex#v2#{vertex2Type}
-edge#v1#v2#{edgeType}
-diameter#{diameterOfPattern}
-literal#x#{vertex1Type}${vertex1Attribute}${vertex1Type}${vertex1Attribute}
-literal#y#{vertex2Type}${vertex2Attribute}${vertex2Type}${vertex2Attribute}
-delta#{start}#{end}#{step}
-```
-
-For example, DBpedia TGFD 1 is defined as:
-```
-tgfd#p0100
-vertex#v1#album#name#uri
-vertex#v2#musicalartist#name
-edge#v1#v2#producer
-diameter#1
-literal#x#album$name$album$name
-literal#x#album$uri$album$uri
-literal#y#musicalartist$name$musicalartist$name
-delta#0#210#1
-```
-
-Refer to `/samplePatterns/` for more examples.
-
-<h4 id="323-creating-conf">3.2.3 Creating conf</h4>
-
-TGFD detection input a configuration file in the form of
+Our implementation of the TGFD error detection requires an input of a configuration file in the form of:
 ```
 Expected arguments to parse:
 -p <path to the patternFile> // in case of Amazon S3, it should be in the form of bucket_name/key
@@ -443,7 +451,7 @@ Example of a conf.txt for the coordinator (to run on Amazon EC2):
 -mqurl ssl://xxxx.mq.us-east-2.amazonaws.com:61617
 ```
 
-<h4 id="324-detecting-errors-local">3.2.4 Detecting errors on local machine</h4>
+<h4 id="423-detecting-errors-local">4.2.3 Detecting errors on local machine</h4>
 
 To detect TGFD errors using SeqTED on DBPedia dataset, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testDbpediaInc ./conf.txt`
@@ -454,21 +462,21 @@ To detect TGFD errors using SeqTED on IMDB dataset, run:
 To detect TGFD errors using SeqTED on Synthetic dataset, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testSyntheticInc ./conf.txt`
 
-<h4 id="325-detecting-errors-Amazon">3.2.5 Detecting errors on EC2 cluster</h4>
+<h4 id="424-detecting-errors-Amazon">4.2.4 Detecting errors on EC2 cluster</h4>
 
 To detect TGFD errors using ParallelTED with QPath based subgraph isomorphism on any dataset , run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testAdvanceParallelQPath ./conf.txt`
 
-You need to specify dataset name in the conf file as it is shown in section [3.2.3](#323-creating-conf).
+You need to specify dataset name in the conf file as it is shown in section [4.2.2](#422-creating-conf).
 
 To detect TGFD/GFD errors using ParallelTED with VF2 based subgraph isomorphism on any dataset, run:  
 `java -Xmx250000m -Xms250000m -cp VF2SubIso.jar testAdvanceParallel ./conf.txt`
 
-Similarly, specify the dataset name in the conf file as it is shown in section [3.2.3](#323-creating-conf).
+Similarly, specify the dataset name in the conf file as it is shown in section [4.2.2](#422-creating-conf).
 
 To run GFD, set `-gfd true` in the conf file.
 
-<h4 id="326-generating-diffs">3.2.6 Generating diffs</h4>
+<h4 id="425-generating-diffs">4.2.5 Generating diffs</h4>
 
 The same conf.txt can be used to generate the diffs as well as TGFD error detection.
 
