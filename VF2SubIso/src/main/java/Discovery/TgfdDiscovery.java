@@ -1,5 +1,6 @@
 package Discovery;
 
+import ICs.TGFD;
 import VF2Runner.VF2SubgraphIsomorphism;
 import Loader.DBPediaLoader;
 import Infra.*;

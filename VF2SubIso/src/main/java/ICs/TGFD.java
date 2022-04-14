@@ -1,4 +1,8 @@
-package Infra;
+package ICs;
+
+import Infra.DataDependency;
+import Infra.Delta;
+import Infra.VF2PatternGraph;
 
 public class TGFD {
 

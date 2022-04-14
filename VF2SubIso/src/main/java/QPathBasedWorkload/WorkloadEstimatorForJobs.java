@@ -1,6 +1,7 @@
 package QPathBasedWorkload;
 
 import AmazonStorage.S3Storage;
+import ICs.TGFD;
 import Infra.*;
 import Loader.GraphLoader;
 import Partitioner.RangeBasedPartitioner;

@@ -1,7 +1,7 @@
 package ParalleRunner;
 
 import Infra.SimpleEdge;
-import Infra.TGFD;
+import ICs.TGFD;
 import Loader.GraphLoader;
 import Loader.SimpleDBPediaLoader;
 import Loader.SimpleIMDBLoader;

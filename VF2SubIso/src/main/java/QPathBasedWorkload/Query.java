@@ -1,7 +1,7 @@
 package QPathBasedWorkload;
 
 import Infra.RelationshipEdge;
-import Infra.TGFD;
+import ICs.TGFD;
 import Infra.Vertex;
 
 import java.util.*;

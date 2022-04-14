@@ -1,5 +1,6 @@
 package QPathBasedWorkload;
 
+import ICs.TGFD;
 import Infra.*;
 import Loader.DBPediaLoader;
 import Loader.GraphLoader;

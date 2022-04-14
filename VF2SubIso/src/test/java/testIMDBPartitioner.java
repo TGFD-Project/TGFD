@@ -2,7 +2,7 @@ package java;
 
 import Partitioner.IMDBPartitioner;
 import Loader.IMDBLoader;
-import Infra.TGFD;
+import ICs.TGFD;
 import Util.Config;
 
 import java.io.FileNotFoundException;

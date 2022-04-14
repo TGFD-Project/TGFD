@@ -1,7 +1,7 @@
 package Util;
 
 import Infra.DataVertex;
-import Infra.TGFD;
+import ICs.TGFD;
 import Infra.VF2DataGraph;
 import Infra.Vertex;
 

@@ -1,7 +1,7 @@
 package Violations;
 
 import Infra.Match;
-import Infra.TGFD;
+import ICs.TGFD;
 
 import java.util.*;
 

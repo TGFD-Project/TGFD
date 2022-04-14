@@ -4,7 +4,7 @@ import SyntheticGraph.SyntheticGenerator;
 import ChangeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import Loader.SyntheticLoader;
-import Infra.TGFD;
+import ICs.TGFD;
 
 import java.io.FileWriter;
 import java.io.IOException;

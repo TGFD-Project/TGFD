@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import Infra.Attribute;
 import Infra.DataVertex;
 import Infra.RelationshipEdge;
-import Infra.TGFD;
+import ICs.TGFD;
 import org.apache.jena.rdf.model.*;
 import Util.Config;
 

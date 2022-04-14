@@ -1,6 +1,7 @@
 package java;
 
 import BatchViolation.OptBatchTED;
+import ICs.TGFD;
 import IncrementalRunner.IncUpdates;
 import IncrementalRunner.IncrementalChange;
 import Loader.TGFDGenerator;

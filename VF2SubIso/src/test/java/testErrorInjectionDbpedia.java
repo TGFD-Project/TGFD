@@ -1,6 +1,7 @@
 package java;
 
 import ErrorInjection.ErrorGenerator;
+import ICs.TGFD;
 import IncrementalRunner.IncUpdates;
 import IncrementalRunner.IncrementalChange;
 import Loader.TGFDGenerator;

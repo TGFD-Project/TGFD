@@ -4,7 +4,7 @@ import AmazonStorage.S3Storage;
 import MPI.Consumer;
 import MPI.Producer;
 import Loader.TGFDGenerator;
-import Infra.TGFD;
+import ICs.TGFD;
 import Infra.VF2DataGraph;
 import org.apache.commons.lang3.RandomStringUtils;
 import Util.Config;

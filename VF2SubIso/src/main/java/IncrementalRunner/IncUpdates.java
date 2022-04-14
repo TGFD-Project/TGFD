@@ -1,5 +1,6 @@
 package IncrementalRunner;
 
+import ICs.TGFD;
 import VF2Runner.VF2SubgraphIsomorphism;
 import ChangeExploration.*;
 import Infra.*;

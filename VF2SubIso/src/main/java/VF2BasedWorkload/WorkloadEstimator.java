@@ -1,6 +1,7 @@
 package VF2BasedWorkload;
 
 import AmazonStorage.S3Storage;
+import ICs.TGFD;
 import Infra.*;
 import Partitioner.RangeBasedPartitioner;
 import ChangeExploration.*;

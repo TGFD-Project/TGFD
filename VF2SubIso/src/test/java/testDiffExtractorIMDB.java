@@ -5,7 +5,7 @@ import ChangeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import Loader.GraphLoader;
 import Loader.IMDBLoader;
-import Infra.TGFD;
+import ICs.TGFD;
 import Util.Config;
 
 import java.io.FileNotFoundException;

@@ -4,7 +4,7 @@ import Infra.SimpleEdge;
 import Loader.GraphLoader;
 import Loader.SimpleDBPediaLoader;
 import Loader.SimpleIMDBLoader;
-import Infra.TGFD;
+import ICs.TGFD;
 import MPI.Consumer;
 import MPI.Producer;
 import Loader.TGFDGenerator;

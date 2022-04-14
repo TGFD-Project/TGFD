@@ -2,7 +2,7 @@ package java;
 
 import Loader.GraphLoader;
 import Loader.IMDBLoader;
-import Infra.TGFD;
+import ICs.TGFD;
 
 import java.util.ArrayList;
 import java.util.Collections;

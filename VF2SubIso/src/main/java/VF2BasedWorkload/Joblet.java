@@ -1,5 +1,6 @@
 package VF2BasedWorkload;
 
+import ICs.TGFD;
 import Infra.*;
 import org.jgrapht.Graph;
 

@@ -2,6 +2,7 @@ package java;
 
 import BatchViolation.NaiveBatchTED;
 import BatchViolation.OptBatchTED;
+import ICs.TGFD;
 import Loader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import Loader.DBPediaLoader;
