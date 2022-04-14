@@ -1,11 +1,11 @@
-package QPathBasedWorkload;
+package main.java.QPathBasedWorkload;
 
-import AmazonStorage.S3Storage;
-import Infra.*;
-import Loader.GraphLoader;
-import Partitioner.RangeBasedPartitioner;
-import Util.Config;
-import changeExploration.*;
+import main.java.AmazonStorage.S3Storage;
+import main.java.Infra.*;
+import main.java.Loader.GraphLoader;
+import main.java.Partitioner.RangeBasedPartitioner;
+import main.java.Util.Config;
+import main.java.changeExploration.*;
 
 import java.io.FileWriter;
 import java.io.IOException;

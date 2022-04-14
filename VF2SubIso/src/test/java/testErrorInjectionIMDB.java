@@ -1,15 +1,18 @@
-import ErrorInjection.ErrorGenerator;
-import IncrementalRunner.IncUpdates;
-import IncrementalRunner.IncrementalChange;
-import Loader.TGFDGenerator;
-import VF2Runner.VF2SubgraphIsomorphism;
-import changeExploration.Change;
-import changeExploration.ChangeLoader;
-import Loader.GraphLoader;
-import Loader.IMDBLoader;
-import Infra.*;
+package test.java;
+
+import main.java.ErrorInjection.ErrorGenerator;
+import main.java.IncrementalRunner.IncUpdates;
+import main.java.IncrementalRunner.IncrementalChange;
+import main.java.Loader.TGFDGenerator;
+import main.java.VF2Runner.VF2SubgraphIsomorphism;
+import main.java.Violations.Violation;
+import main.java.changeExploration.Change;
+import main.java.changeExploration.ChangeLoader;
+import main.java.Loader.GraphLoader;
+import main.java.Loader.IMDBLoader;
+import main.java.Infra.*;
 import org.jgrapht.GraphMapping;
-import Util.Config;
+import main.java.Util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;

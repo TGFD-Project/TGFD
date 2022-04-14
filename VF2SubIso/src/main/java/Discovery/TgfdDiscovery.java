@@ -1,8 +1,8 @@
-package Discovery;
+package main.java.Discovery;
 
-import VF2Runner.VF2SubgraphIsomorphism;
-import Loader.DBPediaLoader;
-import Infra.*;
+import main.java.VF2Runner.VF2SubgraphIsomorphism;
+import main.java.Loader.DBPediaLoader;
+import main.java.Infra.*;
 import org.apache.commons.cli.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;

@@ -1,9 +1,9 @@
-package AmazonStorage;
+package main.java.AmazonStorage;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
-import Util.Config;
+import main.java.Util.Config;
 
 import java.io.*;
 

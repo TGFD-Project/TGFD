@@ -1,4 +1,4 @@
-package Infra;
+package main.java.Infra;
 
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.IsomorphicGraphMapping;

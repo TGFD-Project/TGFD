@@ -1,9 +1,9 @@
-package Util;
+package main.java.Util;
 
-import Infra.DataVertex;
-import Infra.TGFD;
-import Infra.VF2DataGraph;
-import Infra.Vertex;
+import main.java.Infra.DataVertex;
+import main.java.Infra.TGFD;
+import main.java.Infra.VF2DataGraph;
+import main.java.Infra.Vertex;
 
 import java.util.HashMap;
 import java.util.HashSet;

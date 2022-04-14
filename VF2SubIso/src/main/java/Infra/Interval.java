@@ -1,4 +1,6 @@
-package Infra;
+package main.java.Infra;
+
+import main.java.Util.Config;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -44,8 +46,8 @@ public class Interval {
      */
     public boolean contains(LocalDate timepoint) {
         return
-            (timepoint.isEqual(start) || timepoint.isAfter(start)) &&
-            (timepoint.isEqual(end)   || timepoint.isBefore(end));
+                (timepoint.isEqual(start) || timepoint.isAfter(start)) &&
+                        (timepoint.isEqual(end)   || timepoint.isBefore(end));
     }
 
     /**
@@ -69,10 +71,10 @@ public class Interval {
     public boolean inDelta(Duration min, Duration max)
     {
         var between = Duration.between(
-            start.atStartOfDay(),
-            end.atStartOfDay());
+                start.atStartOfDay(),
+                end.atStartOfDay());
         return between.compareTo(min) >= 0 && // min <= between
-               between.compareTo(max) <= 0;   // between <= max
+                between.compareTo(max) <= 0;   // between <= max
     }
 
     /**
@@ -96,11 +98,11 @@ public class Interval {
         {
             var monthsBetween = between.toTotalMonths();
             return
-                min.toTotalMonths() <= monthsBetween &&
-                (
-                    monthsBetween < max.toTotalMonths() ||
-                    (monthsBetween == max.toTotalMonths() && between.getDays() == 0)
-                );
+                    min.toTotalMonths() <= monthsBetween &&
+                            (
+                                    monthsBetween < max.toTotalMonths() ||
+                                            (monthsBetween == max.toTotalMonths() && between.getDays() == 0)
+                            );
         }
     }
     //endregion
@@ -139,8 +141,8 @@ public class Interval {
     @Override
     public String toString() {
         return "Interval{" +
-                "start=" + start +
-                ", end=" + end +
+                "start= t_" + Config.timestampsReverseMap.get(start) +
+                ", end= t_" + Config.timestampsReverseMap.get(end) +
                 '}';
     }
 }

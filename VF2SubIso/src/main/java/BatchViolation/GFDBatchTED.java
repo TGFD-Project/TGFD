@@ -1,6 +1,7 @@
-package BatchViolation;
+package main.java.BatchViolation;
 
-import Infra.*;
+import main.java.Infra.*;
+import main.java.Violations.Violation;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -55,7 +56,7 @@ public class GFDBatchTED {
                         if(!firstSignatureY.equals(secondSignatureY))
                         {
                             //Violation happened.
-                            violations.add(new Violation(first,second,intv));
+                            violations.add(new Violation(first,second,intv,firstSignatureX,firstSignatureY,secondSignatureY));
                         }
                     }
                 }

@@ -1,10 +1,12 @@
-import Loader.TGFDGenerator;
-import changeExploration.*;
+package test.java;
+
+import main.java.Loader.TGFDGenerator;
+import main.java.changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import Loader.GraphLoader;
-import Loader.IMDBLoader;
-import Infra.TGFD;
-import Util.Config;
+import main.java.Loader.GraphLoader;
+import main.java.Loader.IMDBLoader;
+import main.java.Infra.TGFD;
+import main.java.Util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;

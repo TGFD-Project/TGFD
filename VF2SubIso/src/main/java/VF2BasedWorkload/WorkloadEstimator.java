@@ -1,11 +1,11 @@
-package VF2BasedWorkload;
+package main.java.VF2BasedWorkload;
 
-import AmazonStorage.S3Storage;
-import Infra.*;
-import Partitioner.RangeBasedPartitioner;
-import changeExploration.*;
-import Loader.GraphLoader;
-import Util.Config;
+import main.java.AmazonStorage.S3Storage;
+import main.java.Infra.*;
+import main.java.Partitioner.RangeBasedPartitioner;
+import main.java.changeExploration.*;
+import main.java.Loader.GraphLoader;
+import main.java.Util.Config;
 
 import java.io.FileWriter;
 import java.io.IOException;

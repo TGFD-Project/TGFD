@@ -1,7 +1,7 @@
-package QPathBasedWorkload;
+package main.java.QPathBasedWorkload;
 
-import Infra.Attribute;
-import Infra.Vertex;
+import main.java.Infra.Attribute;
+import main.java.Infra.Vertex;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;

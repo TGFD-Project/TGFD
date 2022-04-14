@@ -1,4 +1,4 @@
-package Util;
+package main.java.Util;
 
 import com.amazonaws.regions.Regions;
 import org.apache.activemq.ActiveMQConnection;
@@ -17,6 +17,7 @@ public class Config {
     private static HashMap<Integer, ArrayList<String>> dataPaths = new HashMap<>();
     private static HashMap <Integer, String> diffFilesPath=new HashMap<>();
     private static HashMap<Integer,LocalDate> timestamps=new HashMap<>();
+    public static HashMap<LocalDate,Integer> timestampsReverseMap=new HashMap<>();
     private static ArrayList<Double> diffCaps=new ArrayList <>();
 
     public static String patternPath = "";
@@ -38,7 +39,7 @@ public class Config {
 
     public static boolean optimizedLoadingBasedOnTGFD=false;
     public static boolean saveViolations=false;
-    public static boolean printDetailedMatchingResults=false;
+    public static boolean debug =false;
 
     public static void parse(String input) throws FileNotFoundException {
         if(input.equals("--help")) {
@@ -49,7 +50,7 @@ public class Config {
                      [-d<snapshotId> <dataFile>]
                      [-c<snapshotId> <diff file>]
                      [-s<snapshotId> <snapshot timestamp>]
-                     -diffCap List<double> // example: -diffCap 0.02,0.04,0.06,1
+                     -logcap List<double> // example: -diffCap 0.02,0.04,0.06,1
                      -optgraphload <true-false> // load parts of data file that are needed based on the TGFDs
                      -debug <true-false> // print details of matching
                      -mqurl <URL> // URL of the ActiveMQ Broker
@@ -83,13 +84,16 @@ public class Config {
                 if (conf[0].equals("-optgraphload")) {
                     optimizedLoadingBasedOnTGFD = Boolean.parseBoolean(conf[1]);
                 } else if (conf[0].equals("-debug")) {
-                    printDetailedMatchingResults = Boolean.parseBoolean(conf[1]);
+                    debug = Boolean.parseBoolean(conf[1]);
                 } else if (conf[0].equals("-logcap")) {
                     String[] temp = conf[1].split(",");
                     for (String diffCap : temp)
                         diffCaps.add(Double.parseDouble(diffCap));
                 } else if(conf[0].equals("-mqurl")) {
                     ActiveMQBrokerURL=conf[1];
+                }
+                else if(conf[0].equals("-saveviolations")) {
+                    saveViolations=Boolean.parseBoolean(conf[1]);
                 }
                 else if(conf[0].equals("-mqusername")) {
                     ActiveMQUsername=conf[1];
@@ -141,6 +145,7 @@ public class Config {
                 } else if (conf[0].startsWith("-s")) {
                     var snapshotId = Integer.parseInt(conf[0].substring(2));
                     timestamps.put(snapshotId, LocalDate.parse(conf[1]));
+                    timestampsReverseMap.put(LocalDate.parse(conf[1]),snapshotId);
                 }
             }
         } catch (FileNotFoundException e) {

@@ -1,6 +1,6 @@
-package Partitioner;
+package main.java.Partitioner;
 
-import VF2BasedWorkload.Joblet;
+import main.java.VF2BasedWorkload.Joblet;
 
 import java.util.ArrayList;
 import java.util.List;

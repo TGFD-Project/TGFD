@@ -1,8 +1,8 @@
-package IncrementalRunner;
+package main.java.IncrementalRunner;
 
-import VF2Runner.VF2SubgraphIsomorphism;
-import changeExploration.*;
-import Infra.*;
+import main.java.VF2Runner.VF2SubgraphIsomorphism;
+import main.java.changeExploration.*;
+import main.java.Infra.*;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 

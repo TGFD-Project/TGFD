@@ -1,8 +1,8 @@
-package Partitioner;
+package main.java.Partitioner;
 
-import VF2BasedWorkload.Joblet;
-import Loader.GraphLoader;
-import Infra.*;
+import main.java.VF2BasedWorkload.Joblet;
+import main.java.Loader.GraphLoader;
+import main.java.Infra.*;
 import org.jgrapht.Graph;
 
 import java.util.List;

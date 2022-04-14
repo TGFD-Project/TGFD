@@ -1,10 +1,13 @@
-package BatchViolation;
+package main.java.BatchViolation;
 
-import Infra.*;
-import Violations.Violation;
+import main.java.Violations.Violation;
+
+import main.java.Infra.*;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class NaiveBatchTED {
 

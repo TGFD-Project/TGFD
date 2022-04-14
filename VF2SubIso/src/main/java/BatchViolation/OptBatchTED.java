@@ -1,6 +1,7 @@
-package BatchViolation;
+package main.java.BatchViolation;
 
-import Infra.*;
+import main.java.Infra.*;
+import main.java.Violations.Violation;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ public class OptBatchTED {
                     if(!signatureY.equals(cstY.getAttrValue()))
                     {
                         //Violation is detected. Constant literal violation
-                        violations.add(new Violation(match,match,match.getSignatureYWithInterval().get(signatureY).get(0)));
+                        violations.add(new Violation(match,match,match.getSignatureYWithInterval().get(signatureY).get(0),"","",""));
                     }
                 }
             }
@@ -67,7 +68,7 @@ public class OptBatchTED {
                         if(v2.intersects(v) && !checks.get(v2).equals(signatureYs.get(v)))
                         {
                             //Violation is detected...
-                            violations.add(new Violation(match,match,v2));
+                            violations.add(new Violation(match,match,v2,"","",""));
                         }
                     }
                 }

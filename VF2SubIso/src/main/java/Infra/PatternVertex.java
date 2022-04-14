@@ -1,4 +1,4 @@
-package Infra;
+package main.java.Infra;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;

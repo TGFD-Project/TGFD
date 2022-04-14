@@ -1,14 +1,17 @@
-import BatchViolation.OptBatchTED;
-import IncrementalRunner.IncUpdates;
-import IncrementalRunner.IncrementalChange;
-import Loader.TGFDGenerator;
-import VF2Runner.VF2SubgraphIsomorphism;
-import changeExploration.Change;
-import changeExploration.ChangeLoader;
-import Loader.DBPediaLoader;
-import Infra.*;
+package test.java;
+
+import main.java.BatchViolation.OptBatchTED;
+import main.java.IncrementalRunner.IncUpdates;
+import main.java.IncrementalRunner.IncrementalChange;
+import main.java.Loader.TGFDGenerator;
+import main.java.VF2Runner.VF2SubgraphIsomorphism;
+import main.java.Violations.Violation;
+import main.java.changeExploration.Change;
+import main.java.changeExploration.ChangeLoader;
+import main.java.Loader.DBPediaLoader;
+import main.java.Infra.*;
 import org.jgrapht.GraphMapping;
-import Util.Config;
+import main.java.Util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;

@@ -1,6 +1,6 @@
-package changeExploration;
+package main.java.changeExploration;
 
-import Infra.Attribute;
+import main.java.Infra.Attribute;
 
 public class AttributeChange extends Change {
 
@@ -22,7 +22,7 @@ public class AttributeChange extends Change {
                 '}';
     }
 
-    public Infra.Attribute getAttribute() {
+    public Attribute getAttribute() {
         return attribute;
     }
 

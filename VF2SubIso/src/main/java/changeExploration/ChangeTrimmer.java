@@ -1,6 +1,6 @@
-package changeExploration;
+package main.java.changeExploration;
 
-import Infra.TGFD;
+import main.java.Infra.TGFD;
 
 import java.util.ArrayList;
 import java.util.Arrays;

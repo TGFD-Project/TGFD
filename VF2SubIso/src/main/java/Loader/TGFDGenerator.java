@@ -1,11 +1,11 @@
-package Loader;
+package main.java.Loader;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import Infra.*;
-import Util.Config;
+import main.java.Infra.*;
+import main.java.Util.Config;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

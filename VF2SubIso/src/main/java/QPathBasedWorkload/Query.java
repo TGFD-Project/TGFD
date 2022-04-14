@@ -1,8 +1,8 @@
-package QPathBasedWorkload;
+package main.java.QPathBasedWorkload;
 
-import Infra.RelationshipEdge;
-import Infra.TGFD;
-import Infra.Vertex;
+import main.java.Infra.RelationshipEdge;
+import main.java.Infra.TGFD;
+import main.java.Infra.Vertex;
 
 import java.util.*;
 

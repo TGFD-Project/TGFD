@@ -1,6 +1,8 @@
-import ParalleRunner.AdvancedCoordinatorWithReBalanceAndQPath;
-import ParalleRunner.AdvancedWorkerWithRebalanceAndQPath;
-import Util.Config;
+package test.java;
+
+import main.java.ParalleRunner.AdvancedCoordinatorWithReBalanceAndQPath;
+import main.java.ParalleRunner.AdvancedWorkerWithRebalanceAndQPath;
+import main.java.Util.Config;
 
 import java.io.FileNotFoundException;
 

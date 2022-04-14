@@ -1,13 +1,13 @@
-package ParalleRunner;
+package main.java.ParalleRunner;
 
-import AmazonStorage.S3Storage;
-import Infra.*;
-import MPI.Consumer;
-import MPI.Producer;
-import Partitioner.Util;
-import Util.Config;
-import VF2BasedWorkload.JobletRunner;
-import changeExploration.Change;
+import main.java.AmazonStorage.S3Storage;
+import main.java.Infra.*;
+import main.java.MPI.Consumer;
+import main.java.MPI.Producer;
+import main.java.Partitioner.Util;
+import main.java.Util.Config;
+import main.java.VF2BasedWorkload.JobletRunner;
+import main.java.changeExploration.Change;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 

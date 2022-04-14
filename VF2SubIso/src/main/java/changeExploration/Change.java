@@ -1,4 +1,4 @@
-package changeExploration;
+package main.java.changeExploration;
 
 
 import java.io.Serializable;

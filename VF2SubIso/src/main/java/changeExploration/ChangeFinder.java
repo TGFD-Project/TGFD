@@ -1,7 +1,7 @@
-package changeExploration;
+package main.java.changeExploration;
 
-import Loader.GraphLoader;
-import Infra.*;
+import main.java.Loader.GraphLoader;
+import main.java.Infra.*;
 
 import java.util.*;
 

@@ -1,6 +1,8 @@
-import Loader.GraphLoader;
-import Loader.IMDBLoader;
-import Infra.TGFD;
+package test.java;
+
+import main.java.Loader.GraphLoader;
+import main.java.Loader.IMDBLoader;
+import main.java.Infra.TGFD;
 
 import java.util.ArrayList;
 import java.util.Collections;

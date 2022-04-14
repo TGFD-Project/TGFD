@@ -1,4 +1,4 @@
-package ParalleRunner;
+package main.java.ParalleRunner;
 
 public enum Status {
     Coordinator_Waits_For_Workers_Status,

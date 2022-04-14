@@ -1,4 +1,4 @@
-package Infra;
+package main.java.Infra;
 
 import java.util.ArrayList;
 import java.util.HashSet;

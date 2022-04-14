@@ -1,10 +1,10 @@
-package QPathBasedWorkload;
+package main.java.QPathBasedWorkload;
 
-import Infra.*;
-import changeExploration.AttributeChange;
-import changeExploration.Change;
-import changeExploration.ChangeType;
-import changeExploration.EdgeChange;
+import main.java.Infra.*;
+import main.java.changeExploration.AttributeChange;
+import main.java.changeExploration.Change;
+import main.java.changeExploration.ChangeType;
+import main.java.changeExploration.EdgeChange;
 import org.jgrapht.Graph;
 
 import java.util.ArrayList;

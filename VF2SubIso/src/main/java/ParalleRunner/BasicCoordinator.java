@@ -1,8 +1,8 @@
-package ParalleRunner;
+package main.java.ParalleRunner;
 
-import MPI.Consumer;
-import MPI.Producer;
-import Util.Config;
+import main.java.MPI.Consumer;
+import main.java.MPI.Producer;
+import main.java.Util.Config;
 
 import javax.jms.*;
 import java.util.HashMap;
