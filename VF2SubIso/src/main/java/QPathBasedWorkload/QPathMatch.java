@@ -1,4 +1,4 @@
-package main.java.QPathBasedWorkload;
+package QPathBasedWorkload;
 
 import java.util.ArrayList;
 

@@ -1,14 +1,14 @@
-package test.java;
+package java;
 
-import main.java.BatchViolation.NaiveBatchTED;
-import main.java.BatchViolation.OptBatchTED;
-import main.java.Loader.TGFDGenerator;
-import main.java.VF2Runner.VF2SubgraphIsomorphism;
-import main.java.Loader.DBPediaLoader;
-import main.java.Infra.*;
-import main.java.Violations.Violation;
+import BatchViolation.NaiveBatchTED;
+import BatchViolation.OptBatchTED;
+import Loader.TGFDGenerator;
+import VF2Runner.VF2SubgraphIsomorphism;
+import Loader.DBPediaLoader;
+import Infra.*;
+import Violations.Violation;
 import org.jgrapht.GraphMapping;
-import main.java.Util.Config;
+import Util.Config;
 
 import java.io.File;
 import java.io.FileNotFoundException;

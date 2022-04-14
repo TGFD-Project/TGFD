@@ -1,4 +1,4 @@
-package main.java.Infra;
+package Infra;
 
 import org.jgrapht.Graph;
 

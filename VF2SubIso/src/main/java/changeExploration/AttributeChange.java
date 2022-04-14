@@ -1,6 +1,6 @@
-package main.java.changeExploration;
+package changeExploration;
 
-import main.java.Infra.Attribute;
+import Infra.Attribute;
 
 public class AttributeChange extends Change {
 

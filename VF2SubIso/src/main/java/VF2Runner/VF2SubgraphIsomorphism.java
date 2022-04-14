@@ -1,14 +1,14 @@
-package main.java.VF2Runner;
+package VF2Runner;
 
-import main.java.Infra.RelationshipEdge;
-import main.java.Infra.VF2DataGraph;
-import main.java.Infra.VF2PatternGraph;
-import main.java.Infra.Vertex;
+import Infra.RelationshipEdge;
+import Infra.VF2DataGraph;
+import Infra.VF2PatternGraph;
+import Infra.Vertex;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
 import org.jgrapht.alg.isomorphism.VF2AbstractIsomorphismInspector;
 import org.jgrapht.alg.isomorphism.VF2SubgraphIsomorphismInspector;
-import main.java.Util.Config;
+import Util.Config;
 
 import java.util.Comparator;
 import java.util.Iterator;

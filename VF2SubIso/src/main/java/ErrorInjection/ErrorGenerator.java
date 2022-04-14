@@ -1,6 +1,6 @@
-package main.java.ErrorInjection;
+package ErrorInjection;
 
-import main.java.Infra.*;
+import Infra.*;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.time.LocalDate;

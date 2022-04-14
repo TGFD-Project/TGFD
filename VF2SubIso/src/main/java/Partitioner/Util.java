@@ -1,14 +1,14 @@
-package main.java.Partitioner;
+package Partitioner;
 
-import main.java.AmazonStorage.S3Storage;
+import AmazonStorage.S3Storage;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import main.java.Infra.*;
+import Infra.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
-import main.java.Util.Config;
+import Util.Config;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

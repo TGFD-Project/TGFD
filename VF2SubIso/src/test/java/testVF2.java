@@ -1,8 +1,8 @@
-package test.java;
+package java;
 
-import main.java.VF2Runner.VF2SubgraphIsomorphism;
-import main.java.Infra.*;
-import main.java.Loader.TGFDGenerator;
+import VF2Runner.VF2SubgraphIsomorphism;
+import Infra.*;
+import Loader.TGFDGenerator;
 
 public class testVF2 {
 

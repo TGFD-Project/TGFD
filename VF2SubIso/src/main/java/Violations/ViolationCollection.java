@@ -1,7 +1,7 @@
-package main.java.Violations;
+package Violations;
 
-import main.java.Infra.Match;
-import main.java.Infra.TGFD;
+import Infra.Match;
+import Infra.TGFD;
 
 import java.util.*;
 

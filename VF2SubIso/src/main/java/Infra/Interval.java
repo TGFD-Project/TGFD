@@ -1,6 +1,6 @@
-package main.java.Infra;
+package Infra;
 
-import main.java.Util.Config;
+import Util.Config;
 
 import java.time.Duration;
 import java.time.LocalDate;

@@ -1,14 +1,14 @@
-package main.java.ParalleRunner;
+package ParalleRunner;
 
-import main.java.AmazonStorage.S3Storage;
-import main.java.MPI.Consumer;
-import main.java.MPI.Producer;
-import main.java.Loader.TGFDGenerator;
-import main.java.Infra.TGFD;
-import main.java.Infra.VF2DataGraph;
+import AmazonStorage.S3Storage;
+import MPI.Consumer;
+import MPI.Producer;
+import Loader.TGFDGenerator;
+import Infra.TGFD;
+import Infra.VF2DataGraph;
 import org.apache.commons.lang3.RandomStringUtils;
-import main.java.Util.Config;
-import main.java.Util.testRunner;
+import Util.Config;
+import Util.testRunner;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
@@ -160,7 +160,7 @@ public class MediumWorker {
                 for (String workerName:allJobs.keySet()) {
                     TGFDGenerator generator = new TGFDGenerator(allJobs.get(workerName));
                     otherWorkersJobs.put(workerName,generator.getTGFDs());
-                    VF2DataGraph graphToBeShipped=main.java.Partitioner.Util.getSubgraphToSendToOtherNodes(runner.getLoader().getGraph(), otherWorkersJobs.get(workerName));
+                    VF2DataGraph graphToBeShipped=Partitioner.Util.getSubgraphToSendToOtherNodes(runner.getLoader().getGraph(), otherWorkersJobs.get(workerName));
                     String key = workerName + "_" + RandomStringUtils.randomAlphabetic(5) + ".ser";
                     boolean result = S3Storage.upload(workingBucketName,key,graphToBeShipped);
                     if(!result)
@@ -214,7 +214,7 @@ public class MediumWorker {
                         if(obj!=null)
                         {
                             VF2DataGraph ShippedData=(VF2DataGraph) obj;
-                            main.java.Partitioner.Util.mergeGraphs(runner.getLoader().getGraph(),ShippedData);
+                            Partitioner.Util.mergeGraphs(runner.getLoader().getGraph(),ShippedData);
                         }
                         System.out.println("*DATA RECEIVER*: Data '" + numberOfFilesReceived +"' has been received");
                     }

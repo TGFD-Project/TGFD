@@ -1,14 +1,14 @@
-package main.java.changeExploration;
+package changeExploration;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import main.java.Infra.Attribute;
-import main.java.Infra.DataVertex;
+import Infra.Attribute;
+import Infra.DataVertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import main.java.Util.Config;
+import Util.Config;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

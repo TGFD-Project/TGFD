@@ -1,12 +1,12 @@
-package main.java.Partitioner;
+package Partitioner;
 
-import main.java.Infra.Attribute;
-import main.java.Infra.DataVertex;
-import main.java.Infra.RelationshipEdge;
-import main.java.Loader.DBPediaLoader;
-import main.java.Loader.GraphLoader;
-import main.java.Loader.IMDBLoader;
-import main.java.Util.Config;
+import Infra.Attribute;
+import Infra.DataVertex;
+import Infra.RelationshipEdge;
+import Loader.DBPediaLoader;
+import Loader.GraphLoader;
+import Loader.IMDBLoader;
+import Util.Config;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;

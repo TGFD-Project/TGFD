@@ -1,15 +1,15 @@
-package main.java.ParalleRunner;
+package ParalleRunner;
 
-import main.java.AmazonStorage.S3Storage;
-import main.java.Infra.RelationshipEdge;
-import main.java.Infra.SimpleEdge;
-import main.java.Infra.Vertex;
-import main.java.MPI.Consumer;
-import main.java.MPI.Producer;
-import main.java.Partitioner.Util;
-import main.java.Util.Config;
-import main.java.QPathBasedWorkload.JobRunner;
-import main.java.changeExploration.Change;
+import AmazonStorage.S3Storage;
+import Infra.RelationshipEdge;
+import Infra.SimpleEdge;
+import Infra.Vertex;
+import MPI.Consumer;
+import MPI.Producer;
+import Partitioner.Util;
+import Util.Config;
+import QPathBasedWorkload.JobRunner;
+import changeExploration.Change;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 

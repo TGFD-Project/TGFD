@@ -1,7 +1,7 @@
-package main.java.QPathBasedWorkload;
+package QPathBasedWorkload;
 
-import main.java.Infra.PatternVertex;
-import main.java.Infra.Vertex;
+import Infra.PatternVertex;
+import Infra.Vertex;
 
 import java.util.HashMap;
 

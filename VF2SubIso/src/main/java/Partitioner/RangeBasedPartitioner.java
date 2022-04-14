@@ -1,8 +1,8 @@
-package main.java.Partitioner;
+package Partitioner;
 
-import main.java.Infra.DataVertex;
-import main.java.Infra.VF2DataGraph;
-import main.java.Infra.Vertex;
+import Infra.DataVertex;
+import Infra.VF2DataGraph;
+import Infra.Vertex;
 
 import java.util.HashMap;
 

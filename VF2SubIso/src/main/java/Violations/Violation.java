@@ -1,7 +1,7 @@
-package main.java.Violations;
+package Violations;
 
-import main.java.Infra.Interval;
-import main.java.Infra.Match;
+import Infra.Interval;
+import Infra.Match;
 
 public class Violation {
     private Match match1,match2;

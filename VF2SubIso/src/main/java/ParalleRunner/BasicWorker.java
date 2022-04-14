@@ -1,9 +1,9 @@
-package main.java.ParalleRunner;
+package ParalleRunner;
 
-import main.java.MPI.Consumer;
-import main.java.MPI.Producer;
-import main.java.Util.Config;
-import main.java.Util.testRunner;
+import MPI.Consumer;
+import MPI.Producer;
+import Util.Config;
+import Util.testRunner;
 
 import javax.jms.*;
 import java.util.concurrent.atomic.AtomicBoolean;

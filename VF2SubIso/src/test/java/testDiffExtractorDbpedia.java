@@ -1,11 +1,11 @@
-package test.java;
+package java;
 
-import main.java.Loader.TGFDGenerator;
-import main.java.changeExploration.*;
+import Loader.TGFDGenerator;
+import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import main.java.Loader.DBPediaLoader;
-import main.java.Infra.TGFD;
-import main.java.Util.Config;
+import Loader.DBPediaLoader;
+import Infra.TGFD;
+import Util.Config;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;

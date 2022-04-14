@@ -1,6 +1,6 @@
-package test.java;
+package java;
 
-import main.java.changeExploration.ChangeLoader;
+import changeExploration.ChangeLoader;
 
 public class testJsonLoader {
 

@@ -1,8 +1,8 @@
-package main.java.Loader;
+package Loader;
 
-import main.java.changeExploration.*;
-import main.java.Infra.*;
-import main.java.Util.Config;
+import changeExploration.*;
+import Infra.*;
+import Util.Config;
 
 import java.util.HashSet;
 import java.util.List;

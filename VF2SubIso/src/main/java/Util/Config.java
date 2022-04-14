@@ -1,4 +1,4 @@
-package main.java.Util;
+package Util;
 
 import com.amazonaws.regions.Regions;
 import org.apache.activemq.ActiveMQConnection;

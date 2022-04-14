@@ -1,14 +1,14 @@
-package main.java.QPathBasedWorkload;
+package QPathBasedWorkload;
 
-import main.java.Infra.*;
-import main.java.Loader.DBPediaLoader;
-import main.java.Loader.GraphLoader;
-import main.java.Loader.IMDBLoader;
-import main.java.Loader.SyntheticLoader;
-import main.java.Loader.TGFDGenerator;
-import main.java.Util.Config;
-import main.java.VF2Runner.VF2SubgraphIsomorphism;
-import main.java.changeExploration.Change;
+import Infra.*;
+import Loader.DBPediaLoader;
+import Loader.GraphLoader;
+import Loader.IMDBLoader;
+import Loader.SyntheticLoader;
+import Loader.TGFDGenerator;
+import Util.Config;
+import VF2Runner.VF2SubgraphIsomorphism;
+import changeExploration.Change;
 import org.jgrapht.Graph;
 
 import java.time.LocalDate;

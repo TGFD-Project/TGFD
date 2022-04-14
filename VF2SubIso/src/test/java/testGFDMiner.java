@@ -1,7 +1,7 @@
-package test.java;
+package java;
 
-import main.java.Loader.DBPediaLoader;
-import main.java.Infra.*;
+import Loader.DBPediaLoader;
+import Infra.*;
 
 import java.io.FileWriter;
 import java.io.IOException;

@@ -1,15 +1,15 @@
-package main.java.Loader;
+package Loader;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import main.java.Infra.Attribute;
-import main.java.Infra.DataVertex;
-import main.java.Infra.RelationshipEdge;
-import main.java.Infra.TGFD;
+import Infra.Attribute;
+import Infra.DataVertex;
+import Infra.RelationshipEdge;
+import Infra.TGFD;
 import org.apache.commons.lang3.RandomStringUtils;
-import main.java.Util.Config;
+import Util.Config;
 
 import java.io.BufferedReader;
 import java.io.File;

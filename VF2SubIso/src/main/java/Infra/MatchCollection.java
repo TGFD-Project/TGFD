@@ -1,7 +1,7 @@
-package main.java.Infra;
+package Infra;
 
-import main.java.QPathBasedWorkload.VertexMapping;
-import main.java.Util.Config;
+import QPathBasedWorkload.VertexMapping;
+import Util.Config;
 import org.apache.commons.lang3.EnumUtils;
 import org.jgrapht.GraphMapping;
 

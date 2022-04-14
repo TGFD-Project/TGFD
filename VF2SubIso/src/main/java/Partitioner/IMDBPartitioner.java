@@ -1,13 +1,13 @@
-package main.java.Partitioner;
+package Partitioner;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import main.java.Loader.GraphLoader;
-import main.java.Loader.IMDBLoader;
-import main.java.Infra.DataVertex;
-import main.java.Util.Config;
+import Loader.GraphLoader;
+import Loader.IMDBLoader;
+import Infra.DataVertex;
+import Util.Config;
 
 import java.io.*;
 import java.util.HashMap;

@@ -1,7 +1,7 @@
-package main.java.BatchViolation;
+package BatchViolation;
 
-import main.java.Infra.*;
-import main.java.Violations.Violation;
+import Infra.*;
+import Violations.Violation;
 
 import java.time.LocalDate;
 import java.util.HashSet;

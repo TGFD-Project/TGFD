@@ -1,7 +1,7 @@
-package main.java.changeExploration;
+package changeExploration;
 
-import main.java.Infra.DataVertex;
-import main.java.Infra.RelationshipEdge;
+import Infra.DataVertex;
+import Infra.RelationshipEdge;
 
 public class EdgeChange extends Change {
 

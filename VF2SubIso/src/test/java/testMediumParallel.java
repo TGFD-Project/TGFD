@@ -1,8 +1,8 @@
-package test.java;
+package java;
 
-import main.java.ParalleRunner.MediumCoordinator;
-import main.java.ParalleRunner.MediumWorker;
-import main.java.Util.Config;
+import ParalleRunner.MediumCoordinator;
+import ParalleRunner.MediumWorker;
+import Util.Config;
 
 import java.io.FileNotFoundException;
 

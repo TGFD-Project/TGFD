@@ -1,6 +1,6 @@
-package main.java.changeExploration;
+package changeExploration;
 
-import main.java.Infra.DataVertex;
+import Infra.DataVertex;
 
 public class VertexChange extends Change {
 

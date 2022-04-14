@@ -1,10 +1,10 @@
-package test.java;
+package java;
 
-import main.java.SyntheticGraph.SyntheticGenerator;
-import main.java.changeExploration.*;
+import SyntheticGraph.SyntheticGenerator;
+import changeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import main.java.Loader.SyntheticLoader;
-import main.java.Infra.TGFD;
+import Loader.SyntheticLoader;
+import Infra.TGFD;
 
 import java.io.FileWriter;
 import java.io.IOException;

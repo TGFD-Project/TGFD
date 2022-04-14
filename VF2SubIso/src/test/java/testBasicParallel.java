@@ -1,8 +1,8 @@
-package test.java;
+package java;
 
-import main.java.ParalleRunner.BasicCoordinator;
-import main.java.ParalleRunner.BasicWorker;
-import main.java.Util.Config;
+import ParalleRunner.BasicCoordinator;
+import ParalleRunner.BasicWorker;
+import Util.Config;
 
 import java.io.FileNotFoundException;
 

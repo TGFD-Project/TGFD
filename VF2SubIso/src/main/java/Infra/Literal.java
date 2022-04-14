@@ -1,4 +1,4 @@
-package main.java.Infra;
+package Infra;
 
 public abstract class Literal {
 

@@ -1,6 +1,6 @@
-package main.java.VF2BasedWorkload;
+package VF2BasedWorkload;
 
-import main.java.Infra.*;
+import Infra.*;
 import org.jgrapht.Graph;
 
 import java.util.ArrayList;

@@ -1,8 +1,8 @@
-package test.java;
+package java;
 
-import main.java.Infra.TGFD;
-import main.java.QPathBasedWorkload.Query;
-import main.java.Loader.TGFDGenerator;
+import Infra.TGFD;
+import QPathBasedWorkload.Query;
+import Loader.TGFDGenerator;
 
 import java.util.List;
 

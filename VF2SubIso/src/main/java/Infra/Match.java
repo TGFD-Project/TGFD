@@ -1,6 +1,6 @@
-package main.java.Infra;
+package Infra;
 
-import main.java.QPathBasedWorkload.VertexMapping;
+import QPathBasedWorkload.VertexMapping;
 import org.jgrapht.GraphMapping;
 
 import java.time.Duration;

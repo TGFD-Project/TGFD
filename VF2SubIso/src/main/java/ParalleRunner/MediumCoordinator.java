@@ -1,8 +1,8 @@
-package main.java.ParalleRunner;
+package ParalleRunner;
 
-import main.java.MPI.Consumer;
-import main.java.MPI.Producer;
-import main.java.Util.Config;
+import MPI.Consumer;
+import MPI.Producer;
+import Util.Config;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;

@@ -1,18 +1,18 @@
-package main.java.Util;
+package Util;
 
-import main.java.BatchViolation.OptBatchTED;
-import main.java.IncrementalRunner.IncUpdates;
-import main.java.IncrementalRunner.IncrementalChange;
-import main.java.Loader.TGFDGenerator;
-import main.java.VF2Runner.VF2SubgraphIsomorphism;
-import main.java.Violations.Violation;
-import main.java.changeExploration.Change;
-import main.java.changeExploration.ChangeLoader;
-import main.java.Loader.DBPediaLoader;
-import main.java.Loader.GraphLoader;
-import main.java.Loader.IMDBLoader;
-import main.java.Loader.SyntheticLoader;
-import main.java.Infra.*;
+import BatchViolation.OptBatchTED;
+import IncrementalRunner.IncUpdates;
+import IncrementalRunner.IncrementalChange;
+import Loader.TGFDGenerator;
+import VF2Runner.VF2SubgraphIsomorphism;
+import Violations.Violation;
+import changeExploration.Change;
+import changeExploration.ChangeLoader;
+import Loader.DBPediaLoader;
+import Loader.GraphLoader;
+import Loader.IMDBLoader;
+import Loader.SyntheticLoader;
+import Infra.*;
 import org.jgrapht.GraphMapping;
 
 import java.time.LocalDate;

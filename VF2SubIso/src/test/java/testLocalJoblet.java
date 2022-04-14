@@ -1,6 +1,6 @@
-package test.java;
+package java;
 
-import main.java.Infra.*;
+import Infra.*;
 
 import java.io.FileNotFoundException;
 import java.util.*;

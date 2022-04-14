@@ -1,19 +1,19 @@
-package main.java.ParalleRunner;
+package ParalleRunner;
 
-import main.java.Infra.SimpleEdge;
-import main.java.Infra.TGFD;
-import main.java.Loader.GraphLoader;
-import main.java.Loader.SimpleDBPediaLoader;
-import main.java.Loader.SimpleIMDBLoader;
-import main.java.MPI.Consumer;
-import main.java.MPI.Producer;
-import main.java.QPathBasedWorkload.Job;
-import main.java.Loader.TGFDGenerator;
-import main.java.Util.Config;
+import Infra.SimpleEdge;
+import Infra.TGFD;
+import Loader.GraphLoader;
+import Loader.SimpleDBPediaLoader;
+import Loader.SimpleIMDBLoader;
+import MPI.Consumer;
+import MPI.Producer;
+import QPathBasedWorkload.Job;
+import Loader.TGFDGenerator;
+import Util.Config;
 
-import main.java.QPathBasedWorkload.WorkloadEstimatorForJobs;
-import main.java.changeExploration.Change;
-import main.java.changeExploration.ChangeLoader;
+import QPathBasedWorkload.WorkloadEstimatorForJobs;
+import changeExploration.Change;
+import changeExploration.ChangeLoader;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;

@@ -1,6 +1,6 @@
-package main.java.QPathBasedWorkload;
+package QPathBasedWorkload;
 
-import main.java.Infra.PatternVertex;
+import Infra.PatternVertex;
 
 import java.util.ArrayList;
 
