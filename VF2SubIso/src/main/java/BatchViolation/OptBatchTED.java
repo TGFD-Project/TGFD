@@ -16,7 +16,7 @@ public class OptBatchTED {
 
     public OptBatchTED(MatchCollection allMatches, TGFD tgfd)
     {
-        this.tgfd=tgfd; int x=1;
+        this.tgfd=tgfd;
         this.matches=allMatches;
     }
 
