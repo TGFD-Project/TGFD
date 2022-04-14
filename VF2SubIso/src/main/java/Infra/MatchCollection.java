@@ -2,7 +2,6 @@ package Infra;
 
 import QPathBasedWorkload.VertexMapping;
 import Util.Config;
-import org.apache.commons.lang3.EnumUtils;
 import org.jgrapht.GraphMapping;
 
 import java.time.Duration;
@@ -21,7 +20,7 @@ public class MatchCollection
     private TemporalGraph<Vertex> temporalGraph;
 
     /** Dependency of MatchCollection */
-    private Dependency dependency;
+    private DataDependency dependency;
 
     /** The minimum timespan between matches. */
     private Duration granularity;
@@ -51,11 +50,11 @@ public class MatchCollection
      */
     public MatchCollection(
             VF2PatternGraph pattern,
-            Dependency dependency,
+            DataDependency dataDependency,
             Duration granularity)
     {
         this.pattern = pattern;
-        this.dependency = dependency;
+        this.dependency = dataDependency;
         this.granularity = granularity;
         this.temporalGraph = new TemporalGraph<>(granularity);
     }

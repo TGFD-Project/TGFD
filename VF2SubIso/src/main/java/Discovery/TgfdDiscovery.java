@@ -721,7 +721,7 @@ public class TgfdDiscovery {
 
             Delta delta = new Delta(Period.ofDays(generalMin * 183), Period.ofDays(generalMax * 183 + 1), Duration.ofDays(183));
 
-            Dependency generalDependency = new Dependency();
+            DataDependency generalDependency = new DataDependency();
             String yVertexType = literalPath.get(literalPath.size()-1).getVertexType();
             String yAttrName = literalPath.get(literalPath.size()-1).getAttrName();
             VariableLiteral y = new VariableLiteral(yVertexType, yAttrName, yVertexType, yAttrName);
@@ -747,7 +747,7 @@ public class TgfdDiscovery {
         String yAttrName = yLiteral.getAttrName();
         for (Entry<Set<ConstantLiteral>, ArrayList<Entry<ConstantLiteral, List<Integer>>>> entityEntry : entities.entrySet()) {
             VF2PatternGraph newPattern = patternNode.getPattern().copy();
-            Dependency newDependency = new Dependency();
+            DataDependency newDependency = new DataDependency();
             ArrayList<ConstantLiteral> constantPath = new ArrayList<>();
             for (Vertex v : newPattern.getPattern().vertexSet()) {
                 String vType = new ArrayList<>(v.getTypes()).get(0);

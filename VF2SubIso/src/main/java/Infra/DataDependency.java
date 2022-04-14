@@ -2,18 +2,18 @@ package Infra;
 
 import java.util.ArrayList;
 
-public class Dependency {
+public class DataDependency {
 
     private ArrayList<Literal> X;
     private ArrayList<Literal> Y;
 
-    public Dependency(ArrayList<Literal> X, ArrayList<Literal> Y)
+    public DataDependency(ArrayList<Literal> X, ArrayList<Literal> Y)
     {
         this.X=X;
         this.Y=Y;
     }
 
-    public Dependency()
+    public DataDependency()
     {
         this.X=new ArrayList<>();
         this.Y=new ArrayList<>();

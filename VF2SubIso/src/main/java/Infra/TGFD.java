@@ -3,14 +3,14 @@ package Infra;
 public class TGFD {
 
     private Delta delta;
-    private Dependency dependency;
+    private DataDependency dependency;
     private VF2PatternGraph pattern;
     private String name="";
 
     private Double support;
     private Double patternSupport;
 
-    public TGFD (VF2PatternGraph pattern, Delta delta, Dependency dependency,String name)
+    public TGFD (VF2PatternGraph pattern, Delta delta, DataDependency dependency, String name)
     {
         this.delta=delta;
         this.pattern=pattern;
@@ -18,7 +18,7 @@ public class TGFD {
         this.name=name;
     }
 
-    public TGFD (VF2PatternGraph pattern, Delta delta, Dependency dependency, double support, String name)
+    public TGFD (VF2PatternGraph pattern, Delta delta, DataDependency dependency, double support, String name)
     {
         this.delta = delta;
         this.pattern = pattern;
@@ -27,7 +27,7 @@ public class TGFD {
         this.name=name;
     }
 
-    public TGFD (VF2PatternGraph pattern, Delta delta, Dependency dependency, double support, double patternSupport, String name)
+    public TGFD (VF2PatternGraph pattern, Delta delta, DataDependency dependency, double support, double patternSupport, String name)
     {
         this.delta = delta;
         this.pattern = pattern;
@@ -39,14 +39,14 @@ public class TGFD {
 
     public TGFD ()
     {
-        this.dependency=new Dependency();
+        this.dependency=new DataDependency();
     }
 
     public void setDelta(Delta delta) {
         this.delta = delta;
     }
 
-    public void setDependency(Dependency dependency) {
+    public void setDependency(DataDependency dependency) {
         this.dependency = dependency;
     }
 
@@ -58,7 +58,7 @@ public class TGFD {
         return pattern;
     }
 
-    public Dependency getDependency() {
+    public DataDependency getDependency() {
         return dependency;
     }
 

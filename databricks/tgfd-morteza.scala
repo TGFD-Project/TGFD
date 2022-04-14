@@ -844,7 +844,7 @@ displayVertices(e5match.vertices)
 
 // COMMAND ----------
 
-//Define the X->Y dependency (it is given)
+//Define the X->Y dataDependency (it is given)
 var X1 = List[Predicate]()
 X1 = new Predicate("player","name",null) :: X1
 X1 = new Predicate("team","name",null) :: X1
@@ -853,7 +853,7 @@ val Y1 = new Predicate("player","number",null)
 val delta1=new Delta(0,300)
 
 
-//Define the X->Y dependency (it is given)
+//Define the X->Y dataDependency (it is given)
 var X2 = List[Predicate]()
 X2 = new Predicate("A","a",null) :: X2
 X2 = new Predicate("B","b",null) :: X2
@@ -862,7 +862,7 @@ val Y2 = new Predicate("D","d",null)
 // Define the Delta (it is given)
 val delta2=new Delta(0,300)
 
-//Define the X->Y dependency (it is given)
+//Define the X->Y dataDependency (it is given)
 var X3 = List[Predicate]()
 X3 = new Predicate("A","a",null) :: X3
 X3 = new Predicate("B","b","valB") :: X3
@@ -1141,7 +1141,7 @@ findInconsistencies(chain14, X2, Y2, delta1)
 // COMMAND ----------
 
 
-//Define the X->Y dependency (it is given)
+//Define the X->Y dataDependency (it is given)
 var X1 = List[Predicate]()
 X1 = new Predicate("A","A0",null) :: X1
 X1 = new Predicate("B","B1",null) :: X1
@@ -1159,7 +1159,7 @@ findInconsistencies(chain0, X1, Y1, delta1)
 
 // COMMAND ----------
 
-//Define the X->Y dependency (it is given)
+//Define the X->Y dataDependency (it is given)
 var X1 = List[Predicate]()
 X1 = new Predicate("A","A0",null) :: X1
 X1 = new Predicate("B","B1",null) :: X1
@@ -1192,7 +1192,7 @@ findInconsistencies(chain14, X1, Y1, delta1)
 
 // COMMAND ----------
 
-//Define the X->Y dependency (it is given)
+//Define the X->Y dataDependency (it is given)
 var X3 = List[Predicate]()
 X3 = new Predicate("A","A0",null) :: X3
 X3 = new Predicate("B","B1",null) :: X3
@@ -1216,7 +1216,7 @@ findInconsistencies(chain4, X3, Y3, delta1)
 
 // COMMAND ----------
 
-//Define the X->Y dependency (it is given)
+//Define the X->Y dataDependency (it is given)
 var X3 = List[Predicate]()
 X3 = new Predicate("A","A0",null) :: X3
 X3 = new Predicate("B","B1",null) :: X3
@@ -1255,7 +1255,7 @@ findInconsistencies(chain14, X3, Y3, delta1)
 
 // COMMAND ----------
 
-//Define the X->Y dependency (it is given)
+//Define the X->Y dataDependency (it is given)
 var X4 = List[Predicate]()
 X4 = new Predicate("A","A0",null) :: X4
 X4 = new Predicate("B","B1",null) :: X4
@@ -1279,7 +1279,7 @@ findInconsistencies(chain4, X4, Y4, delta1)
 
 // COMMAND ----------
 
-//Define the X->Y dependency (it is given)
+//Define the X->Y dataDependency (it is given)
 var X4 = List[Predicate]()
 X4 = new Predicate("A","A0",null) :: X4
 X4 = new Predicate("B","B1",null) :: X4
