@@ -1,6 +1,8 @@
 package Infra;
 
 import QPathBasedWorkload.VertexMapping;
+import Util.Config;
+import org.apache.commons.lang3.EnumUtils;
 import org.jgrapht.GraphMapping;
 
 import java.time.Duration;
@@ -26,7 +28,7 @@ public class MatchCollection
 
     // TODO: replace map value type with List<Match> [2021-02-23]
     /** Mapping of match signatures to matches. */
-    private AbstractMap<String, Match> matchesBySignature = new HashMap<>();
+    public AbstractMap<String, Match> matchesBySignature = new HashMap<>();
 
     // TODO: deduplicate vertices in Match [2021-02-23]
     // This may not be so easy because we need to deduplicate by vertex and time.
@@ -48,9 +50,9 @@ public class MatchCollection
      * @param granularity Minimum timespan between matches.
      */
     public MatchCollection(
-        VF2PatternGraph pattern,
-        Dependency dependency,
-        Duration granularity)
+            VF2PatternGraph pattern,
+            Dependency dependency,
+            Duration granularity)
     {
         this.pattern = pattern;
         this.dependency = dependency;
@@ -66,8 +68,8 @@ public class MatchCollection
      * @param mapping The mapping of the match.
      */
     private void addMatch(
-        LocalDate timestamp,
-        GraphMapping<Vertex, RelationshipEdge> mapping)
+            LocalDate timestamp,
+            GraphMapping<Vertex, RelationshipEdge> mapping)
     {
         var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
 
@@ -80,8 +82,11 @@ public class MatchCollection
 
         var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
 
+        if(Config.debug)
+            System.out.println(signature + " ->" + signatureY);
         match.addTimepoint(timestamp, granularity);
         match.addSignatureY(timestamp,granularity,signatureY);
+        match.addSignatureYBasedOnTimestap(timestamp,signatureY);
     }
 
     /**
@@ -121,9 +126,9 @@ public class MatchCollection
 
             // TODO: change Vertex type to DataVertex or add vertex id to Vertex [2021-02-24]
             temporalGraph.addVertex(
-                matchVertex,
-                ((DataVertex)matchVertex).getVertexURI(),
-                timestamp);
+                    matchVertex,
+                    ((DataVertex)matchVertex).getVertexURI(),
+                    timestamp);
         }
     }
 
@@ -154,8 +159,8 @@ public class MatchCollection
      * @param mappingIterator An iterator over all isomorphic mappings from the pattern.
      */
     public int addMatches(
-        LocalDate timestamp,
-        Iterator<GraphMapping<Vertex, RelationshipEdge>> mappingIterator)
+            LocalDate timestamp,
+            Iterator<GraphMapping<Vertex, RelationshipEdge>> mappingIterator)
     {
         if (mappingIterator == null)
             return 0;
@@ -163,12 +168,21 @@ public class MatchCollection
         timestamps.add(timestamp);
 
         int matchCount = 0;
-        long start= System.currentTimeMillis();
         while (mappingIterator.hasNext())
         {
             GraphMapping<Vertex, RelationshipEdge> mapping = mappingIterator.next();
+            if (Config.debug) {
+                System.out.println("---------- Match found ---------- ");
+                for (Vertex v : pattern.getPattern().vertexSet()) {
+                    Vertex currentMatchedVertex = mapping.getVertexCorrespondence(v, false);
+                    if (currentMatchedVertex != null) {
+                        System.out.println(v + " --> " + currentMatchedVertex);
+                    }
+                }
+            }
             addMatch(timestamp, mapping);
             addVertices(timestamp, mapping);
+            matchCount++;
         }
         System.out.println("Total Number of matches: " + matchCount);
         return matchCount;
@@ -207,15 +221,65 @@ public class MatchCollection
      * @param newMatches A HashMap of <SignatureFromPattern,mapping> of all the new matches.
      */
     public void addMatches(
-        LocalDate timepoint,
-        HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches)
+            LocalDate timepoint,
+            HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches)
     {
         timestamps.add(timepoint);
 
         for (var mapping : newMatches.values())
         {
+            if (Config.debug) {
+                System.out.println("---------- Match found ---------- ");
+                for (Vertex v : pattern.getPattern().vertexSet()) {
+                    Vertex currentMatchedVertex = mapping.getVertexCorrespondence(v, false);
+                    if (currentMatchedVertex != null) {
+                        System.out.println(v + " --> " + currentMatchedVertex);
+                    }
+                }
+            }
             addMatch(timepoint, mapping);
             addVertices(timepoint, mapping);
+        }
+    }
+
+    /**
+     * Add timestamp to all matches that are neither new or removed (for incremental case).
+     * @param timestamp Timestamp to add to relevant matches.
+     * @param previousTimeStamp Previous time stamp.
+     * @param newMatchesSignatures Signatures from new matches.
+     * @param removedMatchesSignatures Signatures from deleted matches.
+     */
+    public void addTimestamp(
+            LocalDate timestamp,
+            LocalDate previousTimeStamp,
+            Collection<String> newMatchesSignatures,
+            Collection<String> removedMatchesSignatures)
+    {
+        timestamps.add(timestamp);
+
+        var newSignatures = newMatchesSignatures.stream().collect(Collectors.toSet());
+        var removedSignatures = removedMatchesSignatures.stream().collect(Collectors.toSet());
+
+        var signaturesToUpdate = matchesBySignature.keySet().stream()
+                .filter(k -> !newSignatures.contains(k))
+                .filter(k -> !removedSignatures.contains(k))
+                .collect(Collectors.toList());
+
+        for (var signature : signaturesToUpdate)
+        {
+            matchesBySignature.get(signature).addTimepoint(timestamp, granularity);
+            var signatureY=Match.signatureFromY(pattern,matchesBySignature.get(signature).getMatchMapping(),dependency.getY());
+            matchesBySignature.get(signature).addSignatureYBasedOnTimestap(timestamp,signatureY);
+            if(Config.debug)
+            {
+                if(matchesBySignature.get(signature).getSignatureY(previousTimeStamp)!= null &&
+                        !matchesBySignature.get(signature).getSignatureY(previousTimeStamp).equals(signatureY))
+                {
+                    System.out.println("Change in the existing match: " + matchesBySignature.get(signature).getSignatureY(previousTimeStamp));
+                    System.out.println("Changed to: " + signatureY);
+
+                }
+            }
         }
     }
 
@@ -226,9 +290,9 @@ public class MatchCollection
      * @param removedMatchesSignatures Signatures from deleted matches.
      */
     public void addTimestamp(
-        LocalDate timestamp,
-        Collection<String> newMatchesSignatures,
-        Collection<String> removedMatchesSignatures)
+            LocalDate timestamp,
+            Collection<String> newMatchesSignatures,
+            Collection<String> removedMatchesSignatures)
     {
         timestamps.add(timestamp);
 
@@ -236,12 +300,16 @@ public class MatchCollection
         var removedSignatures = removedMatchesSignatures.stream().collect(Collectors.toSet());
 
         var signaturesToUpdate = matchesBySignature.keySet().stream()
-            .filter(k -> !newSignatures.contains(k))
-            .filter(k -> !removedSignatures.contains(k))
-            .collect(Collectors.toList());
+                .filter(k -> !newSignatures.contains(k))
+                .filter(k -> !removedSignatures.contains(k))
+                .collect(Collectors.toList());
 
         for (var signature : signaturesToUpdate)
+        {
             matchesBySignature.get(signature).addTimepoint(timestamp, granularity);
+            var signatureY=Match.signatureFromY(pattern,matchesBySignature.get(signature).getMatchMapping(),dependency.getY());
+            matchesBySignature.get(signature).addSignatureYBasedOnTimestap(timestamp,signatureY);
+        }
     }
     //endregion
 
@@ -263,12 +331,18 @@ public class MatchCollection
     /** Returns matches applicable for only the given timestamp. */
     public List<Match> getMatches(LocalDate timestamp) {
         var intervals = List.of(new Interval(timestamp, timestamp));
-        return matchesBySignature
-            .values()
-            .stream()
-            .filter(match -> match.getIntervals().stream().anyMatch(intv -> intv.contains(timestamp)))
-            .map(match -> match.WithIntervals(intervals))
-            .collect(Collectors.toList());
+        List<Match> res=new ArrayList<>();
+        for (Match match:matchesBySignature.values()) {
+            if(match.getIntervals().stream().anyMatch(intv -> intv.contains(timestamp)))
+                res.add(match);
+        }
+        return res;
+//        return matchesBySignature
+//            .values()
+//            .stream()
+//            .filter(match -> match.getIntervals().stream().anyMatch(intv -> intv.contains(timestamp)))
+//            .map(match -> match.WithIntervals(intervals))
+//            .collect(Collectors.toList());
     }
     //endregion
 }

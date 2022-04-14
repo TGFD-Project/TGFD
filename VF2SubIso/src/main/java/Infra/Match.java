@@ -27,6 +27,9 @@ public final class Match {
     /** Signature of the match computed from X. */
     private String signatureX;
 
+    /** Signature of the match computed from X. */
+    private HashMap<LocalDate, String> allSignatureY=new HashMap<>();
+
     /** Signature of the match computed from the pattern. */
     private String signatureFromPattern;
 
@@ -38,21 +41,21 @@ public final class Match {
 
     //region --[Constructors]------------------------------------------
     private Match(
-        TemporalGraph<Vertex> temporalGraph,
-        GraphMapping<Vertex, RelationshipEdge> matchMapping,
-        String signatureX,
-        List<Interval> intervals,
-        LocalDate initialTimepoint)
+            TemporalGraph<Vertex> temporalGraph,
+            GraphMapping<Vertex, RelationshipEdge> matchMapping,
+            String signatureX,
+            List<Interval> intervals,
+            LocalDate initialTimepoint)
     {
         this.temporalGraph = temporalGraph;
         this.signatureX = signatureX;
         this.intervals = intervals;
 
         this.matchMapping = (matchMapping instanceof BackwardVertexGraphMapping)
-            ? matchMapping
-            : new BackwardVertexGraphMapping<>(matchMapping, initialTimepoint, temporalGraph);
+                ? matchMapping
+                : new BackwardVertexGraphMapping<>(matchMapping, initialTimepoint, temporalGraph);
         this.matchVertexMapping=null;
-     }
+    }
 
     //region --[Constructors]------------------------------------------
     private Match(
@@ -77,10 +80,10 @@ public final class Match {
      * @param signatureX Signature of the match computed from X.
      */
     public Match(
-        TemporalGraph temporalGraph,
-        GraphMapping<Vertex, RelationshipEdge> matchMapping,
-        String signatureX,
-        LocalDate initialTimepoint)
+            TemporalGraph temporalGraph,
+            GraphMapping<Vertex, RelationshipEdge> matchMapping,
+            String signatureX,
+            LocalDate initialTimepoint)
     {
         // TODO: FIXME: can we get away with using initalTimepoint for the TemporalGraph? [2021-02-24]
         this(temporalGraph, matchMapping, signatureX, new ArrayList<Interval>(), initialTimepoint);
@@ -238,6 +241,17 @@ public final class Match {
         }
     }
 
+    public void addSignatureYBasedOnTimestap(LocalDate timepoint, String signatureY)
+    {
+        if(!allSignatureY.containsKey(timepoint))
+            allSignatureY.put(timepoint,signatureY);
+    }
+
+    public String getSignatureY(LocalDate timestamp)
+    {
+        return allSignatureY.getOrDefault(timestamp,null);
+    }
+
     /**
      * Gets the signature of a match for comparison across time w.r.t. the X of the dependency.
      * @param pattern Pattern of the match.
@@ -274,11 +288,15 @@ public final class Match {
                     var matchVertexTypes = matchVertex.getTypes();
                     if ((matchVertexTypes.contains(varLiteral.getVertexType_1()) && matchVertex.hasAttribute(varLiteral.getAttrName_1())))
                     {
+                        builder.append(varLiteral.getVertexType_1()).append("_1.")
+                                .append(varLiteral.getAttrName_1()).append(": ");
                         builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_1()));
                         builder.append(",");
                     }
                     if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.hasAttribute((varLiteral.getAttrName_2())))
                     {
+                        builder.append(varLiteral.getVertexType_2()).append("_2.")
+                                .append(varLiteral.getAttrName_2()).append(": ");
                         builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
                         builder.append(",");
                     }
@@ -548,12 +566,15 @@ public final class Match {
     //endregion
 
     //region --[Methods: Override]-------------------------------------
+
     @Override
     public String toString() {
         return "Match{" +
-                "signatureX='" + signatureX + '\'' +
-                ", signatureYWithInterval=" + signatureYWithInterval +
+                "intervals=" + intervals +
+                ", signatureX='" + signatureX + '\'' +
+                ", allSignatureY=" + allSignatureY +
                 '}';
     }
+
     //endregion
 }
