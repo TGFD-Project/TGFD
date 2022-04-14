@@ -1,11 +1,12 @@
 package java;
 
-import BatchViolation.OptBatchTED;
+import BatchViolation.NaiveBatchTED;
 import IncrementalRunner.IncUpdates;
 import IncrementalRunner.IncrementalChange;
 import Loader.TGFDGenerator;
 import VF2Runner.VF2SubgraphIsomorphism;
 import Violations.Violation;
+import Violations.ViolationCollection;
 import ChangeExploration.Change;
 import ChangeExploration.ChangeLoader;
 import Loader.DBPediaLoader;
@@ -30,6 +31,9 @@ public class testDbpediaInc
 
         System.out.println("Test DBPedia incremental");
 
+        // Create violation collection
+        Violations.ViolationCollection collection=new Violations.ViolationCollection();
+
         // Test whether we loaded all the files correctly
 
         System.out.println(Arrays.toString(Config.getFirstTypesFilePath().toArray()) + " *** " + Arrays.toString(Config.getFirstDataFilePath().toArray()));
@@ -50,6 +54,22 @@ public class testDbpediaInc
         long startTime=System.currentTimeMillis();
         LocalDate currentSnapshotDate= Config.getTimestamps().get(1);
         DBPediaLoader dbpedia = new DBPediaLoader(allTGFDs, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
+
+//        for (Vertex v:dbpedia.getGraph().getGraph().vertexSet()) {
+//            DataVertex vv=(DataVertex) v;
+//            if(vv.getAllAttributesHashMap().get("uri").getAttrValue().equals("ahmad_jamal"))
+//                for (Attribute attribute:vv.getAllAttributesList()) {
+//                    System.out.println(attribute);
+//                }
+//            if(vv.getAllAttributesHashMap().get("uri").getAttrValue().equals("rossiter_road")) {
+//                for (Attribute attribute : vv.getAllAttributesList()) {
+//                    System.out.println(attribute);
+//                }
+//                for (RelationshipEdge e:dbpedia.getGraph().getGraph().outgoingEdgesOf(vv)) {
+//                    System.out.println(e.getLabel());
+//                }
+//            }
+//        }
 
         printWithTime("Load graph (1)", System.currentTimeMillis()-startTime);
 
@@ -77,6 +97,7 @@ public class testDbpediaInc
 
             startTime=System.currentTimeMillis();
             currentSnapshotDate= Config.getTimestamps().get((int)ids[i]);
+            LocalDate prevTimeStamp=Config.getTimestamps().get(((int)ids[i])-1);
             ChangeLoader changeLoader=new ChangeLoader(Config.getDiffFilesPath().get(ids[i]));
             List<Change> changes=changeLoader.getAllChanges();
 
@@ -112,7 +133,7 @@ public class testDbpediaInc
                 }
             }
             for (TGFD tgfd:allTGFDs) {
-                matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,
+                matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,prevTimeStamp,
                         newMatchesSignaturesByTGFD.get(tgfd.getName()),removedMatchesSignaturesByTGFD.get(tgfd.getName()));
                 System.out.println("New matches ("+tgfd.getName()+"): " +
                         newMatchesSignaturesByTGFD.get(tgfd.getName()).size() + " ** " + removedMatchesSignaturesByTGFD.get(tgfd.getName()).size());
@@ -127,30 +148,33 @@ public class testDbpediaInc
             //First, we run the Naive Batch TED
             System.out.println("==========="+tgfd.getName()+"===========");
 
-            /*
+
             System.out.println("Running the naive TED");
             startTime=System.currentTimeMillis();
             NaiveBatchTED naive=new NaiveBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
             Set<Violation> allViolationsNaiveBatchTED=naive.findViolations();
             System.out.println("Number of violations: " + allViolationsNaiveBatchTED.size());
-            myConsole.print("Naive Batch TED", System.currentTimeMillis()-startTime);
-            if(properties.myProperties.saveViolations)
-                saveViolations("naive",allViolationsNaiveBatchTED,tgfd);
-            */
+            collection.addViolations(tgfd, allViolationsNaiveBatchTED); // Add violation into violation collection !!!!!!!!!!!!
+            printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
+            if(Config.saveViolations)
+//                saveViolations("naive",allViolationsNaiveBatchTED,tgfd,collection);
+                saveViolations("naive",allViolationsNaiveBatchTED,tgfd,collection);
+
 
 
             // we only need to run optimize method to find the violations
 
-            System.out.println("Running the optimized TED");
-
-            startTime=System.currentTimeMillis();
-            OptBatchTED optimize=new OptBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
-            Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
-            System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
-            printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
-            if(Config.saveViolations)
-                saveViolations("optimized",allViolationsOptBatchTED,tgfd);
+//            System.out.println("Running the optimized TED");
+//
+//            startTime=System.currentTimeMillis();
+//            OptBatchTED optimize=new OptBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
+//            Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
+//            System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
+//            printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
+//            if(Config.saveViolations)
+//                saveViolations("optimized",allViolationsOptBatchTED,tgfd);
         }
+
         printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
     }
 
@@ -161,17 +185,39 @@ public class testDbpediaInc
                 TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
     }
 
-    private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd)
+    private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd, ViolationCollection collection)
     {
         try {
             FileWriter file = new FileWriter(path +"_" + tgfd.getName() + ".txt");
             file.write("***************TGFD***************\n");
             file.write(tgfd.toString());
             file.write("\n===============Violations===============\n");
+            int i =1;
             for (Violation vio:violations) {
+                file.write(i+".");
                 file.write(vio.toString() +
                         "\n---------------------------------------------------\n");
+                i++;
             }
+
+            file.write("\n===============Sorted Violation Collection===============\n");
+            ArrayList<Match> sort_list = collection.sortViolationList();
+            for(Match match:sort_list){
+
+                file.write(match.getIntervals()+
+                        "\n---------------------------------------------------\n");
+
+//                List<Violation> vio_list = collection.getViolation(match);
+//                for (Violation vio:vio_list) {
+//                    file.write(vio.toString() +
+//                            "\n---------------------------------------------------\n");
+//                }
+
+
+            }
+
+
+
             file.close();
             System.out.println("Successfully wrote to the file: " + path);
         } catch (IOException e) {
