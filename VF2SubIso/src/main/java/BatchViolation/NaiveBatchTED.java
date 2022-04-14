@@ -1,6 +1,7 @@
 package BatchViolation;
 
 import Infra.*;
+import Violations.Violation;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -26,7 +27,7 @@ public class NaiveBatchTED {
         for(int i = 0; i < allSnapshots.length; i++)
         {
             List<Match> firstMatches=matches.getMatches(allSnapshots[i]);
-            for (int j = i; j < allSnapshots.length; j++)
+            for (int j = 0; j < allSnapshots.length; j++)
             {
                 Interval intv=new Interval(allSnapshots[i],allSnapshots[j]);
                 if(intv.inDelta(delta.getMin(),delta.getMax()))
@@ -34,24 +35,24 @@ public class NaiveBatchTED {
                     List<Match> secondMatches=matches.getMatches(allSnapshots[j]);
                     for (Match first:firstMatches) {
                         String firstSignatureX=first.getSignatureX();
-                        String firstSignatureY="";
-                        if(first.getMatchMapping()!=null)
-                            firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchMapping(),tgfd.getDependency().getY());
-                        else
-                            firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchVertexMapping(),tgfd.getDependency().getY());
+                        String firstSignatureY=first.getSignatureY(allSnapshots[i]);
+//                        if(first.getMatchMapping()!=null)
+//                            firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchMapping(),tgfd.getDependency().getY());
+//                        else
+//                            firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchVertexMapping(),tgfd.getDependency().getY());
                         for (Match second:secondMatches) {
                             if(firstSignatureX.equals(second.getSignatureX()))
                             {
                                 //Here, they both should have the same signature Y
-                                String secondSignatureY="";
-                                if(second.getMatchMapping()!=null)
-                                    secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMatchMapping(),tgfd.getDependency().getY());
-                                else
-                                    secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMatchVertexMapping(),tgfd.getDependency().getY());
+                                String secondSignatureY=second.getSignatureY(allSnapshots[j]);
+//                                if(second.getMatchMapping()!=null)
+//                                    secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMatchMapping(),tgfd.getDependency().getY());
+//                                else
+//                                    secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMatchVertexMapping(),tgfd.getDependency().getY());
                                 if(!firstSignatureY.equals(secondSignatureY))
                                 {
                                     //Violation happened.
-                                    violations.add(new Violation(first,second,intv));
+                                    violations.add(new Violation(first,second,intv,firstSignatureX,firstSignatureY,secondSignatureY));
                                     // counter of violations
                                 }
                                 else
