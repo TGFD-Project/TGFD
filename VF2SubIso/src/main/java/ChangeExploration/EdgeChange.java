@@ -1,4 +1,4 @@
-package changeExploration;
+package ChangeExploration;
 
 import Infra.DataVertex;
 import Infra.RelationshipEdge;

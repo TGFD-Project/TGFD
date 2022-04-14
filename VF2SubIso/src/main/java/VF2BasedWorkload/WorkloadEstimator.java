@@ -3,7 +3,7 @@ package VF2BasedWorkload;
 import AmazonStorage.S3Storage;
 import Infra.*;
 import Partitioner.RangeBasedPartitioner;
-import changeExploration.*;
+import ChangeExploration.*;
 import Loader.GraphLoader;
 import Util.Config;
 

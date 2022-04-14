@@ -1,7 +1,7 @@
 package java;
 
 import Loader.TGFDGenerator;
-import changeExploration.*;
+import ChangeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import Loader.GraphLoader;
 import Loader.IMDBLoader;

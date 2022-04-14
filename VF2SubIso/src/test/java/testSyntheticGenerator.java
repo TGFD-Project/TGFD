@@ -1,7 +1,7 @@
 package java;
 
 import SyntheticGraph.SyntheticGenerator;
-import changeExploration.*;
+import ChangeExploration.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import Loader.SyntheticLoader;
 import Infra.TGFD;

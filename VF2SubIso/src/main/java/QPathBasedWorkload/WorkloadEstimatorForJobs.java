@@ -5,7 +5,7 @@ import Infra.*;
 import Loader.GraphLoader;
 import Partitioner.RangeBasedPartitioner;
 import Util.Config;
-import changeExploration.*;
+import ChangeExploration.*;
 
 import java.io.FileWriter;
 import java.io.IOException;

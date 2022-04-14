@@ -1,6 +1,6 @@
 package java;
 
-import changeExploration.ChangeLoader;
+import ChangeExploration.ChangeLoader;
 
 public class testJsonLoader {
 

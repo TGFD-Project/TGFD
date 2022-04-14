@@ -12,8 +12,8 @@ import Loader.TGFDGenerator;
 import Util.Config;
 
 import QPathBasedWorkload.WorkloadEstimatorForJobs;
-import changeExploration.Change;
-import changeExploration.ChangeLoader;
+import ChangeExploration.Change;
+import ChangeExploration.ChangeLoader;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;

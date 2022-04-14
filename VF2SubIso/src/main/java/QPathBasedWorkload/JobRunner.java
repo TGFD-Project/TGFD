@@ -8,7 +8,7 @@ import Loader.SyntheticLoader;
 import Loader.TGFDGenerator;
 import Util.Config;
 import VF2Runner.VF2SubgraphIsomorphism;
-import changeExploration.Change;
+import ChangeExploration.Change;
 import org.jgrapht.Graph;
 
 import java.time.LocalDate;

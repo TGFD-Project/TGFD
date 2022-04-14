@@ -1,6 +1,6 @@
 package SyntheticGraph;
 
-import changeExploration.*;
+import ChangeExploration.*;
 import Loader.SyntheticLoader;
 import Infra.Attribute;
 import Infra.DataVertex;

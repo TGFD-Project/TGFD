@@ -1,4 +1,4 @@
-package changeExploration;
+package ChangeExploration;
 
 import Loader.GraphLoader;
 import Infra.*;
@@ -205,7 +205,7 @@ public class ChangeFinder {
                 }
                 else if(attrChange!=null && !v2.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue()))
                 {
-                    Change changeOfAttr=new AttributeChange(ChangeType.changeAttr,changeID++ ,v1.getVertexURI(),attr);
+                    Change changeOfAttr=new AttributeChange(ChangeType.changeAttr,changeID++ ,v1.getVertexURI(),v2.getAllAttributesHashMap().get(attr.getAttrName()));
                     changeOfAttr.addTGFD(findRelaventTGFDs(v1.getTypes()));
                     allChanges.add(changeOfAttr);
                     numberOfEffectiveChanges++;

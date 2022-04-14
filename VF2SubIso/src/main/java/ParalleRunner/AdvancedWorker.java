@@ -7,7 +7,7 @@ import MPI.Producer;
 import Partitioner.Util;
 import Util.Config;
 import VF2BasedWorkload.JobletRunner;
-import changeExploration.Change;
+import ChangeExploration.Change;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 

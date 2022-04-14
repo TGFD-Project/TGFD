@@ -1,7 +1,7 @@
 package IncrementalRunner;
 
 import VF2Runner.VF2SubgraphIsomorphism;
-import changeExploration.*;
+import ChangeExploration.*;
 import Infra.*;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphMapping;
