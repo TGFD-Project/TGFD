@@ -47,11 +47,11 @@ public class VF2SubgraphIsomorphism {
                 dataGraph.getGraph(), pattern.getPattern(),
                 myVertexComparator, myEdgeComparator, cacheEdges);
 
-        System.out.println("Search Cost: " + (System.currentTimeMillis() - startTime));
+        //System.out.println("Search Cost: " + (System.currentTimeMillis() - startTime));
         int size=0;
         if (inspector.isomorphismExists()) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
-            if(Config.debug)
+            if(false)
             {
                 while (iterator.hasNext()) {
                     System.out.println("---------- Match found ---------- ");
@@ -65,7 +65,7 @@ public class VF2SubgraphIsomorphism {
                     }
                     size++;
                 }
-                System.out.println("Number of matches: " + size);
+                //System.out.println("Number of matches: " + size);
             }
             //TODO: Potential error here, if we want to debug and see the matches
             //FIXME: The iterator will go to end if the ConfigParser.printDetailedMatchingResults is true! Will be useless to return
@@ -73,7 +73,8 @@ public class VF2SubgraphIsomorphism {
         }
         else
         {
-            System.out.println("No Matches for the query!");
+//            if(Config.debug)
+//                System.out.println("No Matches for the query!");
             return null;
         }
     }
@@ -84,7 +85,7 @@ public class VF2SubgraphIsomorphism {
         inspector = new VF2SubgraphIsomorphismInspector<>(
                 dataGraph.getGraph(), pattern.getPattern(),
                 myVertexComparator, myEdgeComparator, cacheEdges);
-        System.out.println("Search Cost: " + (System.currentTimeMillis() - startTime));
+        //System.out.println("Search Cost: " + (System.currentTimeMillis() - startTime));
         return inspector;
     }
 
@@ -97,12 +98,12 @@ public class VF2SubgraphIsomorphism {
                 dataGraph, pattern.getPattern(),
                 myVertexComparator, myEdgeComparator, cacheEdges);
 
-        if(Config.debug)
-            System.out.println("Search Cost: "+ (System.currentTimeMillis() - startTime));
+        //if(Config.debug)
+        //    System.out.println("Search Cost: "+ (System.currentTimeMillis() - startTime));
         int size=0;
         if (inspector.isomorphismExists()) {
             Iterator<GraphMapping<Vertex, RelationshipEdge>> iterator = inspector.getMappings();
-            if(Config.debug)
+            if(false)
             {
                 while (iterator.hasNext()) {
                     System.out.println("---------- Match found ---------- ");
@@ -116,14 +117,14 @@ public class VF2SubgraphIsomorphism {
                     }
                     size++;
                 }
-                System.out.println("Number of matches: " + size);
+                //System.out.println("Number of matches: " + size);
             }
             return iterator;
         }
         else
         {
-            if(Config.debug)
-                System.out.println("No Matches for the query!");
+//            if(Config.debug)
+//                System.out.println("No Matches for the query!");
             return null;
         }
     }
