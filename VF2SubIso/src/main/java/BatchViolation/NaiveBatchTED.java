@@ -1,13 +1,10 @@
 package BatchViolation;
 
+import Infra.*;
 import Violations.Violation;
 
-import Infra.*;
-
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class NaiveBatchTED {
 
@@ -25,8 +22,8 @@ public class NaiveBatchTED {
     {
         Set<Violation> violations=new HashSet<>();
         Delta delta=tgfd.getDelta();
-
         LocalDate[] allSnapshots = matches.getTimestamps();
+        //TODO: Sort the allSnapshots so j starts at i in the inner loop
         for(int i = 0; i < allSnapshots.length; i++)
         {
             List<Match> firstMatches=matches.getMatches(allSnapshots[i]);
