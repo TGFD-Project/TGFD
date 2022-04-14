@@ -58,12 +58,12 @@
             <artifactId>activemq-broker</artifactId>
             <version>5.16.1</version>
         </dependency>
-        <!--        <dependency>-->
+        <!--        <dataDependency>-->
         <!--            <groupId>com.fasterxml.jackson.core</groupId>-->
         <!--            <artifactId>jackson-databind</artifactId>-->
         <!--            <version>2.10.1</version>-->
         <!--            <scope>test</scope>-->
-        <!--        </dependency>-->
+        <!--        </dataDependency>-->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
