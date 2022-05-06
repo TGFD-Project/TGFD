@@ -152,7 +152,7 @@ public class ViolationCollection {
                 sort_match.add(s_match_1);
                 sort_match.add(s_match_2);
             }
-
+            System.out.println("Done.");
             key_set.add(match.getSignatureX());
 
         }
