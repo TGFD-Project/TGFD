@@ -39,7 +39,7 @@ public class DataVertex extends Vertex implements Serializable {
     public boolean isMapped(Vertex v) {
         if(v instanceof DataVertex)
             return false;
-        if (super.getTypes().containsAll(v.getTypes())) {
+        if (super.getTypes().containsAll(v.getTypes()) || v.getTypes().iterator().next().equals("_")) {
             if (super.getAllAttributesNames().containsAll(v.getAllAttributesNames())) {
                 for (Attribute attr : v.getAllAttributesList())
                     if (!attr.isNULL() && !super.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue())) {
