@@ -1,8 +1,11 @@
 package Violations;
 
+import Infra.Interval;
 import Infra.Match;
 import ICs.TGFD;
+import Util.Config;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class ViolationCollection {
@@ -25,6 +28,7 @@ public class ViolationCollection {
         if(!collection.containsKey(violation.getMatch1()))
             collection.put(violation.getMatch1(),new ArrayList<>());
         collection.get(violation.getMatch1()).add(violation);
+
         if(!collection.containsKey(violation.getMatch2()))
             collection.put(violation.getMatch2(),new ArrayList<>());
         collection.get(violation.getMatch2()).add(violation);
@@ -55,24 +59,6 @@ public class ViolationCollection {
     }
 
 
-//    public Match topViolation()
-//    {
-//        Match match=null;
-//        int max=-1;
-//
-//        for (Match key:key_set) {
-//            if(collection.get(key).size()>max) {
-//                match = key;
-//                max=collection.get(key).size();
-//
-//            }
-//        }
-//
-//
-//
-//
-//        return match;
-//    }
 
     public Match topViolation()
     {
@@ -85,9 +71,9 @@ public class ViolationCollection {
                 {
                     if(collection.get(m).size()>max) {
                         match = m;
-                        System.out.println("m is"+m);
+//                        System.out.println("m is"+m);
                         max=collection.get(m).size();
-                        System.out.println("size is"+max);
+//                        System.out.println("size is"+max);
                     }
                 }
             }
@@ -107,44 +93,129 @@ public class ViolationCollection {
         return vio;
     }
 
-/// Lejia Edit
 
-//    public HashMap<Match, List<Violation>> sortViolationCollection()
-//    {
-//        HashMap<Match, List<Violation>> collection_sort = new HashMap<>();
-//        while(!collection.isEmpty()){
-//            Match max = topViolation();
-//            collection_sort.put(max,collection.get(max));
-//            collection.remove(max);
-//        }
+//    public ArrayList<Match> sortViolationList(){
+//        for (Match match:collection.keySet()) {
+//            System.out.println("m1 is"+match);
+//            key_set.add(match.getSignatureX());
+//            System.out.println("signature x is"+match.getSignatureX());
+//            System.out.println("signature with interval is"+match.getSignatureYWithInterval());
+//            System.out.println("interval is"+match.getIntervals());
+//            List<Interval> vio_intervals = match.getIntervals();
+//            System.out.println("1st interval"+ vio_intervals.get(0));
 //
-//        collection = collection_sort;
-//        return collection_sort;
+//            for(int i=0;i<vio_intervals.size();i++){
+//                System.out.println("signatureY "+match.getSignatureY(vio_intervals.get(i).getStart()));
+//            }
+//
+////            System.out.println("signature y is"+match.getSignatureY());
+//        }
+//        if(!key_set.isEmpty()){
+//            Match max_match=topViolation();
+//            sort_list.add(max_match);
+////            System.out.println("Max add is"+max_match);
+//            key_set.remove(max_match.getSignatureX());
+//        }
+//        return sort_list;
 //    }
 
-    public ArrayList<Match> sortViolationList(){
+    public ArrayList<Match> sortMatchList(){
+        ArrayList<String> sort_match = new ArrayList<>();
         for (Match match:collection.keySet()) {
+
             System.out.println("m1 is"+match);
+            List<Violation> s_vio = new ArrayList<>();
+            s_vio=collection.get(match);
+
+//            for(Violation vio:s_vio){
+//                LocalDate date=vio.getInterval().getStart();
+//                String signatureX = match.getSignatureX();
+//                String signatureY=match.getSignatureY(date);
+//                String s_match=signatureX+signatureY+vio.getInterval().getStart1();
+//                System.out.println("viovio is"+" "+s_match);
+//                sort_match.add(s_match);
+//            }
+
+            for(int i=0;i<s_vio.size();i+=2){
+                Violation vio = s_vio.get(i);
+                LocalDate date1=vio.getInterval().getStart();
+                LocalDate date2=vio.getInterval().getEnd();
+
+                String signatureX = match.getSignatureX();
+                String signatureY_1=match.getSignatureY(date1);
+                String signatureY_2=match.getSignatureY(date2);
+
+                String s_match_1="X: "+signatureX+"->"+ signatureY_1+ "t_"+ Config.timestampsReverseMap.get(vio.getInterval().getStart()) ;
+                String s_match_2="X: "+signatureX+"->"+ signatureY_2+ "t_"+Config.timestampsReverseMap.get(vio.getInterval().getEnd());
+
+
+                sort_match.add(s_match_1);
+                sort_match.add(s_match_2);
+            }
+
             key_set.add(match.getSignatureX());
+
         }
+
+
+
+        Map<String, Integer> mapL = new HashMap<>();
+        for (String current : sort_match) {
+            int count = mapL.getOrDefault(current, 0);
+            mapL.put(current, count + 1);
+        }
+
+        SortComparator1 compL = new SortComparator1(mapL);
+        Collections.sort(sort_match, compL);
+//        for(String i: sort_match){
+//            System.out.println("\n---------------------------------------------------\n");
+//            System.out.println(i+" "+"frequency"+mapL.get(i));
+//        }
+
+        Set<String> distinct = new HashSet<>(sort_match);
+        for(String s:distinct){
+            System.out.println("\n---------------------------------------------------\n");
+            System.out.println(s+" frequency:" +Collections.frequency(sort_match,s));
+
+        }
+
+
         if(!key_set.isEmpty()){
             Match max_match=topViolation();
             sort_list.add(max_match);
-            System.out.println("Max add is"+max_match);
+//            System.out.println("Max add is"+max_match);
             key_set.remove(max_match.getSignatureX());
         }
         return sort_list;
     }
 
-//    public HashMap<Interval,List<Double>> calculate_ErrorMatchesRatio(){
-//        HashMap<Interval,List<Double>> ErrorMatchesRatio = new HashMap<>();
-//
-//
-//
-//        return ErrorMatchesRatio;
-//    }
+    // Implement Comparator Interface to sort the values
+    class SortComparator1 implements Comparator<String> {
+        private final Map<String, Integer> freqMap;
 
+        // Assign the specified map
+        SortComparator1(Map<String, Integer> tFreqMap) {
+            this.freqMap = tFreqMap;
+        }
 
+        // Compare the values
+        @Override
+        public int compare(String s1, String s2) {
+
+            // Compare value by frequency
+            int freqCompare = freqMap.get(s2).compareTo(freqMap.get(s1));
+
+            // Compare value if frequency is equal
+            int valueCompare = s1.compareTo(s2);
+
+            // If frequency is equal, then just compare by value, otherwise -
+            // compare by the frequency.
+            if (freqCompare == 0)
+                return valueCompare;
+            else
+                return freqCompare;
+        }
+    }
 
 
 }
