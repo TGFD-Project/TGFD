@@ -59,9 +59,9 @@ public class TGFD {
     @Override
     public String toString() {
         return "TGFD{" +
-                "delta =" + delta +
-                ", dependency =" + dependency +
-                ", pattern =" + pattern +
+                "delta=" + delta +
+                ", dependency=" + dependency +
+                ", pattern=" + pattern +
                 '}';
     }
 }
