@@ -500,6 +500,13 @@ public final class Match {
                 return;
             builder.append(matchVertex.getVertexURI());
             builder.append(",");
+            for (Attribute patternAttr:patternVertex.getAllAttributesList()) {
+                if(!patternAttr.getAttrName().equals("uri"))
+                {
+                    builder.append(matchVertex.getAttributeValueByName(patternAttr.getAttrName()));
+                    builder.append(",");
+                }
+            }
         });
         // TODO: consider returning a hash [2021-02-13]
         return builder.toString();
@@ -525,6 +532,13 @@ public final class Match {
                 return;
             builder.append(matchVertex.getVertexURI());
             builder.append(",");
+            for (Attribute patternAttr:patternVertex.getAllAttributesList()) {
+                if(!patternAttr.getAttrName().equals("uri"))
+                {
+                    builder.append(matchVertex.getAttributeValueByName(patternAttr.getAttrName()));
+                    builder.append(",");
+                }
+            }
         });
         // TODO: consider returning a hash [2021-02-13]
         return builder.toString();
