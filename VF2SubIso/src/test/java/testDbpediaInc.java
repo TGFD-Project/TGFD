@@ -201,21 +201,21 @@ public class testDbpediaInc
                 i++;
             }
 
-            file.write("\n===============Sorted Violation Collection===============\n");
-            ArrayList<Match> sort_list = collection.sortViolationList();
-            for(Match match:sort_list){
-
-                file.write(match.getIntervals()+
-                        "\n---------------------------------------------------\n");
-
-//                List<Violation> vio_list = collection.getViolation(match);
-//                for (Violation vio:vio_list) {
-//                    file.write(vio.toString() +
-//                            "\n---------------------------------------------------\n");
-//                }
-
-
-            }
+//            file.write("\n===============Sorted Violation Collection===============\n");
+//            ArrayList<Match> sort_list = collection.sortViolationList();
+//            for(Match match:sort_list){
+//
+//                file.write(match.getIntervals()+
+//                        "\n---------------------------------------------------\n");
+//
+////                List<Violation> vio_list = collection.getViolation(match);
+////                for (Violation vio:vio_list) {
+////                    file.write(vio.toString() +
+////                            "\n---------------------------------------------------\n");
+////                }
+//
+//
+//            }
 
 
 
