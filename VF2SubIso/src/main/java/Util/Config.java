@@ -62,7 +62,7 @@ public class Config {
                      -region <region name> // Name of the region in Amazon EC2
                      -language <language name> // Names like "N-Triples", "TURTLE", "RDF/XML"
                      -job <worker name>,<job> // For example: -job worker1,pattern1.txt
-                     -dataset <dataset name> // Options: imdb (default), dbpedia, synthetic
+                     -dataset <dataset name> // Options: imdb (default), dbpedia, synthetic, pdd
                      -idletime <time> // idle time in threads (in ms)
                      -superstep <integer> // number of supersteps
                      -zeta <double> // value of zeta
