@@ -1,5 +1,6 @@
 package Util;
 
+import BatchViolation.NaiveBatchTED;
 import BatchViolation.OptBatchTED;
 import ICs.TGFD;
 import IncrementalRunner.IncUpdates;
@@ -10,8 +11,11 @@ import Violations.Violation;
 import ChangeExploration.Change;
 import ChangeExploration.ChangeLoader;
 import Infra.*;
+import Violations.ViolationCollection;
 import org.jgrapht.GraphMapping;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +25,7 @@ public class testRunner {
     private GraphLoader loader=null;
     private List<TGFD> tgfds;
     private long wallClockTime=0;
+    private ViolationCollection collection;
 
     public testRunner()
     {
@@ -37,6 +42,7 @@ public class testRunner {
 
         TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
         tgfds=generator.getTGFDs();
+        collection = new Violations.ViolationCollection();
 
         //Load the first timestamp
         System.out.println("===========Snapshot 1 (" + Config.getTimestamps().get(1) + ")===========");
@@ -104,6 +110,7 @@ public class testRunner {
 
             startTime=System.currentTimeMillis();
             currentSnapshotDate= Config.getTimestamps().get((int)ids[i]);
+            LocalDate prevTimeStamp=Config.getTimestamps().get(((int)ids[i])-1);
             ChangeLoader changeLoader=new ChangeLoader(Config.getDiffFilesPath().get(ids[i]));
             List<Change> changes=changeLoader.getAllChanges();
 
@@ -115,8 +122,8 @@ public class testRunner {
 
             startTime=System.currentTimeMillis();
             System.out.println("Updating the graph");
-            IncUpdates incUpdatesOnDBpedia=new IncUpdates(loader.getGraph(),tgfds);
-            incUpdatesOnDBpedia.AddNewVertices(changes);
+            IncUpdates incUpdatesOnGraph=new IncUpdates(loader.getGraph(),tgfds);
+            incUpdatesOnGraph.AddNewVertices(changes);
 
             HashMap<String, ArrayList <String>> newMatchesSignaturesByTGFD=new HashMap <>();
             HashMap<String,ArrayList<String>> removedMatchesSignaturesByTGFD=new HashMap <>();
@@ -129,7 +136,7 @@ public class testRunner {
             for (Change change:changes) {
 
                 //System.out.print("\n" + change.getId() + " --> ");
-                HashMap<String, IncrementalChange> incrementalChangeHashMap=incUpdatesOnDBpedia.updateGraph(change,tgfdsByName);
+                HashMap<String, IncrementalChange> incrementalChangeHashMap=incUpdatesOnGraph.updateGraph(change,tgfdsByName);
                 if(incrementalChangeHashMap==null)
                     continue;
                 for (String tgfdName:incrementalChangeHashMap.keySet()) {
@@ -139,7 +146,7 @@ public class testRunner {
                 }
             }
             for (TGFD tgfd:tgfds) {
-                matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate,
+                matchCollectionHashMap.get(tgfd.getName()).addTimestamp(currentSnapshotDate, prevTimeStamp,
                         newMatchesSignaturesByTGFD.get(tgfd.getName()),removedMatchesSignaturesByTGFD.get(tgfd.getName()));
                 System.out.println("New matches ("+tgfd.getName()+"): " +
                         newMatchesSignaturesByTGFD.get(tgfd.getName()).size() + " ** " + removedMatchesSignaturesByTGFD.get(tgfd.getName()).size());
@@ -152,14 +159,30 @@ public class testRunner {
 
             System.out.println("==========="+tgfd.getName()+"===========");
 
-            System.out.println("Running the optimized TED");
+//            System.out.println("Running the optimized TED");
+//
+//            startTime=System.currentTimeMillis();
+//            OptBatchTED optimize=new OptBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
+//            Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
+//            System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
+//            printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
+//            msg.append(getViolationsMessage(allViolationsOptBatchTED,tgfd));
+
+
+            // Now, we need to find all the violations
+            //First, we run the Naive Batch TED
+            System.out.println("Running the naive TED");
 
             startTime=System.currentTimeMillis();
-            OptBatchTED optimize=new OptBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
-            Set<Violation> allViolationsOptBatchTED=optimize.findViolations();
-            System.out.println("Number of violations (Optimized method): " + allViolationsOptBatchTED.size());
-            printWithTime("Optimized Batch TED", System.currentTimeMillis()-startTime);
+            NaiveBatchTED naive=new NaiveBatchTED(matchCollectionHashMap.get(tgfd.getName()),tgfd);
+            Set<Violation> allViolationsOptBatchTED=naive.findViolations();
+            System.out.println("Number of violations (Naive method): " + allViolationsOptBatchTED.size());
+            collection.addViolations(tgfd, allViolationsOptBatchTED); // Add violation into violation collection !!!!!!!!!!!!
+            printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
+            if(Config.saveViolations)
+                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection);
             msg.append(getViolationsMessage(allViolationsOptBatchTED,tgfd));
+
         }
         wallClockTime+=System.currentTimeMillis()-functionWallClockTime;
         printWithTime("Total wall clock time: ", wallClockTime);
@@ -188,6 +211,39 @@ public class testRunner {
         System.out.println(message + " time: " + runTimeInMS + "(ms) ** " +
                 TimeUnit.MILLISECONDS.toSeconds(runTimeInMS) + "(sec) ** " +
                 TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
+    }
+
+    private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd, ViolationCollection collection)
+    {
+        try {
+            FileWriter file = new FileWriter(path +"_" + tgfd.getName() + ".txt");
+            file.write("***************TGFD***************\n");
+            file.write(tgfd.toString());
+            file.write("\n===============Violations===============\n");
+            int i =1;
+            for (Violation vio:violations) {
+                file.write(i+".");
+                file.write(vio.toString() +
+                        "\nPatters1: " + vio.getMatch1().getSignatureFromPattern() +
+                        "\nPatters2: " + vio.getMatch2().getSignatureFromPattern() +
+                        "\n---------------------------------------------------\n");
+                i++;
+            }
+            file.write("\n===============Sorted Error Matches (Frequency of Occurrence)===============\n");
+            /*Problems for multiple TGFDs*/
+            ArrayList<Match> sort_list = collection.sortMatchList();
+            for(Match match:sort_list){
+                file.write(match.getSignatureX()+
+                        "\n---------------------------------------------------\n");
+            }
+
+
+            file.close();
+            System.out.println("Successfully wrote to the file: " + path);
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
     }
 
 }
