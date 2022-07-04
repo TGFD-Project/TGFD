@@ -129,12 +129,12 @@ public class AdvancedCoordinator {
         TGFDGenerator generator = new TGFDGenerator(Config.patternPath);
         tgfds=generator.getTGFDs();
 
-        if(Config.dataset.equals("dbpedia"))
+        if(Config.datasetName== Config.dataset.dbpedia)
             loader = new SimpleDBPediaLoader(tgfds, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
-        else if(Config.dataset.equals("synthetic")) {
+        else if(Config.datasetName== Config.dataset.synthetic) {
             //loader = new SyntheticLoader(tgfds, Config.getFirstDataFilePath());
         }
-        else // default is imdb
+        else if(Config.datasetName== Config.dataset.imdb) // default is imdb
             loader = new SimpleIMDBLoader(tgfds, Config.getFirstDataFilePath());
 
 

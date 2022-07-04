@@ -2,11 +2,7 @@ package QPathBasedWorkload;
 
 import ICs.TGFD;
 import Infra.*;
-import Loader.DBPediaLoader;
-import Loader.GraphLoader;
-import Loader.IMDBLoader;
-import Loader.SyntheticLoader;
-import Loader.TGFDGenerator;
+import Loader.*;
 import Util.Config;
 import VF2Runner.VF2SubgraphIsomorphism;
 import ChangeExploration.Change;
@@ -33,7 +29,7 @@ public class JobRunner {
 
     public JobRunner()
     {
-        System.out.println("Test Incremental algorithm for the "+ Config.dataset+" dataset from testRunner");
+        System.out.println("Test Incremental algorithm for the "+ Config.datasetName +" dataset from testRunner");
         assignedJobs=new HashMap<>();
     }
 
@@ -48,11 +44,13 @@ public class JobRunner {
         //Load the first timestamp
         System.out.println("===========Snapshot 1 (" + Config.getTimestamps().get(1) + ")===========");
 
-        if(Config.dataset.equals("dbpedia"))
+        if(Config.datasetName== Config.dataset.dbpedia)
             loader = new DBPediaLoader(tgfds, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
-        else if(Config.dataset.equals("synthetic"))
+        else if(Config.datasetName == Config.dataset.synthetic)
             loader = new SyntheticLoader(tgfds, Config.getFirstDataFilePath());
-        else // default is imdb
+        else if(Config.datasetName == Config.dataset.pdd)
+            loader = new PDDLoader(tgfds, Config.getFirstDataFilePath());
+        else if(Config.datasetName == Config.dataset.imdb) // default is imdb
             loader = new IMDBLoader(tgfds, Config.getFirstDataFilePath());
 
         printWithTime("Load graph 1 (" + Config.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
