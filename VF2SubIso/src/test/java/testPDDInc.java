@@ -152,7 +152,7 @@ public class testPDDInc
             collection.addViolations(tgfd, allViolationsOptBatchTED); // Add violation into violation collection !!!!!!!!!!!!
             printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
             if(Config.saveViolations)
-                saveViolations("naive",allViolationsOptBatchTED,tgfd,collection);
+                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection);
         }
         printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
     }
