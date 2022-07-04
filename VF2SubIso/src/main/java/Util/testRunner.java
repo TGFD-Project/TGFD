@@ -1,7 +1,6 @@
 package Util;
 
 import BatchViolation.NaiveBatchTED;
-import BatchViolation.OptBatchTED;
 import ICs.TGFD;
 import IncrementalRunner.IncUpdates;
 import IncrementalRunner.IncrementalChange;
@@ -29,7 +28,7 @@ public class testRunner {
 
     public testRunner()
     {
-        System.out.println("Test Incremental algorithm for the "+ Config.dataset+" dataset from testRunner");
+        System.out.println("Test Incremental algorithm for the "+ Config.datasetName +" dataset (using testRunner)");
     }
 
     public void load()
@@ -47,19 +46,19 @@ public class testRunner {
         //Load the first timestamp
         System.out.println("===========Snapshot 1 (" + Config.getTimestamps().get(1) + ")===========");
 
-        if(Config.dataset.equals("dbpedia"))
+        if(Config.datasetName== Config.dataset.dbpedia)
         {
             loader = new DBPediaLoader(tgfds, Config.getFirstTypesFilePath(), Config.getFirstDataFilePath());
         }
-        else if(Config.dataset.equals("synthetic"))
+        else if(Config.datasetName== Config.dataset.synthetic)
         {
             loader = new SyntheticLoader(tgfds, Config.getFirstDataFilePath());
         }
-        else if(Config.dataset.equals("pdd"))
+        else if(Config.datasetName== Config.dataset.pdd)
         {
             loader = new PDDLoader(tgfds, Config.getFirstDataFilePath());
         }
-        else // default is imdb
+        else if(Config.datasetName== Config.dataset.imdb)// default is imdb
         {
             loader = new IMDBLoader(tgfds, Config.getFirstDataFilePath());
         }

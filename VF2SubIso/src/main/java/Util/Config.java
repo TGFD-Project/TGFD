@@ -31,7 +31,7 @@ public class Config {
     public static Regions region=Regions.US_EAST_2;
     public static String language="N-Triples";
     public static HashMap<String,String> jobs=new HashMap <>();
-    public static String dataset="imdb";
+    public static dataset datasetName;
     public static long threadsIdleTime=3000;// in ms
     public static int supersteps=0;
     public static double zeta=-1;
@@ -114,7 +114,15 @@ public class Config {
                 }else if(conf[0].equals("-language")) {
                     language=conf[1];
                 }else if(conf[0].equals("-dataset")) {
-                    dataset=conf[1];
+                    try {
+                        datasetName = dataset.valueOf(conf[1]);
+                    }
+                    catch (IllegalArgumentException exception)
+                    {
+                        System.out.println("Error in dataset name: " + exception.getMessage());
+                        System.out.println("Dataset name is being set to default name: \"IMDB\"");
+                        datasetName=dataset.imdb;
+                    }
                 }else if(conf[0].equals("-zeta")) {
                     zeta=Double.parseDouble(conf[1]);
                 } else if(conf[0].equals("-gfd")) {
@@ -181,4 +189,8 @@ public class Config {
         return diffCaps;
     }
 
+    public enum dataset
+    {
+        pdd, dbpedia, imdb, synthetic
+    }
 }
