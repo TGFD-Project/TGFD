@@ -1,4 +1,3 @@
-package java;
 
 import VF2Runner.VF2SubgraphIsomorphism;
 import Infra.*;

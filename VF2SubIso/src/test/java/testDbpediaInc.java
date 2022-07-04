@@ -1,4 +1,4 @@
-package java;
+
 
 import BatchViolation.NaiveBatchTED;
 import ICs.TGFD;

@@ -4,15 +4,11 @@ import BatchViolation.OptBatchTED;
 import ICs.TGFD;
 import IncrementalRunner.IncUpdates;
 import IncrementalRunner.IncrementalChange;
-import Loader.TGFDGenerator;
+import Loader.*;
 import VF2Runner.VF2SubgraphIsomorphism;
 import Violations.Violation;
 import ChangeExploration.Change;
 import ChangeExploration.ChangeLoader;
-import Loader.DBPediaLoader;
-import Loader.GraphLoader;
-import Loader.IMDBLoader;
-import Loader.SyntheticLoader;
 import Infra.*;
 import org.jgrapht.GraphMapping;
 
@@ -52,6 +48,10 @@ public class testRunner {
         else if(Config.dataset.equals("synthetic"))
         {
             loader = new SyntheticLoader(tgfds, Config.getFirstDataFilePath());
+        }
+        else if(Config.dataset.equals("pdd"))
+        {
+            loader = new PDDLoader(tgfds, Config.getFirstDataFilePath());
         }
         else // default is imdb
         {

@@ -1,4 +1,4 @@
-package java;
+
 
 import ParalleRunner.MediumCoordinator;
 import ParalleRunner.MediumWorker;

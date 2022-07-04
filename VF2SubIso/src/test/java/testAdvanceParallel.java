@@ -1,4 +1,4 @@
-package java;
+
 
 import ParalleRunner.AdvancedCoordinator;
 import ParalleRunner.AdvancedWorker;
