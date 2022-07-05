@@ -86,6 +86,9 @@ public class MatchCollection
         match.addTimepoint(timestamp, granularity);
         match.addSignatureY(timestamp,granularity,signatureY);
         match.addSignatureYBasedOnTimestap(timestamp,signatureY);
+        // TODO: This is extra and not needed for runtime tests
+        // TODO: This has to be a map of signatures from pattern at different timestamps
+        match.setSignatureFromPattern(Match.signatureFromPattern(pattern,mapping));
     }
 
     /**
