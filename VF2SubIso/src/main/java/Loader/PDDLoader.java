@@ -302,6 +302,7 @@ public class PDDLoader extends GraphLoader {
                 {
                     if(!Config.optimizedLoadingBasedOnTGFD || validAttributes.contains(predicate))
                     {
+                        objectNodeURI = roundAttributeValue(predicate,objectNodeURI);
                         subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
                         graphSize++;
                     }
@@ -324,6 +325,35 @@ public class PDDLoader extends GraphLoader {
         {
             System.out.println(e.getMessage());
         }
+    }
+
+    private String roundAttributeValue(String predicate, String value)
+    {
+        if(predicate.equals("bmi_first"))
+        {
+            double bmi = Double.parseDouble(value);
+            if(bmi<=18.5)
+                return "18.5";
+            else if(bmi<=24.9)
+                return "24.9";
+            else if(bmi<=29.9)
+                return "29.9";
+            else
+                return "35";
+        }
+        else if(predicate.equals("age"))
+        {
+            double age = Double.parseDouble(value);
+            if(age<=14)
+                return "children";
+            else if(age<=24)
+                return "youth";
+            else if(age<=64)
+                return "adult";
+            else
+                return "senior";
+        }
+        return value;
     }
 
     //endregion

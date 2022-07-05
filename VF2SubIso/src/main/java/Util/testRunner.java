@@ -25,6 +25,7 @@ public class testRunner {
     private List<TGFD> tgfds;
     private long wallClockTime=0;
     private ViolationCollection collection;
+    private HashSet<String> prescriptionIDs=new HashSet<>();
 
     public testRunner()
     {
@@ -66,6 +67,30 @@ public class testRunner {
 
         wallClockTime+=System.currentTimeMillis()-startTime;
 
+    }
+
+    public void testDataset()
+    {
+        for (Vertex v:loader.getGraph().getGraph().vertexSet()) {
+            DataVertex dataVertex=(DataVertex) v;
+            if(v.getTypes().contains("admission"))
+            {
+                HashSet<Vertex> neighbors=new HashSet<>();
+                for (RelationshipEdge edge:loader.getGraph().getGraph().outgoingEdgesOf(v)) {
+                    if(edge.getLabel().equals("diagnoses_icd9"))
+                    {
+                        neighbors.add(edge.getTarget());
+                    }
+                }
+                if(neighbors.size()==2)
+                {
+                    System.out.printf("\n------------------------");
+                    System.out.println(v);
+                    prescriptionIDs.add(v.getAttributeValueByName("uri"));
+                    System.out.println(neighbors.stream().iterator().next());
+                }
+            }
+        }
     }
 
     public String run()
@@ -179,7 +204,7 @@ public class testRunner {
             collection.addViolations(tgfd, allViolationsOptBatchTED); // Add violation into violation collection !!!!!!!!!!!!
             printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
             if(Config.saveViolations)
-                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection);
+                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection,prescriptionIDs);
             msg.append(getViolationsMessage(allViolationsOptBatchTED,tgfd));
 
         }
@@ -212,7 +237,7 @@ public class testRunner {
                 TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
     }
 
-    private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd, ViolationCollection collection)
+    private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd, ViolationCollection collection,HashSet<String> prescriptionIDs)
     {
         try {
             FileWriter file = new FileWriter(path +"_" + tgfd.getName() + ".txt");
@@ -227,6 +252,16 @@ public class testRunner {
                         "\nPatters2: " + vio.getMatch2().getSignatureFromPattern() +
                         "\n---------------------------------------------------\n");
                 i++;
+                String admissionID=vio.getMatch1().getSignatureFromPattern().split(",")[0];
+                if(prescriptionIDs.contains(admissionID))
+                {
+                    file.write("Found it!" + admissionID);
+                }
+                admissionID=vio.getMatch2().getSignatureFromPattern().split(",")[0];
+                if(prescriptionIDs.contains(admissionID))
+                {
+                    file.write("Found it!" + admissionID);
+                }
             }
             file.write("\n===============Sorted Error Matches (Frequency of Occurrence)===============\n");
             /*Problems for multiple TGFDs*/
