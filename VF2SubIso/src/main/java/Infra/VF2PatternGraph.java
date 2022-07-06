@@ -11,7 +11,7 @@ public class VF2PatternGraph {
 
     private Graph<Vertex, RelationshipEdge> pattern;
 
-    private int diameter;
+    private int diameter=-1;
 
     private String centerVertexType="";
 
@@ -39,6 +39,10 @@ public class VF2PatternGraph {
 
     public void setDiameter(int diameter) {
         this.diameter = diameter;
+    }
+
+    public void setDiameter() {
+        this.findCenterNode();
     }
 
     public int getDiameter() {
