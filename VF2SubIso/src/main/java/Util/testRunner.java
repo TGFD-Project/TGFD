@@ -82,9 +82,9 @@ public class testRunner {
                         neighbors.add(edge.getTarget());
                     }
                 }
-                if(neighbors.size()==2)
+                if(neighbors.size()==1)
                 {
-                    System.out.printf("\n------------------------");
+                    System.out.println("\n------------------------");
                     System.out.println(v);
                     prescriptionIDs.add(v.getAttributeValueByName("uri"));
                     System.out.println(neighbors.stream().iterator().next());
@@ -263,13 +263,13 @@ public class testRunner {
                     file.write("Found it!" + admissionID);
                 }
             }
-            file.write("\n===============Sorted Error Matches (Frequency of Occurrence)===============\n");
-            /*Problems for multiple TGFDs*/
-            ArrayList<Match> sort_list = collection.sortMatchList();
-            for(Match match:sort_list){
-                file.write(match.getSignatureX()+
-                        "\n---------------------------------------------------\n");
-            }
+//            file.write("\n===============Sorted Error Matches (Frequency of Occurrence)===============\n");
+//            /*Problems for multiple TGFDs*/
+//            ArrayList<Match> sort_list = collection.sortMatchList();
+//            for(Match match:sort_list){
+//                file.write(match.getSignatureX()+
+//                        "\n---------------------------------------------------\n");
+//            }
 
 
             file.close();
