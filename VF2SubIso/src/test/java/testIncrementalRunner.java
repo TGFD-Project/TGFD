@@ -9,7 +9,7 @@ public class testIncrementalRunner
         Config.parse(args[0]);
         testRunner runner = new testRunner();
         runner.load();
-        runner.testDataset();
+        //runner.testDataset();
         runner.run();
     }
 }

@@ -25,7 +25,7 @@ public class testRunner {
     private List<TGFD> tgfds;
     private long wallClockTime=0;
     private ViolationCollection collection;
-    private HashSet<String> prescriptionIDs=new HashSet<>();
+    private HashSet<String> tempIDs =new HashSet<>();
 
     public testRunner()
     {
@@ -86,7 +86,7 @@ public class testRunner {
                 {
                     System.out.println("\n------------------------");
                     System.out.println(v);
-                    prescriptionIDs.add(v.getAttributeValueByName("uri"));
+                    tempIDs.add(v.getAttributeValueByName("uri"));
                     System.out.println(neighbors.stream().iterator().next());
                 }
             }
@@ -204,7 +204,7 @@ public class testRunner {
             collection.addViolations(tgfd, allViolationsOptBatchTED); // Add violation into violation collection !!!!!!!!!!!!
             printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
             if(Config.saveViolations)
-                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection,prescriptionIDs);
+                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection, tempIDs);
             msg.append(getViolationsMessage(allViolationsOptBatchTED,tgfd));
 
         }
