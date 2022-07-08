@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class Attribute implements Comparable<Attribute>, Serializable {
 
-    private String attrName;
-    private String attrValue;
+    protected String attrName;
+    protected String attrValue;
 
     //If this class is being used for DataVertex, then this is false
     //If this class is being used as a constant attribute for PatternVertex, then this is false
@@ -13,7 +13,7 @@ public class Attribute implements Comparable<Attribute>, Serializable {
     //This is being used in both DataVertex and PatternVertex.
     //If it is isNULL = true, then in the mapping, we only check if the DataVertex has this attribute,
     //otherwise, the DataVertex has to have it and also has to have the same value
-    private boolean isNULL;
+    protected boolean isNULL;
 
     public Attribute(String attrName, String attrValue)
     {

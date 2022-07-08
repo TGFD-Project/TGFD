@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -92,7 +93,14 @@ public class TGFDGenerator {
                         if(args[i].contains("$"))
                         {
                             String []attr=args[i].split("\\$");
-                            v.addAttribute(new Attribute(attr[0],attr[1]));
+                            if(attr.length==2)
+                                v.addAttribute(new Attribute(attr[0],attr[1]));
+                            else if(attr.length>2)
+                            {
+                                MultiValueAttribute attribute = new MultiValueAttribute(attr[0]);
+                                Arrays.stream(attr, 1, attr.length).forEach(attribute::addValue);
+                                v.addAttribute(attribute);
+                            }
                         }
                         else
                         {

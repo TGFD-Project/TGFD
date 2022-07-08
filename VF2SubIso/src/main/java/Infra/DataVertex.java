@@ -42,7 +42,11 @@ public class DataVertex extends Vertex implements Serializable {
         if (super.getTypes().containsAll(v.getTypes()) || v.getTypes().iterator().next().equals("_")) {
             if (super.getAllAttributesNames().containsAll(v.getAllAttributesNames())) {
                 for (Attribute attr : v.getAllAttributesList())
-                    if (!attr.isNULL() && !super.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue())) {
+                    if(attr instanceof MultiValueAttribute && !((MultiValueAttribute) attr).exists(super.getAttributeValueByName(attr.getAttrName())))
+                    {
+                       return false;
+                    }
+                    else if (!attr.isNULL() && !super.getAttributeValueByName(attr.getAttrName()).equals(attr.getAttrValue())) {
                         return false;
                     }
                 return true;
