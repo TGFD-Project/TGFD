@@ -72,6 +72,15 @@ public class MatchCollection
     {
         var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
 
+        //TODO: Check if this is correct. If a match violates a literal, it must be ignored!
+        if(signature == null)
+        {
+            if (Config.debug) {
+                System.out.println("Match is ignored as it does not satisfy the literals in X.");
+            }
+            return;
+        }
+
         var match = matchesBySignature.getOrDefault(signature, null);
         if (match == null)
         {
@@ -186,7 +195,8 @@ public class MatchCollection
             addVertices(timestamp, mapping);
             matchCount++;
         }
-        System.out.println("Total Number of matches: " + matchCount);
+        if(Config.debug)
+            System.out.println("Total Number of matches: " + matchCount);
         return matchCount;
     }
 

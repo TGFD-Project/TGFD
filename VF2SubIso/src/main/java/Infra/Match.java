@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represents a match.
@@ -265,6 +266,7 @@ public final class Match {
     {
         // We assume that all x variable literals are also defined in the pattern? [2021-02-13]
         var builder = new StringBuilder();
+        AtomicBoolean violateALiteralInX= new AtomicBoolean(false);
 
         // TODO: consider collecting (type, name, attr) and sorting at the end [2021-02-14]
 
@@ -301,10 +303,25 @@ public final class Match {
                         builder.append(",");
                     }
                 }
+                else if(literal instanceof ConstantLiteral)
+                {
+                    //TODO: Check for constant literals on X
+                    var constantLiteral = (ConstantLiteral)literal;
+                    if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
+                        continue;
+                    if (!matchVertex.hasAttribute(constantLiteral.attrName))
+                        continue;
+                    if (!matchVertex.getAttributeValueByName(constantLiteral.attrName).equals(constantLiteral.attrValue)) {
+                        violateALiteralInX.set(true);
+                    }
+                }
             }
         });
         // TODO: consider returning a hash [2021-02-13]
-        return builder.toString();
+        if(violateALiteralInX.get())
+            return null;
+        else
+            return builder.toString();
     }
 
     /**
