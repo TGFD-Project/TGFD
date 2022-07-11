@@ -66,7 +66,7 @@ public class MatchCollection
      * @param timestamp Timepoint of the match.
      * @param mapping The mapping of the match.
      */
-    private void addMatch(
+    private boolean addMatch(
             LocalDate timestamp,
             GraphMapping<Vertex, RelationshipEdge> mapping)
     {
@@ -78,7 +78,7 @@ public class MatchCollection
             if (Config.debug) {
                 System.out.println("Match is ignored as it does not satisfy the literals in X.");
             }
-            return;
+            return false;
         }
 
         var match = matchesBySignature.getOrDefault(signature, null);
@@ -98,6 +98,7 @@ public class MatchCollection
         // TODO: This is extra and not needed for runtime tests
         // TODO: This has to be a map of signatures from pattern at different timestamps
         match.setSignatureFromPattern(Match.signatureFromPattern(pattern,mapping));
+        return true;
     }
 
     /**
@@ -105,11 +106,20 @@ public class MatchCollection
      * @param timestamp Timepoint of the match.
      * @param mapping The mapping of the match.
      */
-    private void addMatch(
+    private boolean addMatch(
             LocalDate timestamp,
             VertexMapping mapping)
     {
         var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
+
+        //TODO: Check if this is correct. If a match violates a literal, it must be ignored!
+        if(signature == null)
+        {
+            if (Config.debug) {
+                System.out.println("Match is ignored as it does not satisfy the literals in X.");
+            }
+            return false;
+        }
 
         var match = matchesBySignature.getOrDefault(signature, null);
         if (match == null)
@@ -122,6 +132,7 @@ public class MatchCollection
 
         match.addTimepoint(timestamp, granularity);
         match.addSignatureY(timestamp,granularity,signatureY);
+        return true;
     }
 
     /**
@@ -191,9 +202,12 @@ public class MatchCollection
                     }
                 }
             }
-            addMatch(timestamp, mapping);
-            addVertices(timestamp, mapping);
-            matchCount++;
+            boolean validMatch = addMatch(timestamp, mapping);
+            if(validMatch)
+            {
+                addVertices(timestamp, mapping);
+                matchCount++;
+            }
         }
         if(Config.debug)
             System.out.println("Total Number of matches: " + matchCount);
@@ -212,17 +226,19 @@ public class MatchCollection
     {
         if (mappings == null)
             return 0;
-
         timestamps.add(timestamp);
-
         int matchCount = 0;
-        long start= System.currentTimeMillis();
         for (VertexMapping mapping:mappings) {
 
-            addMatch(timestamp, mapping);
-            addVertices(timestamp, mapping);
+            boolean validMatch = addMatch(timestamp, mapping);
+            if(validMatch)
+            {
+                addVertices(timestamp, mapping);
+                matchCount++;
+            }
         }
-        System.out.println("Total Number of matches: " + matchCount);
+        if(Config.debug)
+            System.out.println("Total Number of matches: " + matchCount);
         return matchCount;
     }
 
@@ -232,12 +248,12 @@ public class MatchCollection
      * @param timepoint Timepoint of the matches.
      * @param newMatches A HashMap of <SignatureFromPattern,mapping> of all the new matches.
      */
-    public void addMatches(
+    public int addMatches(
             LocalDate timepoint,
             HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches)
     {
         timestamps.add(timepoint);
-
+        int matchCount = 0;
         for (var mapping : newMatches.values())
         {
             if (Config.debug) {
@@ -249,9 +265,15 @@ public class MatchCollection
                     }
                 }
             }
-            addMatch(timepoint, mapping);
-            addVertices(timepoint, mapping);
+            boolean validMatch = addMatch(timepoint, mapping);
+            if(validMatch) {
+                addVertices(timepoint, mapping);
+                matchCount++;
+            }
         }
+        if(Config.debug)
+            System.out.println("Total Number of matches: " + matchCount);
+        return matchCount;
     }
 
     /**
