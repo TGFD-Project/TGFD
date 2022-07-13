@@ -53,7 +53,7 @@ public class GTAR {
 
     @Override
     public String toString() {
-        return "TGFD{" +
+        return "GTAR{" +
                 "delta=" + getDelta() +
                 ", p1=" + getP1() +
                 ", p2=" + getP2() +
