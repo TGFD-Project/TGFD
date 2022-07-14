@@ -175,8 +175,8 @@ public class testPDDInc
             for (Violation vio:violations) {
                 file.write(i+".");
                 file.write(vio.toString() +
-                        "\nPatters1: " + vio.getMatch1().getSignatureFromPattern() +
-                        "\nPatters2: " + vio.getMatch2().getSignatureFromPattern() +
+                        "\nPatters1: " + vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()) +
+                        "\nPatters2: " + vio.getMatch2().getSignatureFromPattern(vio.getInterval().getEnd()) +
                         "\n---------------------------------------------------\n");
                 i++;
             }

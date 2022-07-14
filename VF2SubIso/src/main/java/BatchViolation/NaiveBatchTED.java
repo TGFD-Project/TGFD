@@ -24,10 +24,13 @@ public class NaiveBatchTED {
         Set<Violation> violations=new HashSet<>();
         Delta delta=tgfd.getDelta();
         LocalDate[] allSnapshots = matches.getTimestamps();
+        int totalNumberOfMatches = 0;
+        HashSet<String> uniquePatients = new HashSet<>();
         //TODO: Sort the allSnapshots so j starts at i in the inner loop
         for(int i = 0; i < allSnapshots.length; i++)
         {
             List<Match> firstMatches=matches.getMatches(allSnapshots[i]);
+            totalNumberOfMatches+= firstMatches.size();
             for (int j = 0; j < allSnapshots.length; j++)
             {
                 Interval intv=new Interval(allSnapshots[i],allSnapshots[j]);
@@ -36,12 +39,15 @@ public class NaiveBatchTED {
                     List<Match> secondMatches=matches.getMatches(allSnapshots[j]);
                     for (Match first:firstMatches) {
                         String firstSignatureX=first.getSignatureX();
+                        uniquePatients.add(first.getSignatureFromPattern(allSnapshots[i]).split(",")[0]);
                         String firstSignatureY=first.getSignatureY(allSnapshots[i]);
 //                        if(first.getMatchMapping()!=null)
 //                            firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchMapping(),tgfd.getDependency().getY());
 //                        else
 //                            firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchVertexMapping(),tgfd.getDependency().getY());
                         for (Match second:secondMatches) {
+                            uniquePatients.add(second.getSignatureFromPattern(allSnapshots[j]).split(",")[0]);
+
                             if(firstSignatureX.equals(second.getSignatureX()))
                             {
                                 //Here, they both should have the same signature Y
@@ -66,6 +72,8 @@ public class NaiveBatchTED {
                 }
             }
         }
+        System.out.println("Total Number of matches: "+ totalNumberOfMatches + " - Unique: " + uniquePatients.size());
+        uniquePatients.forEach(System.out::println);
         return violations;
     }
 }

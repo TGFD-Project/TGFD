@@ -43,6 +43,8 @@ public class testErrorInjectionPDD {
         //Create the match collection for all the TGFDs in the list
         HashMap <String, MatchCollection> matchCollectionHashMap=new HashMap <>();
         for (TGFD tgfd:allTGFDs) {
+            System.out.println("--------------------------");
+            System.out.println(tgfd);
             matchCollectionHashMap.put(tgfd.getName(),new MatchCollection(tgfd.getPattern(),tgfd.getDependency(),tgfd.getDelta().getGranularity()));
         }
 
@@ -122,12 +124,13 @@ public class testErrorInjectionPDD {
         for (TGFD tgfd:allTGFDs) {
             System.out.println("==========="+tgfd.getName()+"===========");
 
-            for (double i=0.01;i<0.2;i+=0.02)
+            for (double i=0.01;i<0.1;i+=0.02)
             {
+                long time = System.currentTimeMillis();
                 System.out.println("Injecting errors and evaluating the results with "+i + "% error rate");
                 ErrorGenerator errorGenerator=new ErrorGenerator(matchCollectionHashMap.get(tgfd.getName()),tgfd);
                 errorGenerator.evaluate(i);
-
+                printWithTime("i= "+i,(System.currentTimeMillis()-time));
             }
         }
         printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
