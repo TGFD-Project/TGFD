@@ -97,7 +97,7 @@ public class MatchCollection
         match.addSignatureYBasedOnTimestap(timestamp,signatureY);
         // TODO: This is extra and not needed for runtime tests
         // TODO: This has to be a map of signatures from pattern at different timestamps
-        match.setSignatureFromPattern(Match.signatureFromPattern(pattern,mapping));
+        match.setSignatureFromPattern(timestamp, Match.signatureFromPattern(pattern,mapping));
         return true;
     }
 

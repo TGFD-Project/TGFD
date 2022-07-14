@@ -32,7 +32,7 @@ public final class Match {
     private HashMap<LocalDate, String> allSignatureY=new HashMap<>();
 
     /** Signature of the match computed from the pattern. */
-    private String signatureFromPattern;
+    private HashMap<LocalDate, String> signatureFromPattern = new HashMap<>();
 
     /** Signature of the match computed from Y with different intervals. */
     private HashMap<String, List<Interval>> signatureYWithInterval = new HashMap<>();
@@ -599,11 +599,11 @@ public final class Match {
     }
 
     /** Gets the signature of the match computed from the pattern. */
-    public String getSignatureFromPattern() { return signatureFromPattern; }
+    public String getSignatureFromPattern(LocalDate date) { return signatureFromPattern.getOrDefault(date,""); }
 
     /** Sets the signature of the match computed from the pattern. */
-    public void setSignatureFromPattern(String signatureFromPattern) {
-        this.signatureFromPattern = signatureFromPattern;
+    public void setSignatureFromPattern(LocalDate date, String signatureFromPattern) {
+        this.signatureFromPattern.put(date,signatureFromPattern);
     }
 
     /** Gets the signature Y of the match along with different time intervals. */
