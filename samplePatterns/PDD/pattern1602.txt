@@ -1,0 +1,12 @@
+tgfd#p1602
+vertex#v1#Admission#uri#age
+vertex#v2#Disease#uri
+vertex#v3#Prescription#uri#dose#take_drugbank_id
+edge#v1#v2#diagnoses_icd9
+edge#v1#v3#has_prescription
+diameter#1
+literal#x#Prescription$take_drugbank_id$Prescription$take_drugbank_id
+literal#x#Prescription$dose$Prescription$dose
+literal#x#Admission$age$Admission$age
+literal#y#Disease$uri$Disease$uri
+delta#0#365#1

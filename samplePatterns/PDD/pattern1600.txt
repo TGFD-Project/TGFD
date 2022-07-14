@@ -1,0 +1,11 @@
+tgfd#p1600
+vertex#v1#Admission#uri#bmi_first#age#gender
+vertex#v2#Prescription#uri#take_drugbank_id#dose
+edge#v1#v2#has_prescription
+diameter#1
+literal#x#Admission$bmi_first$Admission$bmi_first
+literal#x#Admission$age$Admission$age
+literal#x#Admission$gender$Admission$gender
+literal#x#Prescription$take_drugbank_id$Prescription$take_drugbank_id
+literal#y#Prescription$dose$Prescription$dose
+delta#0#365#1

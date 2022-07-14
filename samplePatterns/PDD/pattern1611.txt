@@ -1,0 +1,14 @@
+tgfd#p1611
+vertex#v1#Admission#uri#bmi_first#age#gender
+vertex#v2#Prescription#uri#take_drugbank_id$http://bio2rdf.org/drugbank:db00695#duration_days
+vertex#v3#Disease#uri
+edge#v1#v2#has_prescription
+edge#v1#v3#diagnoses_icd9
+diameter#1
+literal#x#Disease$uri$Disease$uri
+literal#x#Admission$bmi_first$Admission$bmi_first
+literal#x#Admission$age$Admission$age
+literal#x#Admission$gender$Admission$gender
+literal#x#Prescription$take_drugbank_id$Prescription$take_drugbank_id
+literal#y#Prescription$duration_days$Prescription$duration_days
+delta#0#365#1
