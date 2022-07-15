@@ -6,6 +6,7 @@
 
 * [1. Overview](#1-overview)
 * [2. TGFD Syntax](#2-TGFD-definition)
+  + [2.1 TGFDs](#"21-TGFDs")
 * [3. Datasets](#3-datasets)
   + [3.1 DBpedia](#31-dbpedia)
     - [3.1.1 DBpedia TGFDs](#311-dbpedia-tgfds)
@@ -60,7 +61,9 @@ literal#y#musicalartist$name$musicalartist$name
 delta#0#210#1
 ```
 
-Refer to `/samplePatterns/` for more examples.
+<h3 id="21-TGFDs">2.1 TGFDs</h3>
+
+Refer to `/sampleTGFDs/` for more examples.
 
 <h2 id="3-datasets">3. Datasets</h2>
 
