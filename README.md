@@ -79,7 +79,7 @@ This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges
 We applied a TGFD mining algorithm [3] over the DBPedia dataset to identify satisfying
 and approximate TGFDs.
 
-<!-- We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/dbpedia` using real life domain knowledge.
+<!-- We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/sampleTGFDs/dbpedia` using real life domain knowledge.
 
 Since there are many possible TGFDs for DBpedia, we considered the total number of vertices per vertex type. We wanted to be fair by not choosing vertices with a very low instance count (e.g. 'mousegene' type with only 1 vertex) or only vertices with a very high instance count (e.g. 'careerstation' type with 976,963 vertices). The DBpedia dataset number of instances per vertex type averaged 13,053 with a median of 1,870. We considered vertices around this range with several above it (including album with 139,058 instances).
 
@@ -159,21 +159,21 @@ Below are samples of the DBpedia TGFDs:
 Δ: (0 days,  1000 days)  
 X: album.name  
 Y: musicalartist.name  
-File: `/samplePatterns/dbpedia/pattern0100.txt`  
+File: `/sampleTGFDs/dbpedia/pattern0100.txt`  
 
 **DBpedia TGFD 2**  
 ![DBpedia TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/2.png "DBpedia TGFD 2 Pattern")  
 Δ: (0 days, 30 days)  
 X: basketballplayer.name, basketballteam.name  
 Y: basketballleague.name  
-File: `/samplePatterns/dbpedia/pattern0400.txt`  
+File: `/sampleTGFDs/dbpedia/pattern0400.txt`  
 
 **DBpedia TGFD 3**  
 ![DBpedia TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/3.png "DBpedia TGFD 3 Pattern")  
 Δ: (0 days, 30 days)  
 X: book.name, book.isbn, country.name  
 Y: publisher.name  
-File: `/samplePatterns/dbpedia/pattern0500.txt`  
+File: `/sampleTGFDs/dbpedia/pattern0500.txt`  
 
 <h3 id="32-imdb">3.2 IMDB</h3>
 
@@ -194,7 +194,7 @@ From these weekly snapshots, we took every 4th snapshot to approximate a monthly
 
 <h4 id="321-imdb-tgfds">3.2.1 IMDB TGFDs</h4>
 
-We mined set of TGFDs for the IMDB dataset in these files `/samplePatterns/imdb` using real life domain knowledge.
+We mined set of TGFDs for the IMDB dataset in these files `/sampleTGFDs/imdb` using real life domain knowledge.
 
 <!--**Extending the core TGFD set**
 
@@ -225,21 +225,21 @@ Below are samples of the core IMDB TGFDs:
 Δ: (0 days, 1000 days)  
 X: actor.name  
 Y: movie.name  
-File: `/samplePatterns/imdb/pattern0100.txt`  
+File: `/sampleTGFDs/imdb/pattern0100.txt`  
 
 **IMDB TGFD 2**  
 ![IMDB TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/2.png "IMDB TGFD 2 Pattern")  
 Δ: (0 days, 365 days)  
 X: genre.name  
 Y: movie.name  
-File: `/samplePatterns/imdb/pattern0600.txt`  
+File: `/sampleTGFDs/imdb/pattern0600.txt`  
 
 **IMDB TGFD 3**  
 ![IMDB TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/3.png "IMDB TGFD 3 Pattern")  
 Δ: (0 days, 365 days)  
 X: language.name  
 Y: language.name  
-File: `/samplePatterns/imdb/pattern0700.txt`  
+File: `/sampleTGFDs/imdb/pattern0700.txt`  
 
 <h3 id="33-synthetic">3.3 Synthetic</h3>
 
@@ -256,7 +256,7 @@ We used `Dataset/synthetic/social-network.xml` as parameters to gMark.
 
 <h4 id="331-synthetic-tgfds">3.3.1 Synthetic TGFDs</h4>
 
-We mined a set of TGFDs specified in these files `/samplePatterns/synthetic` using real life domain knowledge.
+We mined a set of TGFDs specified in these files `/sampleTGFDs/synthetic` using real life domain knowledge.
 
 We used the following subset of the vertices, edges, and attributes as an active set in the Synthetic dataset to mine TGFDs.
 
@@ -310,25 +310,25 @@ Below are samples of the core Synthetic TGFDs:
 Δ: (0 days, 365 days)  
 X: person.name  
 Y: company.name  
-File: `/samplePatterns/synthetic/pattern0200.txt`  
+File: `/sampleTGFDs/synthetic/pattern0200.txt`  
 
 **Synthetic TGFD 2**  
 ![Synthetic TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/2.png "Synthetic TGFD 2 Pattern")  
 Δ: (0 days, 365 days)  
 X: person.name  
 Y: university.name  
-File: `/samplePatterns/synthetic/pattern1000.txt`  
+File: `/sampleTGFDs/synthetic/pattern1000.txt`  
 
 **Synthetic TGFD 3**  
 ![Synthetic TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/3.png "Synthetic TGFD 3 Pattern")  
 Δ: (0 days, 365 days)  
 X: person.name  
 Y: tag.name  
-File: `/samplePatterns/synthetic/pattern0700.txt`  
+File: `/sampleTGFDs/synthetic/pattern0700.txt`  
 
 <h3 id="34-GFDs">3.4 GFDs</h3>
 
-We consider the same set of TGFDs in `/samplePatterns/` folder to define GFDs for each dataset. To this end, we set Δ: (0, 0) to consider each TGFD model the corresponding GFD.
+We consider the same set of TGFDs in `/sampleTGFDs/` folder to define GFDs for each dataset. To this end, we set Δ: (0, 0) to consider each TGFD model the corresponding GFD.
 
 <h2 id="4-getting-started">4. Getting started</h2>
 
