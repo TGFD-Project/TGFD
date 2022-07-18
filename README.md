@@ -32,7 +32,17 @@ The **T**emporal **G**raph **F**unctional **D**ependencies (TGFD) project detect
 This page provides supplementary experimental details, dataset characteristics, TGFD samples, and a link to the source code.
 
 
-<h2 id="2-TGFD-definition">2. TGFD Syntax</h2>
+<h2 id="2-TGFD-definition">2. TGFDs</h2>
+
+We used the TGFD mining algorithm (Here) to find TGFDs for each dataset.
+
+We implement the TGFDs as follows:
+- Run the algorithm to mine TGFDs with minimum support 0.01
+- Pick the top 40 TGFDs for [DBPedia](#31-dbpedia) and [IMDB](#32-imdb) and top 20 TGFDs for [Synthetic](#33-synthetic) datasets.
+- Transform the TGFDs to the format ([Here](21-TGFDs)) accepted by this code
+- Run the algorithm to find inconsistencies based on the TGFDs
+
+<h3 id="21-TGFDs">2.1 TGFD Format</h3>
 
 To store TGFDs and use them in our implementation, we considered a specific syntax to define TGFDs. This syntax is being used throughout the whole implementation.
 
@@ -60,8 +70,6 @@ literal#x#album$uri$album$uri
 literal#y#musicalartist$name$musicalartist$name
 delta#0#210#1
 ```
-
-<h3 id="21-TGFDs">2.1 TGFDs</h3>
 
 Refer to `/sampleTGFDs/` for more examples.
 
