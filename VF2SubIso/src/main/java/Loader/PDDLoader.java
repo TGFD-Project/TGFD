@@ -93,6 +93,7 @@ public class PDDLoader extends GraphLoader {
 
                 String nodeURI = stmt.getSubject().getURI().toLowerCase();
                 nodeURI = nodeURI.substring(nodeURI.lastIndexOf("/")+1).toLowerCase();
+
                 String predicate = stmt.getPredicate().getLocalName().toLowerCase();
                 if(predicate.contains("property") || predicate.equals("type"))
                 {
@@ -102,6 +103,9 @@ public class PDDLoader extends GraphLoader {
                     if(Config.optimizedLoadingBasedOnTGFD && !validTypes.contains(nodeType))
                         continue;
                     //int nodeId = subject.hashCode();
+                    //if(nodeTypesPath.contains("patients_basic.nt"))
+                    //    System.out.println("Subject: "+ nodeURI+ " ->" + predicate);
+
                     DataVertex v= (DataVertex) graph.getNode(nodeURI);
 
                     if (v==null) {
@@ -263,6 +267,17 @@ public class PDDLoader extends GraphLoader {
                 String predicate = stmt.getPredicate().getLocalName().toLowerCase();
                 if(predicate.equals("type"))
                     continue;
+
+                if(predicate.equals("take_drugbank_id"))
+                {
+                    RDFNode object = stmt.getObject();
+                    String objectNodeURI = object.toString();
+
+                    DataVertex subjVertex= (DataVertex) graph.getNode(subjectNodeURI);
+                    subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
+                    continue;
+                }
+
                 RDFNode object = stmt.getObject();
                 String objectNodeURI;
 
@@ -278,7 +293,8 @@ public class PDDLoader extends GraphLoader {
 
                     //System.out.println("Subject node not found: " + subjectNodeURI);
                     numberOfSubjectsNotFound++;
-//                    System.out.println("Subject missing: "+ subjectNodeURI+ " ->" + predicate);
+//                    if(dataGraphFilePath.contains("patients_basic.nt"))
+//                        System.out.println("Subject missing: "+ subjectNodeURI+ " ->" + predicate);
                     continue;
                 }
 
@@ -304,7 +320,6 @@ public class PDDLoader extends GraphLoader {
                     {
                         objectNodeURI = roundAttributeValue(predicate,objectNodeURI);
                         subjVertex.addAttribute(new Attribute(predicate,objectNodeURI));
-                        graphSize++;
                     }
                 }
             }
