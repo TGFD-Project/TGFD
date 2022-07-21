@@ -34,12 +34,12 @@ This page provides supplementary experimental details, dataset characteristics, 
 
 <h2 id="2-TGFD-definition">2. TGFDs</h2>
 
-We used the TGFD mining algorithm (Here) to find TGFDs for each dataset.
+We used the TGFD mining algorithm ([Here](https://github.com/levin-noro/TGFD-discovery)) to find TGFDs for each dataset.
 
 We implement the TGFDs as follows:
 - Run the algorithm to mine TGFDs with minimum support 0.01
 - Pick the top 40 TGFDs for [DBPedia](#31-dbpedia) and [IMDB](#32-imdb) and top 20 TGFDs for [Synthetic](#33-synthetic) datasets.
-- Transform the TGFDs to the format ([Here](21-TGFDs)) accepted by this code
+- Transform the TGFDs to the format ([Here](#21-TGFDs)) accepted by this code
 - Run the algorithm to find inconsistencies based on the TGFDs
 
 <h3 id="21-TGFDs">2.1 TGFD Format</h3>
@@ -70,6 +70,8 @@ literal#x#album$uri$album$uri
 literal#y#musicalartist$name$musicalartist$name
 delta#0#210#1
 ```
+**Equivalent TGFD 1**  
+![Sample TGFD 1](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/tgfd1.png "Sample TGFD 1")
 
 Refer to `/sampleTGFDs/` for more examples.
 
