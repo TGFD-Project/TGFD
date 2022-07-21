@@ -1,14 +1,3 @@
 # Datasets
 
-
-## DBPedia
-https://drive.google.com/drive/folders/1IAt16Tpt0zaX197W1DKHTiezXBcA3RBt?usp=sharing
-
-## Yago
-https://drive.google.com/drive/folders/1clUd5OFpGRpZOKXGoT4mQPUL1av_n37A?usp=sharing
-
-## Wikidata
-https://drive.google.com/drive/folders/1f_tppll2Ao0le19mN6h51MT4jZ4Mb09s?usp=sharing
-
-## Synthetic
-https://drive.google.com/drive/folders/1UudvphkZvU3H5u4mCEBLzaohZdMzCMFO?usp=sharing
+https://mcmasteru365-my.sharepoint.com/:f:/g/personal/fchiang_mcmaster_ca/Ej7mj7k5IR5Kjj4aY-Pive8BpxcZwMMbT_IN7NuRdeHu1A?e=a6evKn
