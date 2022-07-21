@@ -13,7 +13,6 @@ import java.util.Set;
 
 public class split_prescription {
 
-    public static boolean tobeIgnored = false;
     public static void main(String []args)
     {
 
@@ -37,8 +36,9 @@ public class split_prescription {
         try {
             reader = new BufferedReader(new FileReader(path));
             line = reader.readLine().toLowerCase(Locale.ROOT);
+            LocalDate startDate=null, endDate = null;
             StringBuilder sb=new StringBuilder();
-            boolean hasToBeAdded = false;
+            boolean hasToBeAdded = false, tobeIgnored = false;
             while (line != null) {
                 if(line.contains("<http://pdd.wangmengsd.com/property/prescription_id>"))
                 {
@@ -48,20 +48,42 @@ public class split_prescription {
                     sb = new StringBuilder();
                     hasToBeAdded = false;
                     tobeIgnored = false;
+                    startDate = null;
+                    endDate = null;
                     sb.append(line).append("\n");
                 }
                 else
                 {
                     sb.append(line).append("\n");
-                    if(!hasToBeAdded && line.contains("<http://pdd.wangmengsd.com/property/start_date>"))
+                    if(line.contains("<http://pdd.wangmengsd.com/property/start_date>"))
                     {
                         // start date
-                        hasToBeAdded = contains(line,interval);
+                        try {
+                            String[] temp = line.split(" ");
+                            if (temp.length > 2) {
+                                startDate = LocalDate.parse(temp[2].substring(1, 11));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            tobeIgnored = true;
+                        }
                     }
-                    else if(!hasToBeAdded && line.contains("<http://pdd.wangmengsd.com/property/end_date>"))
+                    else if(line.contains("<http://pdd.wangmengsd.com/property/end_date>"))
                     {
                         // end date
-                        hasToBeAdded = contains(line,interval);
+                        try {
+                            String[] temp = line.split(" ");
+                            if (temp.length > 2) {
+                                endDate = LocalDate.parse(temp[2].substring(1, 11));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            tobeIgnored = true;
+                        }
+                        if(!tobeIgnored)
+                            hasToBeAdded = contains(interval, startDate, endDate);
                     }
                 }
                 // read next line
@@ -75,20 +97,15 @@ public class split_prescription {
         return ret;
     }
 
-    public static boolean contains(String line, Interval interval)
+    public static boolean contains(Interval interval, LocalDate startDate, LocalDate endDate)
     {
-        try {
-            String[] temp = line.split(" ");
-            if (temp.length > 2) {
-                LocalDate time = LocalDate.parse(temp[2].substring(1, 11));
-                   return interval.containsExcludeEnd(time);
-            }
-        }
-        catch (Exception e)
+        boolean ret = false;
+        while (startDate.isEqual(endDate) || startDate.isBefore(endDate))
         {
-            tobeIgnored = true;
+            ret = ret || interval.contains(startDate);
+            startDate = startDate.plusDays(1);
         }
-        return false;
+        return ret;
     }
 
     private static void writeToTheFile(String path, StringBuilder sb)
