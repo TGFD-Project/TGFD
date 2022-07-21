@@ -102,7 +102,7 @@ public class split_prescription {
         boolean ret = false;
         while (startDate.isEqual(endDate) || startDate.isBefore(endDate))
         {
-            ret = ret || interval.contains(startDate);
+            ret = ret || interval.containsExcludeEnd(startDate);
             startDate = startDate.plusDays(1);
         }
         return ret;
