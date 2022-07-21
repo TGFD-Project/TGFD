@@ -132,6 +132,7 @@ public class MatchCollection
 
         match.addTimepoint(timestamp, granularity);
         match.addSignatureY(timestamp,granularity,signatureY);
+        match.setSignatureFromPattern(timestamp, Match.signatureFromPattern(pattern,mapping));
         return true;
     }
 
@@ -304,6 +305,7 @@ public class MatchCollection
             matchesBySignature.get(signature).addTimepoint(timestamp, granularity);
             var signatureY=Match.signatureFromY(pattern,matchesBySignature.get(signature).getMatchMapping(),dependency.getY());
             matchesBySignature.get(signature).addSignatureYBasedOnTimestap(timestamp,signatureY);
+            matchesBySignature.get(signature).setSignatureFromPattern(timestamp, Match.signatureFromPattern(pattern,matchesBySignature.get(signature).getMatchMapping()));
             if(Config.debug)
             {
                 if(matchesBySignature.get(signature).getSignatureY(previousTimeStamp)!= null &&
@@ -343,6 +345,7 @@ public class MatchCollection
             matchesBySignature.get(signature).addTimepoint(timestamp, granularity);
             var signatureY=Match.signatureFromY(pattern,matchesBySignature.get(signature).getMatchMapping(),dependency.getY());
             matchesBySignature.get(signature).addSignatureYBasedOnTimestap(timestamp,signatureY);
+            matchesBySignature.get(signature).setSignatureFromPattern(timestamp, Match.signatureFromPattern(pattern,matchesBySignature.get(signature).getMatchMapping()));
         }
     }
     //endregion
