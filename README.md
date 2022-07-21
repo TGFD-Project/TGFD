@@ -71,7 +71,7 @@ literal#y#musicalartist$name$musicalartist$name
 delta#0#210#1
 ```
 **Equivalent TGFD 1**  
-![Sample TGFD](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dbpedia/tgfd1.png "Sample TGFD 1")
+![Sample TGFD 1](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/tgfd1.png "Sample TGFD 1")
 
 Refer to `/sampleTGFDs/` for more examples.
 
