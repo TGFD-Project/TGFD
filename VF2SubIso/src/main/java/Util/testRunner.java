@@ -204,7 +204,7 @@ public class testRunner {
             collection.addViolations(tgfd, allViolationsOptBatchTED); // Add violation into violation collection !!!!!!!!!!!!
             printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
             if(Config.saveViolations)
-                saveViolations("/Users/mortezaalipour/Documents/PDD/Results/naive",allViolationsOptBatchTED,tgfd,collection,prescriptionIDs);
+                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection,prescriptionIDs);
             msg.append(getViolationsMessage(allViolationsOptBatchTED,tgfd));
 
         }
@@ -248,8 +248,11 @@ public class testRunner {
             file.write("***************TGFD***************\n");
             file.write(tgfd.toString());
             file.write("\n===============Violations===============\n");
+            int withinOneTimestamp=0;
             int i =1;
             for (Violation vio:violations) {
+                if(Config.timestampsReverseMap.get(vio.getInterval().getStart()) == Config.timestampsReverseMap.get(vio.getInterval().getEnd()))
+                    withinOneTimestamp++;
                 file.write(i+".");
                 file.write(vio.toString() +
                         "\nPatters1: " + vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()) +
@@ -270,6 +273,7 @@ public class testRunner {
                     file.write("Found it!" + admissionID);
                 }
             }
+            System.out.println("Number within timestamp: " + withinOneTimestamp + " out of " + violations.size());
             printExtraAnalysis(drugCount,drugViolatingDosage,drugDisease,patients);
 //            file.write("\n===============Sorted Error Matches (Frequency of Occurrence)===============\n");
 //            /*Problems for multiple TGFDs*/
