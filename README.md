@@ -77,6 +77,8 @@ Refer to `/sampleTGFDs/` for more examples.
 
 <h2 id="3-datasets">3. Datasets</h2>
 
+To download the dataset, please find the link here: `/Dataset/README.md`
+
 <h3 id="31-dbpedia">3.1 DBpedia</h3>
 
 [DBpedia](https://databus.dbpedia.org/dbpedia/collections/latest-core) is a dataset containing structured content of Wikimedia projects, such as Wikipedia [1].
