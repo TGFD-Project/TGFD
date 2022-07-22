@@ -6,7 +6,8 @@
 
 * [1. Overview](#1-overview)
 * [2. TGFD Syntax](#2-TGFD-definition)
-  + [2.1 TGFDs](#"21-TGFDs")
+  + [2.1 TGFDs](#21-TGFDs)
+  + [2.2 TGFD Sample Error](#22-tgfd_errors)
 * [3. Datasets](#3-datasets)
   + [3.1 DBpedia](#31-dbpedia)
     - [3.1.1 DBpedia TGFDs](#311-dbpedia-tgfds)
@@ -74,6 +75,30 @@ delta#0#210#1
 ![Sample TGFD 1](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/tgfd1.png "Sample TGFD 1")
 
 Refer to `/sampleTGFDs/` for more examples.
+
+<h3 id="22-tgfd_errors">2.2. TGFD Sample Error Files</h3>
+
+A sample violation is in the form of:
+```aidl
+9.Violation{
+X=admission_1.bmi_first: 29.9,admission_2.bmi_first: 29.9,
+admission_1.age: senior,admission_2.age: senior,
+admission_1.gender: m,admission_2.gender: m,
+prescription_1.take_drugbank_id: http://bio2rdf.org/drugbank:db09341,
+prescription_2.take_drugbank_id: http://bio2rdf.org/drugbank:db09341,
+disease_1.uri: 584.9,disease_2.uri: 584.9,, 
+Y1=500ml,500ml,, Y2=50ml,50ml,, 
+interval=Interval{start= t_21, end= t_22}
+}
+Patters1: 128342,29.9,m,senior,pres3419386,500ml,http://bio2rdf.org/drugbank:db09341,584.9,
+Patters2: 128342,29.9,m,senior,pres3419392,50ml,http://bio2rdf.org/drugbank:db09341,584.9,
+```
+The violation states the values of the attributes in X for both matches and then 
+shows the values for Y in the form of `Y1` and `Y2`. For each violation, 
+we have two matches involved and a string signature of the matches are shown
+as `Pattern1` and `Pattern2`.
+
+We refer to `/sampleResults/` for sample violations of each dataset.
 
 <h2 id="3-datasets">3. Datasets</h2>
 
