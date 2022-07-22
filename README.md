@@ -79,7 +79,7 @@ Refer to `/sampleTGFDs/` for more examples.
 <h3 id="22-tgfd_errors">2.2. TGFD Sample Error Files</h3>
 
 A sample violation is in the form of:
-```aidl
+```
 9.Violation{
 X=admission_1.bmi_first: 29.9,admission_2.bmi_first: 29.9,
 admission_1.age: senior,admission_2.age: senior,
