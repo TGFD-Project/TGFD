@@ -204,7 +204,7 @@ public class testRunner {
             collection.addViolations(tgfd, allViolationsOptBatchTED); // Add violation into violation collection !!!!!!!!!!!!
             printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
             if(Config.saveViolations)
-                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection,prescriptionIDs);
+                saveViolations("./naive",allViolationsOptBatchTED,tgfd,collection,prescriptionIDs);
             msg.append(getViolationsMessage(allViolationsOptBatchTED,tgfd));
 
         }
@@ -259,19 +259,19 @@ public class testRunner {
                         "\nPatters2: " + vio.getMatch2().getSignatureFromPattern(vio.getInterval().getEnd()) +
                         "\n---------------------------------------------------\n");
 
-                extraAnalysis(drugCount,drugViolatingDosage,drugDisease,patients,vio);
+                //extraAnalysis(drugCount,drugViolatingDosage,drugDisease,patients,vio);
 
                 i++;
-                String admissionID=vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()).split(",")[0];
-                if(prescriptionIDs.contains(admissionID))
-                {
-                    file.write("Found it!" + admissionID);
-                }
-                admissionID=vio.getMatch2().getSignatureFromPattern(vio.getInterval().getEnd()).split(",")[0];
-                if(prescriptionIDs.contains(admissionID))
-                {
-                    file.write("Found it!" + admissionID);
-                }
+//                String admissionID=vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()).split(",")[0];
+//                if(prescriptionIDs.contains(admissionID))
+//                {
+//                    file.write("Found it!" + admissionID);
+//                }
+//                admissionID=vio.getMatch2().getSignatureFromPattern(vio.getInterval().getEnd()).split(",")[0];
+//                if(prescriptionIDs.contains(admissionID))
+//                {
+//                    file.write("Found it!" + admissionID);
+//                }
             }
             System.out.println("Number within timestamp: " + withinOneTimestamp + " out of " + violations.size());
             printExtraAnalysis(drugCount,drugViolatingDosage,drugDisease,patients);

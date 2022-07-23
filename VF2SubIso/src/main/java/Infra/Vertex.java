@@ -39,7 +39,18 @@ public abstract class Vertex implements Comparable<Vertex>, Serializable {
 
     public String getAttributeValueByName(String name)
     {
-        return attributes.get(name).getAttrValue();
+        try {
+            return attributes.get(name).getAttrValue();
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error retrieving attribute value for: " + name);
+            System.out.println("Current attributes: ");
+            for (Attribute attr:attributes.values()) {
+                System.out.println(attr);
+            }
+            return "NULL";
+        }
     }
 
     public Collection<String> getAllAttributesNames() {

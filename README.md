@@ -35,7 +35,7 @@ This page provides supplementary experimental details, dataset characteristics, 
 
 <h2 id="2-TGFD-definition">2. TGFDs</h2>
 
-We used the TGFD mining algorithm ([Here](https://github.com/levin-noro/TGFD-discovery)) to find TGFDs for each dataset.
+We used the TGFD mining algorithm ([Here](https://github.com/mac-dsl/TGFD-discovery)) to find TGFDs for each dataset.
 
 We implement the TGFDs as follows:
 - Run the algorithm to mine TGFDs with minimum support 0.01
@@ -99,6 +99,10 @@ we have two matches involved and a string signature of the matches are shown
 as `Pattern1` and `Pattern2`.
 
 We refer to `/sampleResults/` for sample violations of each dataset.
+
+<h2 id="22-errors">2.2. Sample TGFD Errors</h2>
+
+
 
 <h2 id="3-datasets">3. Datasets</h2>
 
