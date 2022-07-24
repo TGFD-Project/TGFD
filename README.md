@@ -76,6 +76,9 @@ delta#0#210#1
 
 Refer to `/sampleTGFDs/` for more examples.
 
+To use a TGFD to run the algorithm, one must point to the path that the TGFD file exists in the config file
+using ``-p`` indication. We refer to [Creating conf](#422-creating-conf) section for more details.
+
 <h3 id="22-tgfd_errors">2.2. TGFD Sample Error Files</h3>
 
 A sample violation is in the form of:
@@ -99,8 +102,6 @@ we have two matches involved and a string signature of the matches are shown
 as `Pattern1` and `Pattern2`.
 
 We refer to `/sampleResults/` for sample violations of each dataset.
-
-
 
 <h2 id="3-datasets">3. Datasets</h2>
 
