@@ -100,8 +100,6 @@ as `Pattern1` and `Pattern2`.
 
 We refer to `/sampleResults/` for sample violations of each dataset.
 
-<h2 id="22-errors">2.2. Sample TGFD Errors</h2>
-
 
 
 <h2 id="3-datasets">3. Datasets</h2>
