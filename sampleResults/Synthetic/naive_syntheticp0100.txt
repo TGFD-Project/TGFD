@@ -1,0 +1,7 @@
+***************TGFD***************
+TGFD{delta =Delta{min=P0D, max=P365D, granularity=PT24H}, dependency =Dependency{X=[VariableLiteral{vertexType_1='city', vertexType_2='city', attrName_1='name', attrName_2='name'}, VariableLiteral{vertexType_1='city', vertexType_2='city', attrName_1='uri', attrName_2='uri'}], Y=[VariableLiteral{vertexType_1='country', vertexType_2='country', attrName_1='name', attrName_2='name'}]}, pattern =VF2PatternGraph{(pattern vertex{type='[city]', literals=[('name', -)]} -> pattern vertex{type='[country]', literals=[('name', -)]} : ispartof)}}
+===============Violations===============
+1.Violation{X=city_1.name: 5261883,city_2.name: 5261883,city_1.uri: 756917,city_2.uri: 756917,, Y1=527189,527189,, Y2=string_576421,string_576421,, interval=Interval{start= t_1, end= t_2}}
+Patters1: 756917,5261883,760600,527189,
+Patters2: 756917,5261883,760600,527189,
+---------------------------------------------------
