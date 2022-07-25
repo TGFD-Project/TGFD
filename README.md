@@ -5,8 +5,8 @@
 [comment]: # (Must use Gitub's generated id to be consistent between Github and Github Pages because Github will override it")
 
 * [1. Overview](#1-overview)
-* [2. TGFD Syntax](#2-TGFD-definition)
-  + [2.1 TGFDs](#21-TGFDs)
+* [2. TGFDs](#2-TGFD-definition)
+  + [2.1 TGFD Format](#21-TGFDs)
   + [2.2 TGFD Sample Error](#22-tgfd_errors)
 * [3. Datasets](#3-datasets)
   + [3.1 DBpedia](#31-dbpedia)
