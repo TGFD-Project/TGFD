@@ -72,7 +72,6 @@ public class testRunner {
     public void testDataset()
     {
         for (Vertex v:loader.getGraph().getGraph().vertexSet()) {
-            DataVertex dataVertex=(DataVertex) v;
             if(v.getTypes().contains("admission"))
             {
                 HashSet<Vertex> neighbors=new HashSet<>();
