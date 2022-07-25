@@ -1,0 +1,7 @@
+***************TGFD***************
+TGFD{delta =Delta{min=P0D, max=P91D, granularity=PT24H}, dependency =Dependency{X=[VariableLiteral{vertexType_1='movie', vertexType_2='movie', attrName_1='name', attrName_2='name'}], Y=[VariableLiteral{vertexType_1='country', vertexType_2='country', attrName_1='uri', attrName_2='uri'}]}, pattern =VF2PatternGraph{(pattern vertex{type='[movie]', literals=[('name', -)]} -> pattern vertex{type='[country]', literals=[('uri', -)]} : country_of_origin)}}
+===============Violations===============
+1.Violation{X=movie_1.name: the legend of melita,movie_2.name: the legend of melita,, Y1=italy,italy,, Y2=france,france,, interval=Interval{start= t_1, end= t_5}}
+Patters1: italy,the%20legend%20of%20melita,the legend of melita,
+Patters2: italy,the%20legend%20of%20melita,the legend of melita,
+---------------------------------------------------
