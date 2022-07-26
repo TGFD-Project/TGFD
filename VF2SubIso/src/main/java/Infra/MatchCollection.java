@@ -303,7 +303,7 @@ public class MatchCollection
         for (var signature : signaturesToUpdate)
         {
             matchesBySignature.get(signature).addTimepoint(timestamp, granularity);
-            var signatureY=Match.signatureFromY(pattern,matchesBySignature.get(signature).getMatchMapping(),dependency.getY());
+            var signatureY=matchesBySignature.get(signature).getSignatureY(previousTimeStamp);
             matchesBySignature.get(signature).addSignatureYBasedOnTimestap(timestamp,signatureY);
             matchesBySignature.get(signature).setSignatureFromPattern(timestamp, Match.signatureFromPattern(pattern,matchesBySignature.get(signature).getMatchMapping()));
             if(Config.debug)
