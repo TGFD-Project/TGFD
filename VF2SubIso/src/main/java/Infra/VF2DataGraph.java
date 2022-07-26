@@ -512,6 +512,68 @@ public class VF2DataGraph implements Serializable {
         nodeMap.get(v1.getVertexURI()).setOrAddAttribute(attribute);
     }
 
+    public void filterGraphBasedOnTGFD(TGFD tgfd)
+    {
+        HashMap<String, HashMap<String, String>> validAttributes = new HashMap<>();
+
+        for (Literal x:tgfd.getDependency().getX()) {
+            if(x instanceof ConstantLiteral)
+            {
+                ConstantLiteral x_constant = (ConstantLiteral) x;
+                if(!validAttributes.containsKey(x_constant.getVertexType()))
+                    validAttributes.put(x_constant.getVertexType(), new HashMap<>());
+                validAttributes.get(x_constant.getVertexType()).put(x_constant.getAttrName(), x_constant.getAttrValue());
+            }
+        }
+        for (Vertex v:tgfd.getPattern().getPattern().vertexSet()) {
+            if(v instanceof PatternVertex) {
+                for (Attribute attr : v.getAllAttributesList()) {
+                    if (!attr.isNULL()) {
+                        String type = v.getTypes().iterator().next();
+                        if (!validAttributes.containsKey(type))
+                            validAttributes.put(type, new HashMap<>());
+                        validAttributes.get(type).put(attr.getAttrName(), attr.getAttrValue());
+                    }
+                }
+            }
+        }
+        for (Vertex v:graph.vertexSet()) {
+            DataVertex dataVertex = (DataVertex) v;
+            boolean needsToBeDeleted = false;
+            for (String type:dataVertex.getTypes()) {
+                if(validAttributes.containsKey(type))
+                {
+                    for (Attribute attr:v.getAllAttributesList()) {
+                        if(validAttributes.get(type).containsKey(attr.getAttrName()))
+                        {
+                            if(!attr.getAttrValue().equals(validAttributes.get(type).get(attr.getAttrName())))
+                            {
+                                needsToBeDeleted = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if(needsToBeDeleted)
+            {
+                for (RelationshipEdge edge:graph.outgoingEdgesOf(v))
+                {
+                    graph.removeEdge(edge);
+                }
+                for (RelationshipEdge edge:graph.incomingEdgesOf(v))
+                {
+                    graph.removeEdge(edge);
+                }
+                graph.removeVertex(v);
+            }
+        }
+        for (Vertex v: graph.vertexSet()) {
+            if(graph.outgoingEdgesOf(v).isEmpty() && graph.incomingEdgesOf(v).isEmpty())
+                graph.removeVertex(v);
+        }
+    }
+
     /**
      * Extracts all the types being used in a TGFD from from X->Y dependency and the graph pattern
      * @param tgfd input TGFD
@@ -550,5 +612,7 @@ public class VF2DataGraph implements Serializable {
     {
         return givenTypes.stream().anyMatch(validTypes::contains);
     }
+
+
 
 }
