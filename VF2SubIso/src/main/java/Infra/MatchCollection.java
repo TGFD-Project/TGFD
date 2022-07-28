@@ -70,10 +70,11 @@ public class MatchCollection
             LocalDate timestamp,
             GraphMapping<Vertex, RelationshipEdge> mapping)
     {
-        var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var signatureX = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var signatureFromPattern = Match.signatureFromPattern(pattern, mapping);
 
         //TODO: Check if this is correct. If a match violates a literal, it must be ignored!
-        if(signature == null)
+        if(signatureX == null)
         {
             if (Config.debug) {
                 System.out.println("Match is ignored as it does not satisfy the literals in X.");
@@ -81,23 +82,23 @@ public class MatchCollection
             return false;
         }
 
-        var match = matchesBySignature.getOrDefault(signature, null);
+        var match = matchesBySignature.getOrDefault(signatureFromPattern, null);
         if (match == null)
         {
-            match = new Match(temporalGraph, mapping, signature, timestamp);
-            matchesBySignature.put(signature, match);
+            match = new Match(temporalGraph, mapping, signatureX, signatureFromPattern, timestamp);
+            matchesBySignature.put(signatureFromPattern, match);
         }
 
         var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
 
         if(Config.debug)
-            System.out.println(signature + " ->" + signatureY);
+            System.out.println(signatureFromPattern + " ->" + signatureY);
         match.addTimepoint(timestamp, granularity);
         match.addSignatureY(timestamp,granularity,signatureY);
         match.addSignatureYBasedOnTimestap(timestamp,signatureY);
         // TODO: This is extra and not needed for runtime tests
         // TODO: This has to be a map of signatures from pattern at different timestamps
-        match.setSignatureFromPattern(timestamp, Match.signatureFromPattern(pattern,mapping));
+        match.setSignatureFromPattern(timestamp, signatureFromPattern);
         return true;
     }
 
@@ -110,10 +111,11 @@ public class MatchCollection
             LocalDate timestamp,
             VertexMapping mapping)
     {
-        var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var signatureX = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var signatureFromPattern = Match.signatureFromPattern(pattern, mapping);
 
         //TODO: Check if this is correct. If a match violates a literal, it must be ignored!
-        if(signature == null)
+        if(signatureX == null)
         {
             if (Config.debug) {
                 System.out.println("Match is ignored as it does not satisfy the literals in X.");
@@ -121,18 +123,18 @@ public class MatchCollection
             return false;
         }
 
-        var match = matchesBySignature.getOrDefault(signature, null);
+        var match = matchesBySignature.getOrDefault(signatureFromPattern, null);
         if (match == null)
         {
-            match = new Match(temporalGraph, mapping, signature, timestamp);
-            matchesBySignature.put(signature, match);
+            match = new Match(temporalGraph, mapping, signatureX, signatureFromPattern, timestamp);
+            matchesBySignature.put(signatureFromPattern, match);
         }
 
         var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
 
         match.addTimepoint(timestamp, granularity);
         match.addSignatureY(timestamp,granularity,signatureY);
-        match.setSignatureFromPattern(timestamp, Match.signatureFromPattern(pattern,mapping));
+        match.setSignatureFromPattern(timestamp, signatureFromPattern);
         return true;
     }
 

@@ -2,7 +2,7 @@ package Infra;
 
 public class ConstantLiteral extends Literal {
 
-    String vertexType, attrName, attrValue;
+    private String vertexType, attrName, attrValue;
     public ConstantLiteral(String vertexType, String attrName, String attrValue ) {
         super(LiteralType.Constant);
         this.attrName=attrName;

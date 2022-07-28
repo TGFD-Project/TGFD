@@ -45,12 +45,14 @@ public final class Match {
             TemporalGraph<Vertex> temporalGraph,
             GraphMapping<Vertex, RelationshipEdge> matchMapping,
             String signatureX,
+            String signatureFromPattern,
             List<Interval> intervals,
             LocalDate initialTimepoint)
     {
         this.temporalGraph = temporalGraph;
         this.signatureX = signatureX;
         this.intervals = intervals;
+        this.signatureFromPattern.put(initialTimepoint,signatureFromPattern);
 
         this.matchMapping = (matchMapping instanceof BackwardVertexGraphMapping)
                 ? matchMapping
@@ -63,12 +65,14 @@ public final class Match {
             TemporalGraph<Vertex> temporalGraph,
             VertexMapping matchVertexMapping,
             String signatureX,
+            String signatureFromPattern,
             List<Interval> intervals,
             LocalDate initialTimepoint)
     {
         this.temporalGraph = temporalGraph;
         this.signatureX = signatureX;
         this.intervals = intervals;
+        this.signatureFromPattern.put(initialTimepoint,signatureFromPattern);
 
         this.matchMapping = null;
         this.matchVertexMapping=matchVertexMapping;
@@ -84,10 +88,11 @@ public final class Match {
             TemporalGraph temporalGraph,
             GraphMapping<Vertex, RelationshipEdge> matchMapping,
             String signatureX,
+            String signatureFromPattern,
             LocalDate initialTimepoint)
     {
         // TODO: FIXME: can we get away with using initalTimepoint for the TemporalGraph? [2021-02-24]
-        this(temporalGraph, matchMapping, signatureX, new ArrayList<Interval>(), initialTimepoint);
+        this(temporalGraph, matchMapping, signatureX, signatureFromPattern, new ArrayList<Interval>(), initialTimepoint);
     }
 
     /**
@@ -100,10 +105,11 @@ public final class Match {
             TemporalGraph temporalGraph,
             VertexMapping matchVertexMapping,
             String signatureX,
+            String signatureFromPattern,
             LocalDate initialTimepoint)
     {
         // TODO: FIXME: can we get away with using initalTimepoint for the TemporalGraph? [2021-02-24]
-        this(temporalGraph, matchVertexMapping, signatureX, new ArrayList<Interval>(), initialTimepoint);
+        this(temporalGraph, matchVertexMapping, signatureX,  signatureFromPattern, new ArrayList<Interval>(), initialTimepoint);
     }
 
     /**
@@ -118,6 +124,7 @@ public final class Match {
                     this.temporalGraph,
                     this.matchMapping,
                     this.signatureX,
+                    this.signatureFromPattern.get(intervals.get(0).getEnd()),
                     intervals,
                     intervals.get(0).getEnd());
         }
@@ -127,6 +134,7 @@ public final class Match {
                     this.temporalGraph,
                     this.matchVertexMapping,
                     this.signatureX,
+                    this.signatureFromPattern.get(intervals.get(0).getEnd()),
                     intervals,
                     intervals.get(0).getEnd());
         }
@@ -309,9 +317,9 @@ public final class Match {
                     var constantLiteral = (ConstantLiteral)literal;
                     if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
                         continue;
-                    if (!matchVertex.hasAttribute(constantLiteral.attrName))
+                    if (!matchVertex.hasAttribute(constantLiteral.getAttrName()))
                         continue;
-                    if (!matchVertex.getAttributeValueByName(constantLiteral.attrName).equals(constantLiteral.attrValue)) {
+                    if (!matchVertex.getAttributeValueByName(constantLiteral.getAttrName()).equals(constantLiteral.getAttrValue())) {
                         violateALiteralInX.set(true);
                     }
                 }
@@ -376,9 +384,9 @@ public final class Match {
                     var constantLiteral = (ConstantLiteral)literal;
                     if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
                         continue;
-                    if (!matchVertex.hasAttribute(constantLiteral.attrName))
+                    if (!matchVertex.hasAttribute(constantLiteral.getAttrName()))
                         continue;
-                    if (!matchVertex.getAttributeValueByName(constantLiteral.attrName).equals(constantLiteral.attrValue)) {
+                    if (!matchVertex.getAttributeValueByName(constantLiteral.getAttrName()).equals(constantLiteral.getAttrValue())) {
                         violateALiteralInX.set(true);
                     }
                 }
@@ -423,12 +431,12 @@ public final class Match {
                     var constantLiteral = (ConstantLiteral)literal;
                     if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
                         continue;
-                    if (!matchVertex.hasAttribute(constantLiteral.attrName))
+                    if (!matchVertex.hasAttribute(constantLiteral.getAttrName()))
                         continue;
-                    if (!matchVertex.getAttributeValueByName(constantLiteral.attrName).equals(constantLiteral.attrValue))
+                    if (!matchVertex.getAttributeValueByName(constantLiteral.getAttrName()).equals(constantLiteral.getAttrValue()))
                         continue;
 
-                    builder.append(matchVertex.getAttributeValueByName(constantLiteral.attrName));
+                    builder.append(matchVertex.getAttributeValueByName(constantLiteral.getAttrName()));
                     builder.append(",");
                 }
                 else if (literal instanceof VariableLiteral)
@@ -484,12 +492,12 @@ public final class Match {
                     var constantLiteral = (ConstantLiteral)literal;
                     if (!matchVertex.getTypes().contains(constantLiteral.getVertexType()))
                         continue;
-                    if (!matchVertex.hasAttribute(constantLiteral.attrName))
+                    if (!matchVertex.hasAttribute(constantLiteral.getAttrName()))
                         continue;
-                    if (!matchVertex.getAttributeValueByName(constantLiteral.attrName).equals(constantLiteral.attrValue))
+                    if (!matchVertex.getAttributeValueByName(constantLiteral.getAttrName()).equals(constantLiteral.getAttrValue()))
                         continue;
 
-                    builder.append(matchVertex.getAttributeValueByName(constantLiteral.attrName));
+                    builder.append(matchVertex.getAttributeValueByName(constantLiteral.getAttrName()));
                     builder.append(",");
                 }
                 else if (literal instanceof VariableLiteral)
