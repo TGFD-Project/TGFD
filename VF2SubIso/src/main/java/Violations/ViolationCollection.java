@@ -1,6 +1,5 @@
 package Violations;
 
-import Infra.Interval;
 import Infra.Match;
 import ICs.TGFD;
 import Util.Config;
@@ -22,6 +21,11 @@ public class ViolationCollection {
 
     private Set<String> key_set = new HashSet<>();
     private ArrayList<Match> sort_list = new ArrayList<>();
+
+    public Set<Match> getKeySet(){
+        return collection.keySet();
+    }
+
 
     private void addViolation(HashMap<Match, List<Violation>> collection,Violation violation)
     {
@@ -156,6 +160,8 @@ public class ViolationCollection {
             key_set.add(match.getSignatureX());
 
         }
+
+
 
 
 
