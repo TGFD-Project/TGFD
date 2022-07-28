@@ -2,6 +2,7 @@ package Infra;
 
 import ICs.TGFD;
 import VF2BasedWorkload.Joblet;
+import org.apache.jena.tdb.store.Hash;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 
@@ -537,6 +538,8 @@ public class VF2DataGraph implements Serializable {
                 }
             }
         }
+        Set<Vertex> verticesToBeDeleted = new HashSet<>();
+        Set<RelationshipEdge> edgesToBeDeleted = new HashSet<>();
         for (Vertex v:graph.vertexSet()) {
             DataVertex dataVertex = (DataVertex) v;
             boolean needsToBeDeleted = false;
@@ -559,19 +562,23 @@ public class VF2DataGraph implements Serializable {
             {
                 for (RelationshipEdge edge:graph.outgoingEdgesOf(v))
                 {
-                    graph.removeEdge(edge);
+                    edgesToBeDeleted.add(edge);
                 }
                 for (RelationshipEdge edge:graph.incomingEdgesOf(v))
                 {
-                    graph.removeEdge(edge);
+                    edgesToBeDeleted.add(edge);
                 }
-                graph.removeVertex(v);
+                verticesToBeDeleted.add(v);
             }
         }
+        graph.removeAllEdges(edgesToBeDeleted);
+        graph.removeAllVertices(verticesToBeDeleted);
+        verticesToBeDeleted = new HashSet<>();
         for (Vertex v: graph.vertexSet()) {
             if(graph.outgoingEdgesOf(v).isEmpty() && graph.incomingEdgesOf(v).isEmpty())
-                graph.removeVertex(v);
+                verticesToBeDeleted.add(v);
         }
+        graph.removeAllVertices(verticesToBeDeleted);
     }
 
     /**
