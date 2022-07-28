@@ -53,6 +53,11 @@ public class testPDDInc
         GraphLoader pdd = new PDDLoader(allTGFDs, Config.getFirstDataFilePath());
         printWithTime("Load graph 1 (" + Config.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
 
+        //could be removed
+//        for (TGFD tgfd:allTGFDs) {
+//            pdd.getGraph().filterGraphBasedOnTGFD(tgfd);
+//        }
+
         // Now, we need to find the matches for the first snapshot.
         for (TGFD tgfd:allTGFDs) {
             VF2SubgraphIsomorphism VF2 = new VF2SubgraphIsomorphism();
@@ -71,6 +76,7 @@ public class testPDDInc
         Arrays.sort(ids);
         for (int i=0;i<ids.length;i++)
         {
+
             System.out.println("===========Snapshot "+ids[i]+" (" + Config.getTimestamps().get(ids[i]) + ")===========");
 
             startTime=System.currentTimeMillis();
@@ -152,7 +158,7 @@ public class testPDDInc
             collection.addViolations(tgfd, allViolationsOptBatchTED); // Add violation into violation collection !!!!!!!!!!!!
             printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
             if(Config.saveViolations)
-                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection);
+                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive","E:\\MorteZa\\Datasets\\PDD\\Results\\match",allViolationsOptBatchTED,tgfd,collection);
         }
         printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
     }
@@ -164,17 +170,17 @@ public class testPDDInc
                 TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
     }
 
-    private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd, ViolationCollection collection)
+    private static void saveViolations(String path1, String path2, Set<Violation> violations, TGFD tgfd, ViolationCollection collection)
     {
         try {
-            FileWriter file = new FileWriter(path +"_" + tgfd.getName() + ".txt");
-            file.write("***************TGFD***************\n");
-            file.write(tgfd.toString());
-            file.write("\n===============Violations===============\n");
+            FileWriter file1 = new FileWriter(path1 +"_" + tgfd.getName() + ".txt");
+            file1.write("***************TGFD***************\n");
+            file1.write(tgfd.toString());
+            file1.write("\n===============Violations===============\n");
             int i =1;
             for (Violation vio:violations) {
-                file.write(i+".");
-                file.write(vio.toString() +
+                file1.write(i+".");
+                file1.write(vio.toString() +
                         "\nPatters1: " + vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()) +
                         "\nPatters2: " + vio.getMatch2().getSignatureFromPattern(vio.getInterval().getEnd()) +
                         "\n---------------------------------------------------\n");
@@ -196,29 +202,46 @@ public class testPDDInc
 //
 //
 //            }
-
-            file.write("\n===============Sorted Error Matches (Frequency of Occurrence)===============\n");
-            /*Problems for multiple TGFDs*/
-            ArrayList<Match> sort_list = collection.sortMatchList();
-            for(Match match:sort_list){
-
-                file.write(match.getSignatureX()+
-                        "\n---------------------------------------------------\n");
-
-//                List<Violation> vio_list = collection.getViolation(match);
-//                for (Violation vio:vio_list) {
-//                    file.write(vio.toString() +
-//                            "\n---------------------------------------------------\n");
-//                }
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+        try {
+            FileWriter file2 = new FileWriter(path2 +"_" + tgfd.getName() + ".txt");
+            file2.write("\n===============Unique Error Matches (Frequency of Occurrence)===============\n");
+            int j =1;
+            for (Match match:collection.getKeySet()) {
+                System.out.println("match!!"+match.toString());
+                file2.write(j+".");
+                file2.write(match.toString());
+                file2.write("\n---------------------------------------------------\n");
+                j++;
 
 
             }
+//            file.write("\n===============Sorted Error Matches (Frequency of Occurrence)===============\n");
+//            /*Problems for multiple TGFDs*/
+//            ArrayList<Match> sort_list = collection.sortMatchList();
+//            for(Match match:sort_list){
+//
+//                file.write(match.getSignatureX()+
+//                        "\n---------------------------------------------------\n");
+//
+////                List<Violation> vio_list = collection.getViolation(match);
+////                for (Violation vio:vio_list) {
+////                    file.write(vio.toString() +
+////                            "\n---------------------------------------------------\n");
+////                }
+//
+//
+//            }
+//
+//
+//            file.close();
+            file2.close();
+            System.out.println("Successfully wrote to the file: " + path1+", "+path2);
 
-
-            file.close();
-            System.out.println("Successfully wrote to the file: " + path);
         } catch (IOException e) {
-            System.out.println("An error occurred.");
             e.printStackTrace();
         }
     }

@@ -48,10 +48,21 @@ public class NaiveBatchTED {
                         for (Match second:secondMatches) {
                             uniquePatients.add(second.getSignatureFromPattern(allSnapshots[j]).split(",")[0]);
 
+
                             if(firstSignatureX.equals(second.getSignatureX()))
                             {
                                 //Here, they both should have the same signature Y
                                 String secondSignatureY=second.getSignatureY(allSnapshots[j]);
+                                if(secondSignatureY==null)
+                                {
+                                    //System.out.println("Error(2)!" + second.getSignatureX());
+                                    continue;
+                                }
+                                if(firstSignatureY==null)
+                                {
+                                    //System.out.println("Error(1)!" + first.getSignatureX());
+                                    continue;
+                                }
 //                                if(second.getMatchMapping()!=null)
 //                                    secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMatchMapping(),tgfd.getDependency().getY());
 //                                else

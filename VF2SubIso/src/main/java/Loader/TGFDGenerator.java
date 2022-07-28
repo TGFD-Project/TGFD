@@ -152,7 +152,7 @@ public class TGFDGenerator {
             }
             if(currentPattern!=null)
             {
-                currentPattern.setDiameter();
+                //currentPattern.setDiameter();
                 currentTGFD.setPattern(currentPattern);
                 tgfds.add(currentTGFD);
             }

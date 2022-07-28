@@ -448,16 +448,19 @@ public final class Match {
                         builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_1()));
                         builder.append(",");
                     }
-                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.hasAttribute((varLiteral.getAttrName_2())))
-                    {
-                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
-                        builder.append(",");
-                    }
+//                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.hasAttribute((varLiteral.getAttrName_2())))
+//                    {
+//                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
+//                        builder.append(",");
+//                    }
                 }
             }
         });
+        String ret = builder.toString();
+        if(ret.endsWith(","))
+            ret = ret.substring(0, ret.length()-1);
         // TODO: consider returning a hash [2021-02-13]
-        return builder.toString();
+        return ret;
     }
 
     /**
@@ -509,16 +512,19 @@ public final class Match {
                         builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_1()));
                         builder.append(",");
                     }
-                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.hasAttribute((varLiteral.getAttrName_2())))
-                    {
-                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
-                        builder.append(",");
-                    }
+//                    if(matchVertexTypes.contains(varLiteral.getVertexType_2()) && matchVertex.hasAttribute((varLiteral.getAttrName_2())))
+//                    {
+//                        builder.append(matchVertex.getAttributeValueByName(varLiteral.getAttrName_2()));
+//                        builder.append(",");
+//                    }
                 }
             }
         });
+        String ret = builder.toString();
+        if(ret.endsWith(","))
+            ret = ret.substring(0, ret.length()-1);
         // TODO: consider returning a hash [2021-02-13]
-        return builder.toString();
+        return ret;
     }
 
     /**
