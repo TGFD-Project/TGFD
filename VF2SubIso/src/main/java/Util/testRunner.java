@@ -254,8 +254,8 @@ public class testRunner {
                     withinOneTimestamp++;
                 file.write(i+".");
                 file.write(vio.toString() +
-                        "\nPatters1: " + vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()) +
-                        "\nPatters2: " + vio.getMatch2().getSignatureFromPattern(vio.getInterval().getEnd()) +
+                        "\nPatters1: " + vio.getMatch1().getSignatureFromPattern() +
+                        "\nPatters2: " + vio.getMatch2().getSignatureFromPattern() +
                         "\n---------------------------------------------------\n");
 
                 //extraAnalysis(drugCount,drugViolatingDosage,drugDisease,patients,vio);
@@ -301,7 +301,7 @@ public class testRunner {
 //            Patters2: 172484,29.9,m,adult,pres415063,200mg,http://bio2rdf.org/drugbank:db00996,v12.04,
         try
         {
-            String [] temp = vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()).split(",");
+            String [] temp = vio.getMatch1().getSignatureFromPattern().split(",");
             if(!patients.containsKey(temp[0]))
                 patients.put(temp[0],0);
             patients.put(temp[0],patients.get(temp[0])+2);

@@ -39,20 +39,20 @@ public class NaiveBatchTED {
                     List<Match> secondMatches=matches.getMatches(allSnapshots[j]);
                     for (Match first:firstMatches) {
                         String firstSignatureX=first.getSignatureX();
-                        uniquePatients.add(first.getSignatureFromPattern(allSnapshots[i]).split(",")[0]);
-                        String firstSignatureY=first.getSignatureY(allSnapshots[i]);
+                        uniquePatients.add(first.getSignatureFromPattern().split(",")[0]);
+                        String firstSignatureY=first.getSignatureY();
 //                        if(first.getMatchMapping()!=null)
 //                            firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchMapping(),tgfd.getDependency().getY());
 //                        else
 //                            firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchVertexMapping(),tgfd.getDependency().getY());
                         for (Match second:secondMatches) {
-                            uniquePatients.add(second.getSignatureFromPattern(allSnapshots[j]).split(",")[0]);
+                            uniquePatients.add(second.getSignatureFromPattern().split(",")[0]);
 
 
                             if(firstSignatureX.equals(second.getSignatureX()))
                             {
                                 //Here, they both should have the same signature Y
-                                String secondSignatureY=second.getSignatureY(allSnapshots[j]);
+                                String secondSignatureY=second.getSignatureY();
                                 if(secondSignatureY==null)
                                 {
                                     //System.out.println("Error(2)!" + second.getSignatureX());

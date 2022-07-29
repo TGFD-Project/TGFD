@@ -146,8 +146,9 @@ public class ViolationCollection {
                 LocalDate date2=vio.getInterval().getEnd();
 
                 String signatureX = match.getSignatureX();
-                String signatureY_1=match.getSignatureY(date1);
-                String signatureY_2=match.getSignatureY(date2);
+                //TODO: signatureY_1 and signatureY_2 would be the same
+                String signatureY_1=match.getSignatureY();
+                String signatureY_2=match.getSignatureY();
 
                 String s_match_1="X: "+signatureX+"->"+ signatureY_1+ "t_"+ Config.timestampsReverseMap.get(vio.getInterval().getStart()) ;
                 String s_match_2="X: "+signatureX+"->"+ signatureY_2+ "t_"+Config.timestampsReverseMap.get(vio.getInterval().getEnd());

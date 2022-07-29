@@ -20,96 +20,55 @@ public final class Match {
     private List<Interval> intervals;
 
     /** Graph mapping from pattern graph to match graph. */
-    private GraphMapping<Vertex, RelationshipEdge> matchMapping;
+//    private GraphMapping<Vertex, RelationshipEdge> matchMapping;
 
     /** Graph mapping from pattern graph to match graph using vertexMapping for QPath based subgraph isomorphism. */
-    private VertexMapping matchVertexMapping;
+//    private VertexMapping matchVertexMapping;
 
     /** Signature of the match computed from X. */
     private String signatureX;
 
     /** Signature of the match computed from X. */
-    private HashMap<LocalDate, String> allSignatureY=new HashMap<>();
+    private String signatureY;
 
     /** Signature of the match computed from the pattern. */
-    private HashMap<LocalDate, String> signatureFromPattern = new HashMap<>();
+    private String signatureFromPattern;
 
     /** Signature of the match computed from Y with different intervals. */
-    private HashMap<String, List<Interval>> signatureYWithInterval = new HashMap<>();
+    //private HashMap<String, List<Interval>> signatureYWithInterval = new HashMap<>();
 
-    private TemporalGraph<Vertex> temporalGraph;
+//    private TemporalGraph<Vertex> temporalGraph;
     //endregion
 
     //region --[Constructors]------------------------------------------
-    private Match(
-            TemporalGraph<Vertex> temporalGraph,
-            GraphMapping<Vertex, RelationshipEdge> matchMapping,
-            String signatureX,
-            String signatureFromPattern,
-            List<Interval> intervals,
-            LocalDate initialTimepoint)
-    {
-        this.temporalGraph = temporalGraph;
-        this.signatureX = signatureX;
-        this.intervals = intervals;
-        this.signatureFromPattern.put(initialTimepoint,signatureFromPattern);
-
-        this.matchMapping = (matchMapping instanceof BackwardVertexGraphMapping)
-                ? matchMapping
-                : new BackwardVertexGraphMapping<>(matchMapping, initialTimepoint, temporalGraph);
-        this.matchVertexMapping=null;
-    }
 
     //region --[Constructors]------------------------------------------
     private Match(
-            TemporalGraph<Vertex> temporalGraph,
-            VertexMapping matchVertexMapping,
             String signatureX,
+            String signatureY,
             String signatureFromPattern,
-            List<Interval> intervals,
-            LocalDate initialTimepoint)
+            List<Interval> intervals)
     {
-        this.temporalGraph = temporalGraph;
         this.signatureX = signatureX;
         this.intervals = intervals;
-        this.signatureFromPattern.put(initialTimepoint,signatureFromPattern);
+        this.signatureY = signatureY;
+        this.signatureFromPattern = signatureFromPattern;
 
-        this.matchMapping = null;
-        this.matchVertexMapping=matchVertexMapping;
+//        this.matchMapping = null;
+//        this.matchVertexMapping=matchVertexMapping;
     }
 
     /**
      * Create a new Match.
-     * @param temporalGraph Temporal graph containing the vertices.
-     * @param matchMapping Mapping of the match.
      * @param signatureX Signature of the match computed from X.
      */
     public Match(
-            TemporalGraph temporalGraph,
-            GraphMapping<Vertex, RelationshipEdge> matchMapping,
             String signatureX,
-            String signatureFromPattern,
-            LocalDate initialTimepoint)
+            String signatureY,
+            String signatureFromPattern)
     {
         // TODO: FIXME: can we get away with using initalTimepoint for the TemporalGraph? [2021-02-24]
-        this(temporalGraph, matchMapping, signatureX, signatureFromPattern, new ArrayList<Interval>(), initialTimepoint);
-    }
-
-    /**
-     * Create a new Match.
-     * @param temporalGraph Temporal graph containing the vertices.
-     * @param matchVertexMapping VertexMapping of the match.
-     * @param signatureX Signature of the match computed from X.
-     */
-    public Match(
-            TemporalGraph temporalGraph,
-            VertexMapping matchVertexMapping,
-            String signatureX,
-            String signatureFromPattern,
-            LocalDate initialTimepoint)
-    {
-        // TODO: FIXME: can we get away with using initalTimepoint for the TemporalGraph? [2021-02-24]
-        this(temporalGraph, matchVertexMapping, signatureX,  signatureFromPattern, new ArrayList<Interval>(), initialTimepoint);
+        this(signatureX, signatureY,  signatureFromPattern, new ArrayList<Interval>());
     }
 
     /**
@@ -118,26 +77,11 @@ public final class Match {
      */
     public Match WithIntervals(List<Interval> intervals)
     {
-        if(matchMapping!=null)
-        {
             return new Match(
-                    this.temporalGraph,
-                    this.matchMapping,
                     this.signatureX,
-                    this.signatureFromPattern.get(intervals.get(0).getEnd()),
-                    intervals,
-                    intervals.get(0).getEnd());
-        }
-        else
-        {
-            return new Match(
-                    this.temporalGraph,
-                    this.matchVertexMapping,
-                    this.signatureX,
-                    this.signatureFromPattern.get(intervals.get(0).getEnd()),
-                    intervals,
-                    intervals.get(0).getEnd());
-        }
+                    this.signatureY,
+                    this.signatureFromPattern,
+                    intervals);
     }
     //endregion
 
@@ -195,70 +139,70 @@ public final class Match {
         }
     }
 
-    /**
-     * Adds a timepoint to the match.
-     *
-     * Will either extend the latest interval to include the new timepoint, or
-     * add a new interval (break in intervals represents that no match occurred).
-     *
-     * @param timepoint Timepoint of match.
-     * @param granularity Minimum timespan between matches.
-     * @param signatureY Signature of the match derived form Y.
-     * @exception IllegalArgumentException if timepoint is before the latest interval's end.
-     * @exception IllegalArgumentException if timepoint is less than the granularity away from the latest interval end.
-     */
-    public void addSignatureY(LocalDate timepoint, Duration granularity, String signatureY)
+//    /**
+//     * Adds a timepoint to the match.
+//     *
+//     * Will either extend the latest interval to include the new timepoint, or
+//     * add a new interval (break in intervals represents that no match occurred).
+//     *
+//     * @param timepoint Timepoint of match.
+//     * @param granularity Minimum timespan between matches.
+//     * @param signatureY Signature of the match derived form Y.
+//     * @exception IllegalArgumentException if timepoint is before the latest interval's end.
+//     * @exception IllegalArgumentException if timepoint is less than the granularity away from the latest interval end.
+//     */
+//    public void addSignatureY(LocalDate timepoint, Duration granularity, String signatureY)
+//    {
+//        if (!signatureYWithInterval.containsKey(signatureY))
+//        {
+//            signatureYWithInterval.put(signatureY,new ArrayList<>());
+//            signatureYWithInterval.get(signatureY).add(new Interval(timepoint, timepoint));
+//            return;
+//        }
+//
+//        var latestInterval = signatureYWithInterval.get(signatureY)
+//                .get(signatureYWithInterval.get(signatureY).size()-1);
+//
+//        //var latestInterval = signatureYWithInterval.get(signatureY).stream()
+//        //                .max(Comparator.comparing(Interval::getEnd))
+//        //                .orElseThrow();
+//
+//        var latestEnd = latestInterval.getEnd();
+//        if (timepoint.isBefore(latestEnd))
+//            return;
+////            throw new IllegalArgumentException(String.format(
+////                    "Timepoint `%s` is < the latest interval's end `%s`",
+////                    timepoint.toString(), latestEnd.toString()));
+//
+//        var sinceEnd = Duration.between(latestEnd.atStartOfDay(), timepoint.atStartOfDay());
+//        var comparison = sinceEnd.compareTo(granularity);
+//        if (comparison > 0)
+//        {
+//            // Time since end is greater than the granularity so add a new interval.
+//            // This represents that the match did not exist between the latestInterval.end and newInterval.start.
+//            signatureYWithInterval.get(signatureY).add(new Interval(timepoint, timepoint));
+//        }
+//        else if (comparison == 0)
+//        {
+//            // Time since end is the granularity so extend the last interval.
+//            // This represents that the match continued existing for this interval.
+//            latestInterval.setEnd(timepoint);
+//        }
+//        else
+//        {
+//            //throw new IllegalArgumentException("Timepoint is less than the granularity away from the latest interval end");
+//        }
+//    }
+
+//    public void addSignatureYBasedOnTimestap(LocalDate timepoint, String signatureY)
+//    {
+//        if(!allSignatureY.containsKey(timepoint))
+//            allSignatureY.put(timepoint,signatureY);
+//    }
+
+    public String getSignatureY()
     {
-        if (!signatureYWithInterval.containsKey(signatureY))
-        {
-            signatureYWithInterval.put(signatureY,new ArrayList<>());
-            signatureYWithInterval.get(signatureY).add(new Interval(timepoint, timepoint));
-            return;
-        }
-
-        var latestInterval = signatureYWithInterval.get(signatureY)
-                .get(signatureYWithInterval.get(signatureY).size()-1);
-
-        //var latestInterval = signatureYWithInterval.get(signatureY).stream()
-        //                .max(Comparator.comparing(Interval::getEnd))
-        //                .orElseThrow();
-
-        var latestEnd = latestInterval.getEnd();
-        if (timepoint.isBefore(latestEnd))
-            return;
-//            throw new IllegalArgumentException(String.format(
-//                    "Timepoint `%s` is < the latest interval's end `%s`",
-//                    timepoint.toString(), latestEnd.toString()));
-
-        var sinceEnd = Duration.between(latestEnd.atStartOfDay(), timepoint.atStartOfDay());
-        var comparison = sinceEnd.compareTo(granularity);
-        if (comparison > 0)
-        {
-            // Time since end is greater than the granularity so add a new interval.
-            // This represents that the match did not exist between the latestInterval.end and newInterval.start.
-            signatureYWithInterval.get(signatureY).add(new Interval(timepoint, timepoint));
-        }
-        else if (comparison == 0)
-        {
-            // Time since end is the granularity so extend the last interval.
-            // This represents that the match continued existing for this interval.
-            latestInterval.setEnd(timepoint);
-        }
-        else
-        {
-            //throw new IllegalArgumentException("Timepoint is less than the granularity away from the latest interval end");
-        }
-    }
-
-    public void addSignatureYBasedOnTimestap(LocalDate timepoint, String signatureY)
-    {
-        if(!allSignatureY.containsKey(timepoint))
-            allSignatureY.put(timepoint,signatureY);
-    }
-
-    public String getSignatureY(LocalDate timestamp)
-    {
-        return allSignatureY.getOrDefault(timestamp,null);
+        return signatureY;
     }
 
     /**
@@ -597,12 +541,12 @@ public final class Match {
     public List<Interval> getIntervals() { return this.intervals; }
 
     /** Gets the vertices of the match. */
-    public GraphMapping<Vertex, RelationshipEdge> getMatchMapping() { return this.matchMapping; }
+//    public GraphMapping<Vertex, RelationshipEdge> getMatchMapping() { return this.matchMapping; }
 
     /** Gets the vertices of the match using VertexMapping. */
-    public VertexMapping getMatchVertexMapping() {
-        return matchVertexMapping;
-    }
+//    public VertexMapping getMatchVertexMapping() {
+//        return matchVertexMapping;
+//    }
 
     /** Gets the signature of the match computed from X. */
     public String getSignatureX() { return signatureX; }
@@ -613,17 +557,17 @@ public final class Match {
     }
 
     /** Gets the signature of the match computed from the pattern. */
-    public String getSignatureFromPattern(LocalDate date) { return signatureFromPattern.getOrDefault(date,""); }
+    public String getSignatureFromPattern() { return signatureFromPattern; }
 
     /** Sets the signature of the match computed from the pattern. */
-    public void setSignatureFromPattern(LocalDate date, String signatureFromPattern) {
-        this.signatureFromPattern.put(date,signatureFromPattern);
-    }
+//    public void setSignatureFromPattern(LocalDate date, String signatureFromPattern) {
+//        this.signatureFromPattern.put(date,signatureFromPattern);
+//    }
 
     /** Gets the signature Y of the match along with different time intervals. */
-    public HashMap<String, List<Interval>> getSignatureYWithInterval() {
-        return signatureYWithInterval;
-    }
+//    public String getSignatureY() {
+//        return signatureY;
+//    }
     //endregion
 
     //region --[Methods: Override]-------------------------------------
@@ -633,7 +577,8 @@ public final class Match {
         return "Match{" +
                 "intervals=" + intervals +
                 ", signatureX='" + signatureX + '\'' +
-                ", allSignatureY=" + allSignatureY +
+                ", signatureY=" + signatureY +
+                ", signatureFromPattern=" + signatureFromPattern +
                 '}';
     }
 
