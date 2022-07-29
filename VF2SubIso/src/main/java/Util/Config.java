@@ -36,6 +36,7 @@ public class Config {
     public static int supersteps=0;
     public static double zeta=-1;
     public static boolean gfd=false;
+    public static boolean filterGraph = false;
 
     public static boolean optimizedLoadingBasedOnTGFD=false;
     public static boolean saveViolations=false;
@@ -67,6 +68,7 @@ public class Config {
                      -superstep <integer> // number of supersteps
                      -zeta <double> // value of zeta
                      -gfd <true-false> // run GFD error detection
+                     -filter <true-false> // Filter the loaded graph based on the constant literals in the TGFD (for debugging purposes)
                     """.indent(5));
         } else
             parseInputParams(input);
@@ -127,6 +129,9 @@ public class Config {
                     zeta=Double.parseDouble(conf[1]);
                 } else if(conf[0].equals("-gfd")) {
                     gfd=Boolean.parseBoolean(conf[1]);
+                }
+                else if(conf[0].equals("-filter")) {
+                    filterGraph=Boolean.parseBoolean(conf[1]);
                 }else if(conf[0].equals("-job")) {
                     String[] temp = conf[1].split(",");
                     if(temp.length !=2)

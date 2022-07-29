@@ -53,10 +53,11 @@ public class testPDDInc
         GraphLoader pdd = new PDDLoader(allTGFDs, Config.getFirstDataFilePath());
         printWithTime("Load graph 1 (" + Config.getTimestamps().get(1) + ")", System.currentTimeMillis()-startTime);
 
-        //could be removed
-//        for (TGFD tgfd:allTGFDs) {
-//            pdd.getGraph().filterGraphBasedOnTGFD(tgfd);
-//        }
+        if(Config.filterGraph) {
+            for (TGFD tgfd : allTGFDs) {
+                pdd.getGraph().filterGraphBasedOnTGFD(tgfd);
+            }
+        }
 
         // Now, we need to find the matches for the first snapshot.
         for (TGFD tgfd:allTGFDs) {
@@ -181,8 +182,8 @@ public class testPDDInc
             for (Violation vio:violations) {
                 file1.write(i+".");
                 file1.write(vio.toString() +
-                        "\nPatters1: " + vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()) +
-                        "\nPatters2: " + vio.getMatch2().getSignatureFromPattern(vio.getInterval().getEnd()) +
+                        "\nPatters1: " + vio.getMatch1().getSignatureFromPattern() +
+                        "\nPatters2: " + vio.getMatch2().getSignatureFromPattern() +
                         "\n---------------------------------------------------\n");
                 i++;
             }

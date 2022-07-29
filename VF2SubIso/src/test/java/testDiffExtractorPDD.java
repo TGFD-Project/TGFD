@@ -54,6 +54,13 @@ public class testDiffExtractorPDD {
             t1=(int)ids[i];
             first = new PDDLoader(allTGFDs, Config.getAllDataPaths().get((int) ids[i]));
 
+            if(Config.filterGraph)
+            {
+                for (TGFD tgfd:allTGFDs) {
+                    first.getGraph().filterGraphBasedOnTGFD(tgfd);
+                }
+            }
+
             printWithTime("Load graph "+ids[i]+" (" + Config.getTimestamps().get(ids[i]) + ")", System.currentTimeMillis() - startTime);
 
             //
@@ -74,6 +81,13 @@ public class testDiffExtractorPDD {
 
             t2=(int)ids[i+1];
             second = new PDDLoader(allTGFDs, Config.getAllDataPaths().get((int) ids[i+1]));
+
+            if(Config.filterGraph)
+            {
+                for (TGFD tgfd:allTGFDs) {
+                    second.getGraph().filterGraphBasedOnTGFD(tgfd);
+                }
+            }
 
             printWithTime("Load graph "+ids[i+1]+" (" + Config.getTimestamps().get(ids[i+1])+ ")", System.currentTimeMillis() - startTime);
 
