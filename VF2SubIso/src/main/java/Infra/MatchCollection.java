@@ -17,7 +17,7 @@ public class MatchCollection
     //region --[Fields: Private]---------------------------------------
     // TODO: handle concurrent use of TemporalGraph [2021-02-24]
     /** Temporal graph containing the vertices to reduce memory consumption by the matches. */
-    private TemporalGraph<Vertex> temporalGraph;
+//    private TemporalGraph<Vertex> temporalGraph;
 
     /** Dependency of MatchCollection */
     private DataDependency dependency;
@@ -56,7 +56,6 @@ public class MatchCollection
         this.pattern = pattern;
         this.dependency = dataDependency;
         this.granularity = granularity;
-        this.temporalGraph = new TemporalGraph<>(granularity);
     }
     //endregion
 
@@ -66,29 +65,41 @@ public class MatchCollection
      * @param timestamp Timepoint of the match.
      * @param mapping The mapping of the match.
      */
-    private void addMatch(
+    private boolean addMatch(
             LocalDate timestamp,
             GraphMapping<Vertex, RelationshipEdge> mapping)
     {
-        var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var signatureX = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var signatureFromPattern = Match.signatureFromPattern(pattern, mapping);
 
-        var match = matchesBySignature.getOrDefault(signature, null);
-        if (match == null)
+        //TODO: Check if this is correct. If a match violates a literal, it must be ignored!
+        if(signatureX == null)
         {
-            match = new Match(temporalGraph, mapping, signature, timestamp);
-            matchesBySignature.put(signature, match);
+            if (Config.debug) {
+                System.out.println("Match is ignored as it does not satisfy the literals in X.");
+            }
+            return false;
         }
 
-        var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
+        var match = matchesBySignature.getOrDefault(signatureFromPattern, null);
+        if (match == null)
+        {
+            var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
+            match = new Match(signatureX, signatureY, signatureFromPattern);
+            matchesBySignature.put(signatureFromPattern, match);
+        }
 
-        if(Config.debug)
-            System.out.println(signature + " ->" + signatureY);
+//        var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
+//
+//        if(Config.debug)
+//            System.out.println(signatureFromPattern + " ->" + signatureY);
         match.addTimepoint(timestamp, granularity);
-        match.addSignatureY(timestamp,granularity,signatureY);
-        match.addSignatureYBasedOnTimestap(timestamp,signatureY);
-        // TODO: This is extra and not needed for runtime tests
-        // TODO: This has to be a map of signatures from pattern at different timestamps
-        match.setSignatureFromPattern(Match.signatureFromPattern(pattern,mapping));
+//        match.addSignatureY(timestamp,granularity,signatureY);
+//        match.addSignatureYBasedOnTimestap(timestamp,signatureY);
+//        // TODO: This is extra and not needed for runtime tests
+//        // TODO: This has to be a map of signatures from pattern at different timestamps
+//        match.setSignatureFromPattern(timestamp, signatureFromPattern);
+        return true;
     }
 
     /**
@@ -96,23 +107,37 @@ public class MatchCollection
      * @param timestamp Timepoint of the match.
      * @param mapping The mapping of the match.
      */
-    private void addMatch(
+    private boolean addMatch(
             LocalDate timestamp,
             VertexMapping mapping)
     {
-        var signature = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var signatureX = Match.signatureFromX(pattern, mapping, dependency.getX());
+        var signatureFromPattern = Match.signatureFromPattern(pattern, mapping);
 
-        var match = matchesBySignature.getOrDefault(signature, null);
-        if (match == null)
+        //TODO: Check if this is correct. If a match violates a literal, it must be ignored!
+        if(signatureX == null)
         {
-            match = new Match(temporalGraph, mapping, signature, timestamp);
-            matchesBySignature.put(signature, match);
+            if (Config.debug) {
+                System.out.println("Match is ignored as it does not satisfy the literals in X.");
+            }
+            return false;
         }
 
-        var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
-
+        var match = matchesBySignature.getOrDefault(signatureFromPattern, null);
+        if (match == null)
+        {
+            var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
+            match = new Match(signatureX, signatureY, signatureFromPattern);
+            matchesBySignature.put(signatureFromPattern, match);
+        }
         match.addTimepoint(timestamp, granularity);
-        match.addSignatureY(timestamp,granularity,signatureY);
+
+//        var signatureY=Match.signatureFromY(pattern,mapping,dependency.getY());
+//
+//
+//        match.addSignatureY(timestamp,granularity,signatureY);
+//        match.setSignatureFromPattern(timestamp, signatureFromPattern);
+        return true;
     }
 
     /**
@@ -122,16 +147,16 @@ public class MatchCollection
      */
     private void addVertices(LocalDate timestamp, GraphMapping<Vertex, RelationshipEdge> mapping)
     {
-        for (var pattenVertex : pattern.getPattern().vertexSet())
-        {
-            var matchVertex = mapping.getVertexCorrespondence(pattenVertex, false);
-
-            // TODO: change Vertex type to DataVertex or add vertex id to Vertex [2021-02-24]
-            temporalGraph.addVertex(
-                    matchVertex,
-                    ((DataVertex)matchVertex).getVertexURI(),
-                    timestamp);
-        }
+//        for (var pattenVertex : pattern.getPattern().vertexSet())
+//        {
+//            var matchVertex = mapping.getVertexCorrespondence(pattenVertex, false);
+//
+//            // TODO: change Vertex type to DataVertex or add vertex id to Vertex [2021-02-24]
+//            temporalGraph.addVertex(
+//                    matchVertex,
+//                    ((DataVertex)matchVertex).getVertexURI(),
+//                    timestamp);
+//        }
     }
 
     /**
@@ -141,16 +166,16 @@ public class MatchCollection
      */
     private void addVertices(LocalDate timestamp, VertexMapping mapping)
     {
-        for (var pattenVertex : pattern.getPattern().vertexSet())
-        {
-            var matchVertex = mapping.getVertexCorrespondence(pattenVertex);
-
-            // TODO: change Vertex type to DataVertex or add vertex id to Vertex [2021-02-24]
-            temporalGraph.addVertex(
-                    matchVertex,
-                    ((DataVertex)matchVertex).getVertexURI(),
-                    timestamp);
-        }
+//        for (var pattenVertex : pattern.getPattern().vertexSet())
+//        {
+//            var matchVertex = mapping.getVertexCorrespondence(pattenVertex);
+//
+//            // TODO: change Vertex type to DataVertex or add vertex id to Vertex [2021-02-24]
+//            temporalGraph.addVertex(
+//                    matchVertex,
+//                    ((DataVertex)matchVertex).getVertexURI(),
+//                    timestamp);
+//        }
     }
     //endregion
 
@@ -182,11 +207,15 @@ public class MatchCollection
                     }
                 }
             }
-            addMatch(timestamp, mapping);
-            addVertices(timestamp, mapping);
-            matchCount++;
+            boolean validMatch = addMatch(timestamp, mapping);
+            if(validMatch)
+            {
+                addVertices(timestamp, mapping);
+                matchCount++;
+            }
         }
-        System.out.println("Total Number of matches: " + matchCount);
+        if(Config.debug)
+            System.out.println("Total Number of matches: " + matchCount);
         return matchCount;
     }
 
@@ -202,17 +231,19 @@ public class MatchCollection
     {
         if (mappings == null)
             return 0;
-
         timestamps.add(timestamp);
-
         int matchCount = 0;
-        long start= System.currentTimeMillis();
         for (VertexMapping mapping:mappings) {
 
-            addMatch(timestamp, mapping);
-            addVertices(timestamp, mapping);
+            boolean validMatch = addMatch(timestamp, mapping);
+            if(validMatch)
+            {
+                addVertices(timestamp, mapping);
+                matchCount++;
+            }
         }
-        System.out.println("Total Number of matches: " + matchCount);
+        if(Config.debug)
+            System.out.println("Total Number of matches: " + matchCount);
         return matchCount;
     }
 
@@ -222,12 +253,12 @@ public class MatchCollection
      * @param timepoint Timepoint of the matches.
      * @param newMatches A HashMap of <SignatureFromPattern,mapping> of all the new matches.
      */
-    public void addMatches(
+    public int addMatches(
             LocalDate timepoint,
             HashMap <String, GraphMapping <Vertex, RelationshipEdge>> newMatches)
     {
         timestamps.add(timepoint);
-
+        int matchCount = 0;
         for (var mapping : newMatches.values())
         {
             if (Config.debug) {
@@ -239,9 +270,15 @@ public class MatchCollection
                     }
                 }
             }
-            addMatch(timepoint, mapping);
-            addVertices(timepoint, mapping);
+            boolean validMatch = addMatch(timepoint, mapping);
+            if(validMatch) {
+                addVertices(timepoint, mapping);
+                matchCount++;
+            }
         }
+        if(Config.debug)
+            System.out.println("Total Number of matches: " + matchCount);
+        return matchCount;
     }
 
     /**
@@ -262,7 +299,10 @@ public class MatchCollection
         var newSignatures = newMatchesSignatures.stream().collect(Collectors.toSet());
         var removedSignatures = removedMatchesSignatures.stream().collect(Collectors.toSet());
 
-        var signaturesToUpdate = matchesBySignature.keySet().stream()
+        var matchesFromPreviousSnapshot = getMatches(previousTimeStamp);
+        Set<String> signatures = matchesFromPreviousSnapshot.stream().map(Match::getSignatureFromPattern).collect(Collectors.toSet());
+
+        var signaturesToUpdate = signatures.stream()
                 .filter(k -> !newSignatures.contains(k))
                 .filter(k -> !removedSignatures.contains(k))
                 .collect(Collectors.toList());
@@ -270,18 +310,19 @@ public class MatchCollection
         for (var signature : signaturesToUpdate)
         {
             matchesBySignature.get(signature).addTimepoint(timestamp, granularity);
-            var signatureY=Match.signatureFromY(pattern,matchesBySignature.get(signature).getMatchMapping(),dependency.getY());
-            matchesBySignature.get(signature).addSignatureYBasedOnTimestap(timestamp,signatureY);
-            if(Config.debug)
-            {
-                if(matchesBySignature.get(signature).getSignatureY(previousTimeStamp)!= null &&
-                        !matchesBySignature.get(signature).getSignatureY(previousTimeStamp).equals(signatureY))
-                {
-                    System.out.println("Change in the existing match: " + matchesBySignature.get(signature).getSignatureY(previousTimeStamp));
-                    System.out.println("Changed to: " + signatureY);
-
-                }
-            }
+//            var signatureY=matchesBySignature.get(signature).getSignatureY(previousTimeStamp);
+//            matchesBySignature.get(signature).addSignatureYBasedOnTimestap(timestamp,signatureY);
+//            matchesBySignature.get(signature).setSignatureFromPattern(timestamp, Match.signatureFromPattern(pattern,matchesBySignature.get(signature).getMatchMapping()));
+//            if(Config.debug)
+//            {
+//                if(matchesBySignature.get(signature).getSignatureY(previousTimeStamp)!= null &&
+//                        !matchesBySignature.get(signature).getSignatureY(previousTimeStamp).equals(signatureY))
+//                {
+//                    System.out.println("Change in the existing match: " + matchesBySignature.get(signature).getSignatureY(previousTimeStamp));
+//                    System.out.println("Changed to: " + signatureY);
+//
+//                }
+//            }
         }
     }
 
@@ -309,8 +350,9 @@ public class MatchCollection
         for (var signature : signaturesToUpdate)
         {
             matchesBySignature.get(signature).addTimepoint(timestamp, granularity);
-            var signatureY=Match.signatureFromY(pattern,matchesBySignature.get(signature).getMatchMapping(),dependency.getY());
-            matchesBySignature.get(signature).addSignatureYBasedOnTimestap(timestamp,signatureY);
+//            var signatureY=Match.signatureFromY(pattern,matchesBySignature.get(signature).getMatchMapping(),dependency.getY());
+//            matchesBySignature.get(signature).addSignatureYBasedOnTimestap(timestamp,signatureY);
+//            matchesBySignature.get(signature).setSignatureFromPattern(timestamp, Match.signatureFromPattern(pattern,matchesBySignature.get(signature).getMatchMapping()));
         }
     }
     //endregion
