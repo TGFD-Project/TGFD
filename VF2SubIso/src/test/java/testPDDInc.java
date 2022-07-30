@@ -159,7 +159,7 @@ public class testPDDInc
             collection.addViolations(tgfd, allViolationsOptBatchTED); // Add violation into violation collection !!!!!!!!!!!!
             printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
             if(Config.saveViolations)
-                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive","E:\\MorteZa\\Datasets\\PDD\\Results\\match",allViolationsOptBatchTED,tgfd,collection);
+                saveViolations("/Users/lexie/Desktop/Master_Project/Violations/P1612/naive","/Users/lexie/Desktop/Master_Project/Violations/P1612/match",allViolationsOptBatchTED,tgfd,collection, matchCollectionHashMap);
         }
         printWithTime("Total wall clock time: ", System.currentTimeMillis()-wallClockStart);
     }
@@ -171,7 +171,7 @@ public class testPDDInc
                 TimeUnit.MILLISECONDS.toMinutes(runTimeInMS) +  "(min)");
     }
 
-    private static void saveViolations(String path1, String path2, Set<Violation> violations, TGFD tgfd, ViolationCollection collection)
+    private static void saveViolations(String path1, String path2, Set<Violation> violations, TGFD tgfd, ViolationCollection collection, HashMap<String, MatchCollection> matchCollectionHashMap)
     {
         try {
             FileWriter file1 = new FileWriter(path1 +"_" + tgfd.getName() + ".txt");
@@ -187,7 +187,7 @@ public class testPDDInc
                         "\n---------------------------------------------------\n");
                 i++;
             }
-
+            file1.close();
 //            file.write("\n===============Sorted Violation Collection===============\n");
 //            ArrayList<Match> sort_list = collection.sortViolationList();
 //            for(Match match:sort_list){
@@ -210,16 +210,32 @@ public class testPDDInc
         try {
             FileWriter file2 = new FileWriter(path2 +"_" + tgfd.getName() + ".txt");
             file2.write("\n===============Unique Error Matches (Frequency of Occurrence)===============\n");
+//            int j =1;
+//            for (Match match:collection.getKeySet()) {
+//                System.out.println("match!!"+match.toString());
+//                file2.write(j+".");
+//                file2.write(match.toString());
+//                file2.write("\n---------------------------------------------------\n");
+//                j++;
+//
+//
+//            }
             int j =1;
-            for (Match match:collection.getKeySet()) {
-                System.out.println("match!!"+match.toString());
-                file2.write(j+".");
-                file2.write(match.toString());
-                file2.write("\n---------------------------------------------------\n");
-                j++;
-
-
+            for(Map.Entry<String, MatchCollection> entry:matchCollectionHashMap.entrySet()){
+                MatchCollection matchCollection = entry.getValue();
+                for(Match match:matchCollection.getMatches()){
+                    System.out.println("match!!"+match.toString());
+                    file2.write(j+".");
+                    file2.write(match.toString());
+                    file2.write("\n---------------------------------------------------\n");
+                    j++;
+                }
             }
+
+
+
+
+
 //            file.write("\n===============Sorted Error Matches (Frequency of Occurrence)===============\n");
 //            /*Problems for multiple TGFDs*/
 //            ArrayList<Match> sort_list = collection.sortMatchList();
