@@ -49,11 +49,11 @@ public class ErrorGenerator {
                     List<Match> secondMatches=matches.getMatches(allSnapshots[j]);
                     for (Match first:firstMatches) {
                         String firstSignatureX=first.getSignatureX();
-                        String firstSignatureY=Match.signatureFromY(tgfd.getPattern(),first.getMatchMapping(),tgfd.getDependency().getY());
+                        String firstSignatureY=first.getSignatureY();
                         for (Match second:secondMatches) {
                             if(firstSignatureX.equals(second.getSignatureX()))
                             {
-                                String secondSignatureY=Match.signatureFromY(tgfd.getPattern(),second.getMatchMapping(),tgfd.getDependency().getY());
+                                String secondSignatureY=second.getSignatureY();
                                 if(firstSignatureY.equals(secondSignatureY))
                                 {
                                     PairsOfMatches pair=new PairsOfMatches(first,second,firstSignatureX,firstSignatureY,intv);
@@ -162,7 +162,7 @@ public class ErrorGenerator {
                 if (intv.inDelta(delta.getMin(), delta.getMax())) {
                     for (Match first : firstMatches) {
                         String firstSignatureX = first.getSignatureX();
-                        String firstSignatureY = Match.signatureFromY(tgfd.getPattern(), first.getMatchMapping(), tgfd.getDependency().getY());
+                        String firstSignatureY = first.getSignatureY();
                         if (firstSignatureX.equals(pair.X)) {
                             if (!firstSignatureY.equals(pair.Y1)) {
                                 TGFDNegativeErrors++;
