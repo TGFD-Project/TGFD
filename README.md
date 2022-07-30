@@ -5,7 +5,9 @@
 [comment]: # (Must use Gitub's generated id to be consistent between Github and Github Pages because Github will override it")
 
 * [1. Overview](#1-overview)
-* [2. TGFD Syntax](#2-TGFD-definition)
+* [2. TGFDs](#2-TGFD-definition)
+  + [2.1 TGFD Format](#21-TGFDs)
+  + [2.2 TGFD Sample Error](#22-tgfd_errors)
 * [3. Datasets](#3-datasets)
   + [3.1 DBpedia](#31-dbpedia)
     - [3.1.1 DBpedia TGFDs](#311-dbpedia-tgfds)
@@ -31,7 +33,17 @@ The **T**emporal **G**raph **F**unctional **D**ependencies (TGFD) project detect
 This page provides supplementary experimental details, dataset characteristics, TGFD samples, and a link to the source code.
 
 
-<h2 id="2-TGFD-definition">2. TGFD Syntax</h2>
+<h2 id="2-TGFD-definition">2. TGFDs</h2>
+
+We used the TGFD mining algorithm ([Here](https://github.com/mac-dsl/TGFD-discovery)) to find TGFDs for each dataset.
+
+We implement the TGFDs as follows:
+- Run the algorithm to mine TGFDs with minimum support 0.01
+- Pick the top 40 TGFDs for [DBPedia](#31-dbpedia) and [IMDB](#32-imdb) and top 20 TGFDs for [Synthetic](#33-synthetic) datasets.
+- Transform the TGFDs to the format ([Here](#21-TGFDs)) accepted by this code
+- Run the algorithm to find inconsistencies based on the TGFDs
+
+<h3 id="21-TGFDs">2.1 TGFD Format</h3>
 
 To store TGFDs and use them in our implementation, we considered a specific syntax to define TGFDs. This syntax is being used throughout the whole implementation.
 
@@ -59,10 +71,41 @@ literal#x#album$uri$album$uri
 literal#y#musicalartist$name$musicalartist$name
 delta#0#210#1
 ```
+**Equivalent TGFD 1**  
+![Sample TGFD 1](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/tgfd1.png "Sample TGFD 1")
 
-Refer to `/samplePatterns/` for more examples.
+Refer to `/sampleTGFDs/` for more examples.
+
+To use a TGFD to run the algorithm, one must point to the path that the TGFD file exists in the config file
+using ``-p`` indication. We refer to [Creating conf](#422-creating-conf) section for more details.
+
+<h3 id="22-tgfd_errors">2.2. TGFD Sample Error Files</h3>
+
+A sample violation is in the form of:
+```
+9.Violation{
+X=admission_1.bmi_first: 29.9,admission_2.bmi_first: 29.9,
+admission_1.age: senior,admission_2.age: senior,
+admission_1.gender: m,admission_2.gender: m,
+prescription_1.take_drugbank_id: http://bio2rdf.org/drugbank:db09341,
+prescription_2.take_drugbank_id: http://bio2rdf.org/drugbank:db09341,
+disease_1.uri: 584.9,disease_2.uri: 584.9,, 
+Y1=500ml,500ml,, Y2=50ml,50ml,, 
+interval=Interval{start= t_21, end= t_22}
+}
+Patters1: 128342,29.9,m,senior,pres3419386,500ml,http://bio2rdf.org/drugbank:db09341,584.9,
+Patters2: 128342,29.9,m,senior,pres3419392,50ml,http://bio2rdf.org/drugbank:db09341,584.9,
+```
+The violation states the values of the attributes in X for both matches and then
+shows the values for Y in the form of `Y1` and `Y2`. For each violation,
+we have two matches involved and a string signature of the matches are shown
+as `Pattern1` and `Pattern2`.
+
+We refer to `/sampleResults/` for sample violations of each dataset.
 
 <h2 id="3-datasets">3. Datasets</h2>
+
+To download the dataset, please find the link here: `/Dataset/README.md`
 
 <h3 id="31-dbpedia">3.1 DBpedia</h3>
 
@@ -76,7 +119,7 @@ This dataset contains 2.2M entities with 73 distinct entity types and 7.4M edges
 We applied a TGFD mining algorithm [3] over the DBPedia dataset to identify satisfying
 and approximate TGFDs.
 
-<!-- We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/samplePatterns/dbpedia` using real life domain knowledge.
+<!-- We manually defined a core set of TGFDs specified in these files `/VF2SubIso/src/test/java/sampleTGFDs/dbpedia` using real life domain knowledge.
 
 Since there are many possible TGFDs for DBpedia, we considered the total number of vertices per vertex type. We wanted to be fair by not choosing vertices with a very low instance count (e.g. 'mousegene' type with only 1 vertex) or only vertices with a very high instance count (e.g. 'careerstation' type with 976,963 vertices). The DBpedia dataset number of instances per vertex type averaged 13,053 with a median of 1,870. We considered vertices around this range with several above it (including album with 139,058 instances).
 
@@ -149,28 +192,28 @@ We used the following subset of the vertices, edges, and attributes as the activ
 | team          | basketballplayer | basketballteam   |
 | team          | soccerplayer     | soccerteam       |
 
-Below are samples of the DBpedia TGFDs:  
+Below are samples of the DBpedia TGFDs:
 
 **DBpedia TGFD 1**  
 ![DBpedia TGFD 1 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/1.png "DBpedia TGFD 1 Pattern")  
 Δ: (0 days,  1000 days)  
 X: album.name  
 Y: musicalartist.name  
-File: `/samplePatterns/dbpedia/pattern0100.txt`  
+File: `/sampleTGFDs/dbpedia/pattern0100.txt`
 
 **DBpedia TGFD 2**  
 ![DBpedia TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/2.png "DBpedia TGFD 2 Pattern")  
 Δ: (0 days, 30 days)  
 X: basketballplayer.name, basketballteam.name  
 Y: basketballleague.name  
-File: `/samplePatterns/dbpedia/pattern0400.txt`  
+File: `/sampleTGFDs/dbpedia/pattern0400.txt`
 
 **DBpedia TGFD 3**  
 ![DBpedia TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/dpedia/3.png "DBpedia TGFD 3 Pattern")  
 Δ: (0 days, 30 days)  
 X: book.name, book.isbn, country.name  
 Y: publisher.name  
-File: `/samplePatterns/dbpedia/pattern0500.txt`  
+File: `/sampleTGFDs/dbpedia/pattern0500.txt`
 
 <h3 id="32-imdb">3.2 IMDB</h3>
 
@@ -191,7 +234,7 @@ From these weekly snapshots, we took every 4th snapshot to approximate a monthly
 
 <h4 id="321-imdb-tgfds">3.2.1 IMDB TGFDs</h4>
 
-We mined set of TGFDs for the IMDB dataset in these files `/samplePatterns/imdb` using real life domain knowledge.
+We mined set of TGFDs for the IMDB dataset in these files `/sampleTGFDs/imdb` using real life domain knowledge.
 
 <!--**Extending the core TGFD set**
 
@@ -215,28 +258,28 @@ Vertices of types {actor, actress, country, director, distributor, genre} have a
 | language_of    | movie    | language    |
 | genre_of       | genre    | movie       |
 
-Below are samples of the core IMDB TGFDs:  
+Below are samples of the core IMDB TGFDs:
 
 **IMDB TGFD 1**  
 ![IMDB TGFD 1 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/1.png "IMDB TGFD 1 Pattern")  
 Δ: (0 days, 1000 days)  
 X: actor.name  
 Y: movie.name  
-File: `/samplePatterns/imdb/pattern0100.txt`  
+File: `/sampleTGFDs/imdb/pattern0100.txt`
 
 **IMDB TGFD 2**  
 ![IMDB TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/2.png "IMDB TGFD 2 Pattern")  
 Δ: (0 days, 365 days)  
 X: genre.name  
 Y: movie.name  
-File: `/samplePatterns/imdb/pattern0600.txt`  
+File: `/sampleTGFDs/imdb/pattern0600.txt`
 
 **IMDB TGFD 3**  
 ![IMDB TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/imdb/3.png "IMDB TGFD 3 Pattern")  
 Δ: (0 days, 365 days)  
 X: language.name  
 Y: language.name  
-File: `/samplePatterns/imdb/pattern0700.txt`  
+File: `/sampleTGFDs/imdb/pattern0700.txt`
 
 <h3 id="33-synthetic">3.3 Synthetic</h3>
 
@@ -253,7 +296,7 @@ We used `Dataset/synthetic/social-network.xml` as parameters to gMark.
 
 <h4 id="331-synthetic-tgfds">3.3.1 Synthetic TGFDs</h4>
 
-We mined a set of TGFDs specified in these files `/samplePatterns/synthetic` using real life domain knowledge.
+We mined a set of TGFDs specified in these files `/sampleTGFDs/synthetic` using real life domain knowledge.
 
 We used the following subset of the vertices, edges, and attributes as an active set in the Synthetic dataset to mine TGFDs.
 
@@ -300,38 +343,38 @@ We used the following subset of the vertices, edges, and attributes as an active
 | isSubclassOf   | Comment    | Message     |
 | replyOf        | Comment    | Message     |
 
-Below are samples of the core Synthetic TGFDs:  
+Below are samples of the core Synthetic TGFDs:
 
 **Synthetic TGFD 1**  
 ![Synthetic TGFD 1 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/1.png "Synthetic TGFD 1 Pattern")  
 Δ: (0 days, 365 days)  
 X: person.name  
 Y: company.name  
-File: `/samplePatterns/synthetic/pattern0200.txt`  
+File: `/sampleTGFDs/synthetic/pattern0200.txt`
 
 **Synthetic TGFD 2**  
 ![Synthetic TGFD 2 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/2.png "Synthetic TGFD 2 Pattern")  
 Δ: (0 days, 365 days)  
 X: person.name  
 Y: university.name  
-File: `/samplePatterns/synthetic/pattern1000.txt`  
+File: `/sampleTGFDs/synthetic/pattern1000.txt`
 
 **Synthetic TGFD 3**  
 ![Synthetic TGFD 3 Pattern](https://raw.githubusercontent.com/TGFD-Project/TGFD/main/site/images/patterns/synthetic/3.png "Synthetic TGFD 3 Pattern")  
 Δ: (0 days, 365 days)  
 X: person.name  
 Y: tag.name  
-File: `/samplePatterns/synthetic/pattern0700.txt`  
+File: `/sampleTGFDs/synthetic/pattern0700.txt`
 
 <h3 id="34-GFDs">3.4 GFDs</h3>
 
-We consider the same set of TGFDs in `/samplePatterns/` folder to define GFDs for each dataset. To this end, we set Δ: (0, 0) to consider each TGFD model the corresponding GFD.
+We consider the same set of TGFDs in `/sampleTGFDs/` folder to define GFDs for each dataset. To this end, we set Δ: (0, 0) to consider each TGFD model the corresponding GFD.
 
 <h2 id="4-getting-started">4. Getting started</h2>
 
 Prerequisites:
-  - Java 15
-  - maven
+- Java 15
+- maven
 
 <h3 id="41-with-sample">4.1 With Sample</h3>
 
@@ -360,8 +403,8 @@ There is no extra prerequisite for this dataset as the diff files can be extract
 (to be explained in Section [4.2.5](#425-generating-diffs).)
 
 However, for IMDB dataset, you need the additional prerequisites:
-  - Python 3
-  - rdflib
+- Python 3
+- rdflib
 
 Download the original IMDB text diffs, convert them into RDF format by running:
 ```
@@ -370,7 +413,7 @@ cd Dataset/imdb
 ```
 
 For Synthetic dataset, you need the additional prerequisites:
-  - [gMark](https://github.com/gbagan/gmark)
+- [gMark](https://github.com/gbagan/gmark)
 
 For a custom dataset, you'll need to either format the data the same as DBpedia or as RDF. Then it may be possible to re-use either the DBpedia graph loader or the IMDB graph loader. For example, you should be able to use DBpedia loader to load [Yago](https://yago-knowledge.org/). If you need to write your own loader, then refer to the loaders in `/VF2SubIso/src/main/java/graphLoader`.
 

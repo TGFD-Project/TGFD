@@ -51,6 +51,15 @@ public class Interval {
     }
 
     /**
+     * Returns true if timepoint within the interval (start and end inclusive).
+     */
+    public boolean containsExcludeEnd(LocalDate timepoint) {
+        return
+                (timepoint.isEqual(start) || timepoint.isAfter(start)) &&
+                        (timepoint.isBefore(end));
+    }
+
+    /**
      * Returns true if the other interval intersects with the interval (inclusive).
      */
     public boolean intersects(Interval other) {

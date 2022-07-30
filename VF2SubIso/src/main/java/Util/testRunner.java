@@ -25,7 +25,7 @@ public class testRunner {
     private List<TGFD> tgfds;
     private long wallClockTime=0;
     private ViolationCollection collection;
-    private HashSet<String> tempIDs =new HashSet<>();
+    private HashSet<String> prescriptionIDs=new HashSet<>();
 
     public testRunner()
     {
@@ -72,7 +72,6 @@ public class testRunner {
     public void testDataset()
     {
         for (Vertex v:loader.getGraph().getGraph().vertexSet()) {
-            DataVertex dataVertex=(DataVertex) v;
             if(v.getTypes().contains("admission"))
             {
                 HashSet<Vertex> neighbors=new HashSet<>();
@@ -86,7 +85,7 @@ public class testRunner {
                 {
                     System.out.println("\n------------------------");
                     System.out.println(v);
-                    tempIDs.add(v.getAttributeValueByName("uri"));
+                    prescriptionIDs.add(v.getAttributeValueByName("uri"));
                     System.out.println(neighbors.stream().iterator().next());
                 }
             }
@@ -204,7 +203,7 @@ public class testRunner {
             collection.addViolations(tgfd, allViolationsOptBatchTED); // Add violation into violation collection !!!!!!!!!!!!
             printWithTime("Naive Batch TED", System.currentTimeMillis()-startTime);
             if(Config.saveViolations)
-                saveViolations("E:\\MorteZa\\Datasets\\PDD\\Results\\naive",allViolationsOptBatchTED,tgfd,collection, tempIDs);
+                saveViolations("./naive",allViolationsOptBatchTED,tgfd,collection,prescriptionIDs);
             msg.append(getViolationsMessage(allViolationsOptBatchTED,tgfd));
 
         }
@@ -240,29 +239,41 @@ public class testRunner {
     private static void saveViolations(String path, Set<Violation> violations, TGFD tgfd, ViolationCollection collection,HashSet<String> prescriptionIDs)
     {
         try {
+            HashMap<String, Integer> drugCount=new HashMap<>();
+            HashMap<String,HashMap<String, Integer>> drugViolatingDosage = new HashMap<>();
+            HashMap<String, ArrayList<String>> drugDisease= new HashMap<>();
+            HashMap<String, Integer> patients = new HashMap<>();
             FileWriter file = new FileWriter(path +"_" + tgfd.getName() + ".txt");
             file.write("***************TGFD***************\n");
             file.write(tgfd.toString());
             file.write("\n===============Violations===============\n");
+            int withinOneTimestamp=0;
             int i =1;
             for (Violation vio:violations) {
+                if(Config.timestampsReverseMap.get(vio.getInterval().getStart()) == Config.timestampsReverseMap.get(vio.getInterval().getEnd()))
+                    withinOneTimestamp++;
                 file.write(i+".");
                 file.write(vio.toString() +
                         "\nPatters1: " + vio.getMatch1().getSignatureFromPattern() +
                         "\nPatters2: " + vio.getMatch2().getSignatureFromPattern() +
                         "\n---------------------------------------------------\n");
+
+                //extraAnalysis(drugCount,drugViolatingDosage,drugDisease,patients,vio);
+
                 i++;
-                String admissionID=vio.getMatch1().getSignatureFromPattern().split(",")[0];
-                if(prescriptionIDs.contains(admissionID))
-                {
-                    file.write("Found it!" + admissionID);
-                }
-                admissionID=vio.getMatch2().getSignatureFromPattern().split(",")[0];
-                if(prescriptionIDs.contains(admissionID))
-                {
-                    file.write("Found it!" + admissionID);
-                }
+//                String admissionID=vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()).split(",")[0];
+//                if(prescriptionIDs.contains(admissionID))
+//                {
+//                    file.write("Found it!" + admissionID);
+//                }
+//                admissionID=vio.getMatch2().getSignatureFromPattern(vio.getInterval().getEnd()).split(",")[0];
+//                if(prescriptionIDs.contains(admissionID))
+//                {
+//                    file.write("Found it!" + admissionID);
+//                }
             }
+            System.out.println("Number within timestamp: " + withinOneTimestamp + " out of " + violations.size());
+            printExtraAnalysis(drugCount,drugViolatingDosage,drugDisease,patients);
 //            file.write("\n===============Sorted Error Matches (Frequency of Occurrence)===============\n");
 //            /*Problems for multiple TGFDs*/
 //            ArrayList<Match> sort_list = collection.sortMatchList();
@@ -277,6 +288,77 @@ public class testRunner {
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
+        }
+    }
+
+    private static void extraAnalysis(HashMap<String, Integer> drugCount,
+                                      HashMap<String,HashMap<String, Integer>> drugViolatingDosage,
+                                      HashMap<String, ArrayList<String>> drugDisease,
+                                      HashMap<String, Integer> patients,
+                                      Violation vio)
+    {
+//            Patters1: 172484,29.9,m,adult,pres415063,200mg,http://bio2rdf.org/drugbank:db00996,v12.04,
+//            Patters2: 172484,29.9,m,adult,pres415063,200mg,http://bio2rdf.org/drugbank:db00996,v12.04,
+        try
+        {
+            String [] temp = vio.getMatch1().getSignatureFromPattern().split(",");
+            if(!patients.containsKey(temp[0]))
+                patients.put(temp[0],0);
+            patients.put(temp[0],patients.get(temp[0])+2);
+            String drugName= temp[6];
+            String diseaseName=temp[7];
+            if(!drugDisease.containsKey(drugName))
+                drugDisease.put(drugName,new ArrayList<>());
+            drugDisease.get(drugName).add(diseaseName);
+
+            if(!drugCount.containsKey(drugName))
+                drugCount.put(drugName,0);
+            drugCount.put(drugName,drugCount.get(drugName)+1);
+
+            if(!drugViolatingDosage.containsKey(drugName))
+                drugViolatingDosage.put(drugName,new HashMap<>());
+            if(!drugViolatingDosage.get(drugName).containsKey(vio.getY1()))
+                drugViolatingDosage.get(drugName).put(vio.getY1(),0);
+            if(!drugViolatingDosage.get(drugName).containsKey(vio.getY2()))
+                drugViolatingDosage.get(drugName).put(vio.getY2(),0);
+            drugViolatingDosage.get(drugName).put(vio.getY1(),drugViolatingDosage.get(drugName).get(vio.getY1())+1);
+            drugViolatingDosage.get(drugName).put(vio.getY2(),drugViolatingDosage.get(drugName).get(vio.getY2())+1);
+        }
+        catch (Exception e)
+        {
+            //System.out.println(vio.getMatch1().getSignatureFromPattern(vio.getInterval().getStart()));
+        }
+
+    }
+
+    private static void printExtraAnalysis(HashMap<String, Integer> drugCount,
+                                           HashMap<String,HashMap<String, Integer>> drugViolatingDosage,
+                                           HashMap<String, ArrayList<String>> drugDisease,
+                                           HashMap<String, Integer> patients)
+    {
+        HashSet<String> visited = new HashSet<>();
+        boolean found = false;
+        while (true)
+        {
+            int max = Integer.MIN_VALUE;
+            String val = "";
+            for (String drugName:drugCount.keySet()) {
+                if(!visited.contains(drugName) && drugCount.get(drugName)>max)
+                {
+                    val=drugName;
+                    found = true;
+                    max = drugCount.get(drugName);
+                }
+            }
+            if(!found)
+                break;
+            found = false;
+            visited.add(val);
+            System.out.println("Drug: " + val + " -- " + max);
+        }
+
+        for (String patient:patients.keySet()) {
+            System.out.println(patient + "  :  " + patients.get(patient));
         }
     }
 

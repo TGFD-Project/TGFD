@@ -98,8 +98,8 @@ public class SyntheticLoader extends GraphLoader {
                     {
                         if(Config.optimizedLoadingBasedOnTGFD && !validTypes.contains(subject[0]))
                             continue;
-                        if(Config.optimizedLoadingBasedOnTGFD && !validTypes.contains(object[0]))
-                            continue;
+//                        if(Config.optimizedLoadingBasedOnTGFD && !validTypes.contains(object[0]))
+//                            continue;
 
                         DataVertex subjectVertex= (DataVertex) graph.getNode(subject[1]);
                         if (subjectVertex==null) {
