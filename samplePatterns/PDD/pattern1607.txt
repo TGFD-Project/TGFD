@@ -1,0 +1,10 @@
+tgfd#p1607
+vertex#v1#Admission#uri#age#gender
+vertex#v2#Prescription#uri#take_drugbank_id#duration_days
+edge#v1#v2#has_prescription
+diameter#1
+literal#x#Admission$age$Admission$age
+literal#x#Admission$gender$Admission$gender
+literal#x#Prescription$take_drugbank_id$Prescription$take_drugbank_id
+literal#y#Prescription$duration_days$Prescription$duration_days
+delta#0#365#1

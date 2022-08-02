@@ -1,0 +1,9 @@
+tgfd#p1606
+vertex#v1#Admission#uri
+vertex#v2#Prescription#uri#take_drugbank_id#dose
+edge#v1#v2#has_prescription
+diameter#1
+literal#x#Admission$uri$Admission$uri
+literal#x#Prescription$take_drugbank_id$Prescription$take_drugbank_id
+literal#y#Prescription$dose$Prescription$dose
+delta#0#365#1

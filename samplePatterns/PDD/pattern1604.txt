@@ -1,0 +1,13 @@
+tgfd#p1604
+vertex#v1#Admission#uri
+vertex#v2#Disease#uri
+vertex#v3#Drug#uri
+vertex#v4#Drug#uri
+edge#v1#v2#diagnoses_icd9
+edge#v1#v3#take_drugbank_id
+edge#v1#v4#take_drugbank_id
+diameter#2
+literal#x#Admission$uri$Admission$uri
+literal#x#Disease$uri$Disease$uri
+literal#x#Drug$take_drugbank_id$Drug$take_drugbank_id
+delta#0#365#1
