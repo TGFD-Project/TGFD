@@ -2,6 +2,7 @@ package Violations;
 
 import Infra.Interval;
 import Infra.Match;
+import Util.Config;
 
 public class Violation {
     private Match match1,match2;
@@ -48,8 +49,8 @@ public class Violation {
                 "X=" + X +
                 ", Y1=" + Y1 +
                 ", Y2=" + Y2 +
-                ", First timestamp=" + interval.getStart() +
-                ", Second timestamp=" + interval.getEnd() +
+                ", First timestamp= " + interval.getStart() +" (t_" + Config.timestampsReverseMap.get(interval.getStart()) + ")" +
+                ", Second timestamp= " + interval.getEnd() +" (t_" + Config.timestampsReverseMap.get(interval.getEnd()) + ")" +
                 '}';
     }
 }
