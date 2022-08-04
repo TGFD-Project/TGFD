@@ -1,6 +1,6 @@
 tgfd#p1605
 vertex#v1#Admission#uri
-vertex#v2#Prescription#uri#take_drugbank_id#duration_days
+vertex#v2#Prescription#uri#take_drugbank_id$http://bio2rdf.org/drugbank:db00264#duration_days
 edge#v1#v2#has_prescription
 diameter#1
 literal#x#Admission$uri$Admission$uri
