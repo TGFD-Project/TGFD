@@ -48,7 +48,8 @@ public class Violation {
                 "X=" + X +
                 ", Y1=" + Y1 +
                 ", Y2=" + Y2 +
-                ", interval=" + interval +
+                ", First timestamp=" + interval.getStart() +
+                ", Second timestamp=" + interval.getEnd() +
                 '}';
     }
 }
