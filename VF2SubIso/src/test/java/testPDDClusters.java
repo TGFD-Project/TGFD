@@ -2,11 +2,13 @@ import KMeansClustering.Centroid;
 import KMeansClustering.EuclideanDistance;
 import KMeansClustering.KMeans;
 import PDD.Record;
+import ViolationRepair.Util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.*;
 
 import static java.util.stream.Collectors.toSet;
@@ -42,13 +44,10 @@ public class testPDDClusters {
 //        }
 //
 
-        computeKMeansClustering(records);
-
-
-
+        computeKMeansClustering(records,patientsDose_fromFile);
     }
 
-    public static void computeKMeansClustering(List<Record> records){
+    public static void computeKMeansClustering(List<Record> records,HashMap<String, double[]> patient_collection){
         HashMap<String,HashMap<String,String>> clusters_collection = new HashMap<>();
         //form k-means Clustering
         Map<Centroid,List<Record>> clusters = KMeans.fit(records,7,new EuclideanDistance(),1000);
@@ -63,6 +62,9 @@ public class testPDDClusters {
             //TODO: change stream
             String members = String.join(", ", value.stream().map(Record::getUri).collect(toSet()));
             System.out.print(members);
+            ArrayList<String> memberList = new ArrayList<>(Arrays.asList(members.split(",")));
+            HashMap<String,HashMap<String,Double>> JS_collection=CalculateJSDivergence(memberList,patient_collection);
+            JS_sorting(JS_collection);
             System.out.println();
             System.out.println();
 
@@ -72,6 +74,7 @@ public class testPDDClusters {
             temp_attributes.put("members",members);
 
             clusters_collection.put("Cluster"+key,temp_attributes);
+
 
         });
         saveClusters("/Users/lexie/Desktop/Master_Project/Clusters/cluster",clusters_collection);
@@ -312,5 +315,57 @@ public class testPDDClusters {
         }
         return records;
     }
+
+
+    public static HashMap<String,HashMap<String,Double>> CalculateJSDivergence(ArrayList<String> membersList,HashMap<String, double[]> patient_collection){
+        HashMap<String,HashMap<String,Double>> JS_collection = new HashMap<>();
+        for(int i=0;i<membersList.size();i++){
+            HashMap<String,Double> JS_Values = new HashMap<>();
+            String patient1 = membersList.get(i);
+            if(patient1.contains(" ")){
+                patient1=patient1.substring(1);
+            }
+//            System.out.println("The JS Divergence for patient"+patient1);
+            double[] p1 = patient_collection.get(patient1);
+            for(int j=i+1;j<membersList.size();j++){
+                String patient2 = membersList.get(j).substring(1);
+                double[] p2 = patient_collection.get(patient2);
+                double score = Util.jsDivergence(p1,p2);
+                JS_Values.put(patient2,score);
+
+//                    System.out.println(patient1+" with "+patient2+" is "+score);
+                }
+
+            JS_collection.put(patient1,JS_Values);
+
+            }
+        return JS_collection;
+        }
+
+        public static void JS_sorting(HashMap<String,HashMap<String,Double>> JS_collection){
+        for(Map.Entry<String,HashMap<String,Double>> i:JS_collection.entrySet()){
+            System.out.println("For patient "+i.getKey());
+            HashMap<String,Double> similarity = i.getValue();
+            Set<Map.Entry<String,Double>> entries =similarity.entrySet();
+            Comparator<Map.Entry<String,Double>> valueComparator = (o1, o2) -> {
+                Double v1 = o1.getValue();
+                Double v2 = o2.getValue();
+                return v1.compareTo(v2);
+            };
+
+            List<Map.Entry<String,Double>> listofEntries = new ArrayList<>(entries);
+            listofEntries.sort(valueComparator);
+            LinkedHashMap<String,Double> sortedByValue = new LinkedHashMap<>(listofEntries.size());
+            for(Map.Entry<String,Double>entry:listofEntries){
+                sortedByValue.put(entry.getKey(),entry.getValue());
+            }
+            System.out.println("After sorting");
+            for(Map.Entry<String,Double>mapping:sortedByValue.entrySet()){
+                System.out.println(mapping.getKey()+"==>"+mapping.getValue());
+            }
+        }
+        }
+
+
 
 }
