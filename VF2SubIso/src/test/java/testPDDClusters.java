@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.*;
 
 import static java.util.stream.Collectors.toSet;
@@ -39,9 +38,10 @@ public class testPDDClusters {
 //        }
         //create patients records with URI and Features
         List<Record> records = datasetWithTaggedPatients(patientsWithTags);
-//        for(Record r:records){
-//            System.out.println(r.toString());
-//        }
+        System.out.println("print records");
+        for(Record r:records){
+            System.out.println(r.toString());
+        }
 //
 
         computeKMeansClustering(records,patientsDose_fromFile);
@@ -109,12 +109,12 @@ public class testPDDClusters {
             FileWriter file1 = new FileWriter(path + "_"+"1612"+".txt");
 
             for(Map.Entry<String,double[]> e:patient_collection.entrySet()){
-                String dose="dose:";
+                StringBuilder dose= new StringBuilder("dose:");
                 String patient = e.getKey();
                 file1.write(num+"."+patient+"\n");
                 double[] doses = e.getValue();
                 for(double i:doses){
-                    dose = dose+ i +",";
+                    dose.append(i).append(",");
                 }
                 file1.write(dose+"\n");
                 num++;
@@ -235,7 +235,7 @@ public class testPDDClusters {
         return  patients;
     }
 
-    public static HashMap<String,HashMap<String,Double>> computeTaggedPatients(int numOfWindows, HashMap<String,double[]> patient_collection,
+    public static HashMap<String,HashMap<String,Double>> computeTaggedPatients(int WindowSize, HashMap<String,double[]> patient_collection,
                                                                                         HashMap<String,HashMap<String,Double>> bio_collection){
         HashMap<String,HashMap<String,Double>> taggedPatients = new HashMap<>();
         String type = "dose_signature";
@@ -243,35 +243,123 @@ public class testPDDClusters {
             String patient = i.getKey();
             double[] doses = i.getValue();
             double mean_sum = 0;
+            double WMA_sum = 0;
+            double error_WMA_sum = 0;
             int valid_windows = 0;
-            for(int j=1;j<=doses.length-numOfWindows;j++){
+
+            int weights_sum = WindowSize*(WindowSize+1)/2;
+
+            //loop each window
+            for(int j=1;j<=doses.length-WindowSize;j++){
+                System.out.println("Start window "+j);
+                double weighted_sum=0;
+                double WMA_each;
+                double error_WMA_each;
+                ArrayList<Object> error_points = new ArrayList<>();
+                Map<Integer,Integer> error_weights_sum_collection = new HashMap<>();
                 //compute single window size mean
                 double single_sum = 0;
-                for(int k=j;k<j+numOfWindows;k++){
+                int temp_Windows=WindowSize;
+                for(int k=j+WindowSize-1;k>=j;k--){
+                    System.out.println("Current dose"+doses[k]);
                     single_sum=single_sum+doses[k];
+                    weighted_sum = weighted_sum + doses[k]*temp_Windows;
+                    temp_Windows--;
+
+                    //check if current one is the error point
+                    if(doses[k]!=doses[k-1]){
+                        error_points.add(k);
+                    }
                 }
-                double single_mean = single_sum/numOfWindows;
+
+                //error weights assigned
+                if(error_points.isEmpty()){
+                    for(int z=j+WindowSize-1;z>=j;z--){
+                        error_weights_sum_collection.put(z,WindowSize);
+                    }
+                }else{
+                    for(int z=j+WindowSize-1;z>=j;z--){
+                        if(error_points.contains(z)){
+                            error_weights_sum_collection.put(z,WindowSize);
+                        }else{
+                            //find the nearest error point
+                            int shortest_length=999;
+                            for(int d=1;d<=WindowSize;d++){
+                                if(z-d>0){
+                                    if(error_points.contains(z-d)){
+                                        if(d<shortest_length){
+                                            shortest_length = d;
+                                        }
+                                    }
+                                }
+
+                                if(z+d<=j+WindowSize-1){
+                                    if(error_points.contains(z+d)){
+                                        if(d<shortest_length){
+                                            shortest_length = d;
+                                        }
+                                    }
+                                }
+                            }
+                            error_weights_sum_collection.put(z,WindowSize-shortest_length);
+                        }
+                    }
+                }
+
+
+
+
+                double single_mean = single_sum/WindowSize;
+
+
+                //Calculate WMA
+                WMA_each = weighted_sum/weights_sum;
+//                System.out.println(j+" window WMA is"+WMA_each);
+
+
+
+                // Calculate single window error WMA
+                double error_weights_sum = 0;
+                double error_weighted_sum=0;
+                for(Map.Entry<Integer,Integer> e:error_weights_sum_collection.entrySet()){
+                    System.out.println("weight"+e.getKey()+"is"+e.getValue());
+                    error_weights_sum = error_weights_sum+e.getValue();
+                    error_weighted_sum = error_weighted_sum + doses[e.getKey()]*e.getValue();
+                }
+
+                // Calculate error WMA
+                error_WMA_each = error_weighted_sum/error_weights_sum;
+
 
                 //Add single window size mean to sum if the window is valid
                 if(single_mean!=0){
                     mean_sum = mean_sum+single_mean;
+                    WMA_sum = WMA_sum+WMA_each;
+                    error_WMA_sum =error_WMA_sum +error_WMA_each;
                     valid_windows++;
                 }
 
+
+
             }
+
+
 //            System.out.println("For patient"+patient+"The number of valid winodws is"+valid_windows);
             double mean=mean_sum/valid_windows;
+            double WMA = WMA_sum/valid_windows;
+            double error_WMA = error_WMA_sum/valid_windows;
 //            System.out.println("For patient"+patient+"The mean of all valid winodws is"+mean);
 
             HashMap<String,Double> attributes = bio_collection.get(patient);
-            attributes.put(type,mean);
+//            attributes.put(type,mean);
+//            attributes.put(type,WMA);
+            attributes.put(type,error_WMA);
             taggedPatients.put(patient,attributes);
         }
 
 
         return taggedPatients;
     }
-
 
     public static void putInDoseHashMap(String patient,int start_date, int end_date, HashMap<String,double[]> patient_collection,double signatureY){
 //        System.out.println("patient is" + patient);
@@ -327,14 +415,15 @@ public class testPDDClusters {
             }
 //            System.out.println("The JS Divergence for patient"+patient1);
             double[] p1 = patient_collection.get(patient1);
-            for(int j=i+1;j<membersList.size();j++){
-                String patient2 = membersList.get(j).substring(1);
+            for (String s : membersList) {
+                String patient2 = s.substring(1);
                 double[] p2 = patient_collection.get(patient2);
-                double score = Util.jsDivergence(p1,p2);
-                JS_Values.put(patient2,score);
-
-//                    System.out.println(patient1+" with "+patient2+" is "+score);
+                if (p2 != null) {
+                    double score = Util.jsDivergence(p1, p2);
+                    JS_Values.put(patient2, score);
                 }
+//                    System.out.println(patient1+" with "+patient2+" is "+score);
+            }
 
             JS_collection.put(patient1,JS_Values);
 
